@@ -1,122 +1,421 @@
 import 'package:flutter/material.dart';
+import 'supabase_config.dart';
+import 'theme/app_colors.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  try {
+    await SupabaseConfig.initialize();
+    runApp(const HouseHelpApp());
+  } catch (e) {
+    // Handle initialization errors gracefully
+    runApp(const HouseHelpApp());
+  }
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class HouseHelpApp extends StatelessWidget {
+  const HouseHelpApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'House Help',
+      theme: AppTheme.lightTheme,
+      home: const HomePage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+  bool _isConnected = false;
 
-  void _incrementCounter() {
+  @override
+  void initState() {
+    super.initState();
+    _checkSupabaseConnection();
+  }
+
+  Future<void> _checkSupabaseConnection() async {
+    try {
+      await SupabaseConfig.client.from('users').select('count').limit(1);
+      setState(() {
+        _isConnected = true;
+      });
+    } catch (e) {
+      setState(() {
+        _isConnected = false;
+      });
+      // Connection check failed, but app continues to work
+    }
+  }
+
+  void _onItemTapped(int index) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _selectedIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+        title: const Text('House Help'),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _isConnected ? Icons.cloud_done : Icons.cloud_off,
+              color: _isConnected ? AppColors.success : AppColors.error,
             ),
-          ],
-        ),
+            onPressed: _checkSupabaseConnection,
+            tooltip: _isConnected ? 'Connected to Supabase' : 'Not connected to Supabase',
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: const [
+          DashboardPage(),
+          TasksPage(),
+          ProfilePage(),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.task_alt),
+            label: 'Tasks',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: AppColors.lightBlue,
+        unselectedItemColor: AppColors.accentGray,
+        onTap: _onItemTapped,
+      ),
     );
   }
+}
+
+class DashboardPage extends StatelessWidget {
+  const DashboardPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Welcome to House Help!',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 24),
+          Expanded(
+            child: GridView.count(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              children: [
+                _buildDashboardCard(
+                  context,
+                  'Quick Tasks',
+                  Icons.flash_on,
+                  'Complete daily tasks quickly',
+                  () => _showSnackBar(context, 'Quick Tasks feature coming soon!'),
+                ),
+                _buildDashboardCard(
+                  context,
+                  'Schedule',
+                  Icons.calendar_today,
+                  'Manage your schedule',
+                  () => _showSnackBar(context, 'Schedule feature coming soon!'),
+                ),
+                _buildDashboardCard(
+                  context,
+                  'Reminders',
+                  Icons.notifications,
+                  'Set task reminders',
+                  () => _showSnackBar(context, 'Reminders feature coming soon!'),
+                ),
+                _buildDashboardCard(
+                  context,
+                  'Statistics',
+                  Icons.bar_chart,
+                  'View your progress',
+                  () => _showSnackBar(context, 'Statistics feature coming soon!'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDashboardCard(
+    BuildContext context,
+    String title,
+    IconData icon,
+    String description,
+    VoidCallback onTap,
+  ) {
+    return Card(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 32,
+                color: AppColors.lightBlue,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: Theme.of(context).textTheme.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.lightBlue,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+}
+
+class TasksPage extends StatefulWidget {
+  const TasksPage({super.key});
+
+  @override
+  State<TasksPage> createState() => _TasksPageState();
+}
+
+class _TasksPageState extends State<TasksPage> {
+  final List<Task> _tasks = [
+    Task(id: '1', title: 'Clean kitchen', isCompleted: false),
+    Task(id: '2', title: 'Vacuum living room', isCompleted: true),
+    Task(id: '3', title: 'Do laundry', isCompleted: false),
+    Task(id: '4', title: 'Water plants', isCompleted: false),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Your Tasks',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _tasks.length,
+              itemBuilder: (context, index) {
+                final task = _tasks[index];
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    leading: Checkbox(
+                      value: task.isCompleted,
+                      onChanged: (value) {
+                        setState(() {
+                          task.isCompleted = value ?? false;
+                        });
+                      },
+                      activeColor: AppColors.lightBlue,
+                    ),
+                    title: Text(
+                      task.title,
+                      style: TextStyle(
+                        decoration: task.isCompleted
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                        color: task.isCompleted
+                            ? AppColors.secondaryText
+                            : AppColors.primaryText,
+                      ),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        setState(() {
+                          _tasks.removeAt(index);
+                        });
+                      },
+                      color: AppColors.error,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Profile',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 24),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: AppColors.lightBlue,
+                    child: const Icon(
+                      Icons.person,
+                      size: 48,
+                      color: AppColors.cleanWhite,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'House Helper',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Keeping your home organized',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.settings, color: AppColors.accentGray),
+                  title: const Text('Settings'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Settings feature coming soon!'),
+                        backgroundColor: AppColors.lightBlue,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.help, color: AppColors.accentGray),
+                  title: const Text('Help & Support'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Help feature coming soon!'),
+                        backgroundColor: AppColors.lightBlue,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.info, color: AppColors.accentGray),
+                  title: const Text('About'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    _showAboutDialog(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('About House Help'),
+        content: const Text(
+          'House Help is your personal assistant for managing household tasks and keeping your home organized. Version 1.0.0\n\nPowered by Supabase.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class Task {
+  final String id;
+  final String title;
+  bool isCompleted;
+
+  Task({
+    required this.id,
+    required this.title,
+    required this.isCompleted,
+  });
 }
