@@ -7,8 +7,8 @@ class AppConstants {
   static const String appTagline = 'Connecting you to trusted home services';
 
   // Supabase Configuration
-  static const String supabaseUrl = 'YOUR_SUPABASE_URL';
-  static const String supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
+  static const String supabaseUrl = 'https://vxvegxuiefezdkzaempn.supabase.co';
+  static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4dmVneHVpZWZlemRremFlbXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MTQxOTMsImV4cCI6MjA2ODE5MDE5M30.qwzXDLkZ4ObVjtKkeZjPBQ4JwbPoxoB5TJEI7hwGi1I';
 
   // App Colors
   static const Color primaryColor = Color.fromARGB(255, 127, 191, 255);
@@ -18,6 +18,11 @@ class AppConstants {
   static const Color errorColor = Color(0xFFD32F2F);
   static const Color successColor = Color(0xFF4CAF50);
   static const Color warningColor = Color(0xFFFF9800);
+
+  // Custom Palette
+  static const Color lightBlue = Color.fromRGBO(138, 165, 208, 1.0); // Light Blue
+  static const Color cleanWhite = Color.fromRGBO(255, 255, 255, 1.0); // Clean White
+  static const Color accentGray = Color.fromRGBO(95, 108, 126, 1.0); // Accent Gray
 
   // User Type Colors
   static const Color workerColor = Color.fromARGB(255, 16, 147, 255);
