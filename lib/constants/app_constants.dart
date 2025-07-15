@@ -77,8 +77,8 @@ class AppConstants {
   static const List<String> allowedImageTypes = ['jpg', 'jpeg', 'png'];
   
   // API Constants
-  static const String baseUrl = 'https://your-supabase-url.supabase.co';
-  static const String supabaseKey = 'your-supabase-anon-key';
+  static const String baseUrl = 'https://vxvegxuiefezdkzaempn.supabase.co';
+  static const String supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4dmVneHVpZWZlemRremFlbXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MTQxOTMsImV4cCI6MjA2ODE5MDE5M30.qwzXDLkZ4ObVjtKkeZjPBQ4JwbPoxoB5TJEI7hwGi1I';
   
   // Storage Keys
   static const String keyUserType = 'user_type';
