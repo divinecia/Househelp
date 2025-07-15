@@ -10,19 +10,19 @@ class AppConstants {
   static const String supabaseUrl = 'https://vxvegxuiefezdkzaempn.supabase.co';
   static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ4dmVneHVpZWZlemRremFlbXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MTQxOTMsImV4cCI6MjA2ODE5MDE5M30.qwzXDLkZ4ObVjtKkeZjPBQ4JwbPoxoB5TJEI7hwGi1I';
 
-  // App Colors
-  static const Color primaryColor = Color.fromARGB(255, 127, 191, 255);
-  static const Color secondaryColor = Color.fromARGB(255, 76, 91, 175);
-  static const Color accentColor = Color(0xFF757575);
-  static const Color backgroundColor = Color(0xFFF5F5F5);
+  // App Colors - Updated Brand Colors
+  static const Color primaryColor = Color.fromRGBO(76, 102, 164, 1); // Primary Blue
+  static const Color secondaryColor = Color.fromRGBO(138, 165, 208, 1); // Light Blue
+  static const Color accentColor = Color.fromRGBO(95, 108, 126, 1); // Accent Gray
+  static const Color backgroundColor = Color.fromRGBO(255, 255, 255, 1); // Clean White
   static const Color errorColor = Color(0xFFD32F2F);
   static const Color successColor = Color(0xFF4CAF50);
   static const Color warningColor = Color(0xFFFF9800);
 
   // User Type Colors
-  static const Color workerColor = Color.fromARGB(255, 16, 147, 255);
-  static const Color householdColor = Color.fromARGB(255, 20, 55, 100);
-  static const Color adminColor = Color(0xFF757575);
+  static const Color workerColor = Color.fromRGBO(76, 102, 164, 1); // Primary Blue
+  static const Color householdColor = Color.fromRGBO(138, 165, 208, 1); // Light Blue
+  static const Color adminColor = Color.fromRGBO(95, 108, 126, 1); // Accent Gray
 
   // Text Colors
   static const Color textPrimary = Color(0xFF212121);
@@ -158,4 +158,35 @@ class AppConstants {
   static const int maxFileSize = 5 * 1024 * 1024; // 5MB
   static const List<String> allowedImageTypes = ['jpg', 'jpeg', 'png'];
   static const List<String> allowedDocumentTypes = ['pdf', 'doc', 'docx'];
+
+  // Emergency Contact Numbers (Rwanda)
+  static const String emergencyGeneral = '112'; // Police, Fire, Medical
+  static const String emergencyTraffic = '113'; // Traffic Accidents
+  static const String emergencyHealth = '114'; // Health Services
+  static const String emergencyAmbulance = '912'; // Ambulance
+  static const String emergencyChildHelpLine = '116'; // Child Help Line
+  static const String emergencyTrafficPolice = '118'; // Traffic Police
+  static const String emergencyPoliceAbuse = '3511'; // Report Abuse by Police Officer
+  static const String emergencyGenderViolence = '3512'; // Gender Based Violence (Isange Centers)
+
+  // Government Integration
+  static const String isangeOneCenterUrl = 'https://isange.gov.rw';
+  static const String rraUrl = 'https://rra.gov.rw';
+  static const String rraApiKey = 'YOUR_RRA_API_KEY'; // To be configured
+
+  // Payment Integration
+  static const String flutterwavePublicKey = 'YOUR_FLUTTERWAVE_PUBLIC_KEY';
+  static const String flutterwaveSecretKey = 'YOUR_FLUTTERWAVE_SECRET_KEY';
+  static const String flutterwaveEncryptionKey = 'YOUR_FLUTTERWAVE_ENCRYPTION_KEY';
+
+  // Tax Configuration
+  static const double serviceTaxRate = 0.18; // 18% VAT
+  static const double incomeTaxRate = 0.30; // 30% Income Tax
+  static const double socialSecurityRate = 0.06; // 6% Social Security
+
+  // Payment Types
+  static const String paymentTypeService = 'service';
+  static const String paymentTypeTraining = 'training';
+  static const String paymentTypeWithdrawal = 'withdrawal';
+  static const String paymentTypeTax = 'tax';
 }
