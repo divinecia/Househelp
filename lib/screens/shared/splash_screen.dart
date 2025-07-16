@@ -140,7 +140,7 @@ class _SplashScreenState extends State<SplashScreen>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   blurRadius: 20,
                                   offset: const Offset(0, 10),
                                 ),
@@ -214,7 +214,7 @@ class _SplashScreenState extends State<SplashScreen>
                             AppConstants.appTagline,
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   fontWeight: FontWeight.w500,
                                 ),
                             textAlign: TextAlign.center,
@@ -236,7 +236,7 @@ class _SplashScreenState extends State<SplashScreen>
                     Text(
                       'Version ${AppConstants.appVersion}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
                     const SizedBox(height: AppConstants.paddingSmall),
@@ -245,7 +245,7 @@ class _SplashScreenState extends State<SplashScreen>
                     Text(
                       '© 2024 HouseHelp Rwanda',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: AppConstants.paddingLarge),
