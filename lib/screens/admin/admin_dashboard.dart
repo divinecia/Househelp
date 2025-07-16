@@ -131,7 +131,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   Expanded(
                     child: _buildStatCard(
                       'Households',
-                      '678',
+                      '312',
                       AppConstants.householdColor,
                       Icons.home,
                     ),
@@ -139,41 +139,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   const SizedBox(width: AppConstants.paddingMedium),
                   Expanded(
                     child: _buildStatCard(
-                      'Emergency Reports',
-                      '12',
-                      AppConstants.errorColor,
-                      Icons.warning,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppConstants.paddingMedium),
-
-              // Revenue and payments
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      'Service Revenue',
-                      'RWF 1.2M',
-                      AppConstants.successColor,
-                      Icons.monetization_on,
-                    ),
-                  ),
-                  const SizedBox(width: AppConstants.paddingMedium),
-                  Expanded(
-                    child: _buildStatCard(
-                      'Training Revenue',
-                      'RWF 340K',
-                      AppConstants.secondaryColor,
-                      Icons.school,
+                      'Admins',
+                      '7',
+                      AppConstants.adminColor,
+                      Icons.admin_panel_settings_outlined,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: AppConstants.paddingLarge),
 
-              // Quick Actions
+              // Quick actions
               Text(
                 'Quick Actions',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -222,14 +198,21 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       'Tax Reports',
                       Icons.receipt,
                       AppConstants.warningColor,
-                      () => _showTaxReports(),
+                      () {
+                        // TODO: Implement tax reports view
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Tax Reports coming soon'),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: AppConstants.paddingLarge),
 
-              // Recent activity
+              // Recent activity (sample data for now)
               Text(
                 'Recent Activity',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -262,33 +245,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
               ),
               _buildActivityCard(
                 'Training Completed',
-                'Alice Mukamana completed childcare training',
-                '6 hours ago',
+                '2 workers finished cleaning safety training',
+                '5 hours ago',
                 Icons.school,
-                AppConstants.secondaryColor,
+                AppConstants.householdColor,
               ),
             ],
           ),
         );
       },
-    );
-  }
-
-  void _showTaxReports() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Tax Reports'),
-        content: const Text(
-          'Tax reporting functionality will be implemented here.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -298,46 +263,38 @@ class _AdminDashboardState extends State<AdminDashboard> {
     Color color,
     IconData icon,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(AppConstants.paddingMedium),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 24),
-              const SizedBox(width: AppConstants.paddingSmall),
-              Expanded(
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppConstants.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.paddingMedium),
+        child: Row(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(
+                  AppConstants.borderRadiusMedium,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: AppConstants.paddingSmall),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
+              padding: const EdgeInsets.all(8),
+              child: Icon(icon, color: color),
             ),
-          ),
-        ],
+            const SizedBox(width: AppConstants.paddingMedium),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(title, style: Theme.of(context).textTheme.bodyMedium),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -348,29 +305,29 @@ class _AdminDashboardState extends State<AdminDashboard> {
     Color color,
     VoidCallback onTap,
   ) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-      child: Container(
-        padding: const EdgeInsets.all(AppConstants.paddingMedium),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-          border: Border.all(color: color.withOpacity(0.3)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: AppConstants.paddingSmall),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w600,
+      child: Card(
+        elevation: 3,
+        color: color.withOpacity(0.07),
+        child: Padding(
+          padding: const EdgeInsets.all(AppConstants.paddingLarge),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 28),
+              const SizedBox(width: AppConstants.paddingMedium),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const Icon(Icons.arrow_forward_ios, size: 16),
+            ],
+          ),
         ),
       ),
     );
@@ -383,63 +340,41 @@ class _AdminDashboardState extends State<AdminDashboard> {
     IconData icon,
     Color color,
   ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
-      padding: const EdgeInsets.all(AppConstants.paddingMedium),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(
-                AppConstants.borderRadiusLarge,
+    return Card(
+      elevation: 1,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.paddingMedium),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(width: AppConstants.paddingMedium),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    description,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
               ),
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(width: AppConstants.paddingMedium),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: AppConstants.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppConstants.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  time,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppConstants.textLight,
-                  ),
-                ),
-              ],
+            Text(
+              time,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppConstants.textLight),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

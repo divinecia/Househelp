@@ -73,13 +73,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   }
 
   void _onContinueAsGuest() {
-    // TODO: Implement guest mode navigation
+    // Show an informative dialog for unimplemented guest mode
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Guest Mode'),
         content: const Text(
-          'Guest mode is not yet implemented. Please register or login to continue.',
+          'Guest mode is coming soon. Please register or login to continue.',
         ),
         actions: [
           TextButton(
@@ -131,6 +131,14 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         ],
       ),
     );
+  }
+
+  void _navigateToTerms() {
+    NavigationHelper.goToTerms(context);
+  }
+
+  void _navigateToPrivacy() {
+    NavigationHelper.goToPrivacy(context);
   }
 
   @override
@@ -360,16 +368,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextButton(
-              onPressed: () {
-                // TODO: Navigate to terms
-              },
+              onPressed: _navigateToTerms,
               child: const Text('Terms of Service'),
             ),
             const Text(' • '),
             TextButton(
-              onPressed: () {
-                // TODO: Navigate to privacy
-              },
+              onPressed: _navigateToPrivacy,
               child: const Text('Privacy Policy'),
             ),
           ],

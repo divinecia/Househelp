@@ -140,7 +140,12 @@ class _SplashScreenState extends State<SplashScreen>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(
+                                    Colors.black.red,
+                                    Colors.black.green,
+                                    Colors.black.blue,
+                                    (0.2 * 255).round(),
+                                  ),
                                   blurRadius: 20,
                                   offset: const Offset(0, 10),
                                 ),
@@ -214,7 +219,12 @@ class _SplashScreenState extends State<SplashScreen>
                             AppConstants.appTagline,
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Color.fromARGB(
+                                    (0.9 * 255).round(),
+                                    Colors.white.red,
+                                    Colors.white.green,
+                                    Colors.white.blue,
+                                  ),
                                   fontWeight: FontWeight.w500,
                                 ),
                             textAlign: TextAlign.center,
@@ -236,7 +246,12 @@ class _SplashScreenState extends State<SplashScreen>
                     Text(
                       'Version ${AppConstants.appVersion}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Color.fromARGB(
+                          (0.7 * 255).round(),
+                          Colors.white.red,
+                          Colors.white.green,
+                          Colors.white.blue,
+                        ),
                       ),
                     ),
                     const SizedBox(height: AppConstants.paddingSmall),
@@ -245,7 +260,12 @@ class _SplashScreenState extends State<SplashScreen>
                     Text(
                       '© 2024 HouseHelp Rwanda',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Color.fromARGB(
+                          (0.6 * 255).round(),
+                          Colors.white.red,
+                          Colors.white.green,
+                          Colors.white.blue,
+                        ),
                       ),
                     ),
                     const SizedBox(height: AppConstants.paddingLarge),
