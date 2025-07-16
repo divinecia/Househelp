@@ -95,6 +95,39 @@ dependencies:
   
   # Slider
   flutter_xlider: ^3.5.0
+  
+  # Payment Integration
+  flutterwave_standard: ^1.0.8
+  
+  # Emergency & Communication
+  url_launcher: ^6.2.5
+  
+  # Tax & Financial
+  crypto: ^3.0.3
+  
+  # Charts & Analytics
+  fl_chart: ^0.68.0
+  
+  # Maps & Location
+  google_maps_flutter: ^2.6.0
+  
+  # Push Notifications
+  firebase_messaging: ^14.9.4
+  firebase_core: ^2.31.1
+  
+  # Local Storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  
+  # PDF Generation
+  pdf: ^3.10.8
+  
+  # QR Code
+  qr_flutter: ^4.1.0
+  qr_code_scanner: ^1.0.1
+  
+  # HTTP Client
+  http: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -136,14 +169,14 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  fonts:
-    - family: Roboto
-      fonts:
-        - asset: assets/fonts/Roboto-Regular.ttf
-        - asset: assets/fonts/Roboto-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Roboto-Light.ttf
-          weight: 300
+  # fonts:
+  #   - family: Roboto
+  #     fonts:
+  #       - asset: assets/fonts/Roboto-Regular.ttf
+  #       - asset: assets/fonts/Roboto-Bold.ttf
+  #         weight: 700
+  #       - asset: assets/fonts/Roboto-Light.ttf
+  #         weight: 300
   #   - family: Schyler
   #     fonts:
   #       - asset: fonts/Schyler-Regular.ttf

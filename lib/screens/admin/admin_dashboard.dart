@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../../constants/app_constants.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/app_router.dart';
+import '../../services/payment_service.dart';
+import '../../services/emergency_service.dart';
+import '../../widgets/admin/payment_analytics_widget.dart';
+import '../../widgets/admin/emergency_reports_widget.dart';
+import '../../widgets/admin/user_management_widget.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -49,12 +55,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
               ),
               BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
               BottomNavigationBarItem(
-                icon: Icon(Icons.report),
-                label: 'Reports',
+                icon: Icon(Icons.warning),
+                label: 'Emergency',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.settings),
-                label: 'Settings',
+                icon: Icon(Icons.payment),
+                label: 'Payments',
               ),
             ],
           ),
@@ -68,11 +74,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
       case 0:
         return _buildOverviewTab();
       case 1:
-        return _buildUsersTab();
+        return const UserManagementWidget();
       case 2:
-        return _buildReportsTab();
+        return const EmergencyReportsWidget();
       case 3:
-        return _buildSettingsTab();
+        return const PaymentAnalyticsWidget();
       default:
         return _buildOverviewTab();
     }
@@ -104,6 +110,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       'Total Users',
                       '1,234',
                       AppConstants.primaryColor,
+                      Icons.people,
                     ),
                   ),
                   const SizedBox(width: AppConstants.paddingMedium),
@@ -112,6 +119,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       'Active Workers',
                       '456',
                       AppConstants.workerColor,
+                      Icons.work,
                     ),
                   ),
                 ],
@@ -125,14 +133,96 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       'Households',
                       '678',
                       AppConstants.householdColor,
+                      Icons.home,
                     ),
                   ),
                   const SizedBox(width: AppConstants.paddingMedium),
                   Expanded(
                     child: _buildStatCard(
-                      'Jobs Today',
-                      '89',
+                      'Emergency Reports',
+                      '12',
+                      AppConstants.errorColor,
+                      Icons.warning,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppConstants.paddingMedium),
+
+              // Revenue and payments
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      'Service Revenue',
+                      'RWF 1.2M',
+                      AppConstants.successColor,
+                      Icons.monetization_on,
+                    ),
+                  ),
+                  const SizedBox(width: AppConstants.paddingMedium),
+                  Expanded(
+                    child: _buildStatCard(
+                      'Training Revenue',
+                      'RWF 340K',
+                      AppConstants.secondaryColor,
+                      Icons.school,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppConstants.paddingLarge),
+
+              // Quick Actions
+              Text(
+                'Quick Actions',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: AppConstants.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: AppConstants.paddingMedium),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildActionCard(
+                      'View Users',
+                      Icons.people,
+                      AppConstants.primaryColor,
+                      () => setState(() => _selectedIndex = 1),
+                    ),
+                  ),
+                  const SizedBox(width: AppConstants.paddingMedium),
+                  Expanded(
+                    child: _buildActionCard(
+                      'Emergency Reports',
+                      Icons.warning,
+                      AppConstants.errorColor,
+                      () => setState(() => _selectedIndex = 2),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppConstants.paddingMedium),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildActionCard(
+                      'Payment Analytics',
+                      Icons.payment,
+                      AppConstants.successColor,
+                      () => setState(() => _selectedIndex = 3),
+                    ),
+                  ),
+                  const SizedBox(width: AppConstants.paddingMedium),
+                  Expanded(
+                    child: _buildActionCard(
+                      'Tax Reports',
+                      Icons.receipt,
                       AppConstants.warningColor,
+                      () => _showTaxReports(),
                     ),
                   ),
                 ],
@@ -157,24 +247,24 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 AppConstants.successColor,
               ),
               _buildActivityCard(
-                'Job Completed',
-                'Jean Baptiste completed a cooking job',
-                '4 hours ago',
-                Icons.check_circle,
-                AppConstants.primaryColor,
-              ),
-              _buildActivityCard(
-                'Verification Pending',
-                'Alice Mukamana submitted documents for verification',
-                '6 hours ago',
-                Icons.pending,
-                AppConstants.warningColor,
+                'Emergency Report',
+                'Theft reported at household in Gasabo',
+                '3 hours ago',
+                Icons.warning,
+                AppConstants.errorColor,
               ),
               _buildActivityCard(
                 'Payment Processed',
-                'Payment of RWF 25,000 processed successfully',
-                '1 day ago',
+                'Service payment of RWF 25,000 processed',
+                '4 hours ago',
                 Icons.payment,
+                AppConstants.primaryColor,
+              ),
+              _buildActivityCard(
+                'Training Completed',
+                'Alice Mukamana completed childcare training',
+                '6 hours ago',
+                Icons.school,
                 AppConstants.secondaryColor,
               ),
             ],
@@ -184,28 +274,30 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
-  Widget _buildUsersTab() {
-    return const Center(
-      child: Text(
-        'Users Management - Coming Soon',
-        style: TextStyle(fontSize: 18),
+  void _showTaxReports() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Tax Reports'),
+        content: const Text(
+          'Tax reporting functionality will be implemented here.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildReportsTab() {
-    return const Center(
-      child: Text('Reports - Coming Soon', style: TextStyle(fontSize: 18)),
-    );
-  }
-
-  Widget _buildSettingsTab() {
-    return const Center(
-      child: Text('Settings - Coming Soon', style: TextStyle(fontSize: 18)),
-    );
-  }
-
-  Widget _buildStatCard(String title, String value, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    Color color,
+    IconData icon,
+  ) {
     return Container(
       padding: const EdgeInsets.all(AppConstants.paddingMedium),
       decoration: BoxDecoration(
@@ -222,11 +314,20 @@ class _AdminDashboardState extends State<AdminDashboard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppConstants.textSecondary),
+          Row(
+            children: [
+              Icon(icon, color: color, size: 24),
+              const SizedBox(width: AppConstants.paddingSmall),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppConstants.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: AppConstants.paddingSmall),
           Text(
@@ -237,6 +338,40 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionCard(
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+      child: Container(
+        padding: const EdgeInsets.all(AppConstants.paddingMedium),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 32),
+            const SizedBox(height: AppConstants.paddingSmall),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

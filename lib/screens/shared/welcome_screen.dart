@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../utils/app_router.dart';
 import '../../widgets/user_type_card.dart';
+import '../../widgets/language_selector.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
