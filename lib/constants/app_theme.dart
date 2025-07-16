@@ -130,7 +130,7 @@ class AppTheme {
       ),
 
       // Card Theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 4,
         shape: RoundedRectangleBorder(
@@ -218,8 +218,8 @@ class AppTheme {
 
       // Checkbox Theme
       checkboxTheme: CheckboxThemeData(
-        fillColor: WidgetStateProperty.resolveWith<Color?>((states) {
-          if (states.contains(WidgetState.selected)) {
+        fillColor: MaterialStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(MaterialState.selected)) {
             return AppConstants.primaryColor;
           }
           return null;
@@ -231,8 +231,8 @@ class AppTheme {
 
       // Radio Theme
       radioTheme: RadioThemeData(
-        fillColor: WidgetStateProperty.resolveWith<Color?>((states) {
-          if (states.contains(WidgetState.selected)) {
+        fillColor: MaterialStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(MaterialState.selected)) {
             return AppConstants.primaryColor;
           }
           return null;
@@ -241,149 +241,15 @@ class AppTheme {
 
       // Switch Theme
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith<Color?>((states) {
-          if (states.contains(WidgetState.selected)) {
-            return AppConstants.primaryColor;
-          }
-          return null;
-        }),
-        trackColor: WidgetStateProperty.resolveWith<Color?>((states) {
-          if (states.contains(WidgetState.selected)) {
+        thumbColor: MaterialStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(MaterialState.selected)) {
+            // Use primaryColor with reduced opacity for selected state
             return AppConstants.primaryColor.withOpacity(0.5);
           }
-          return null;
+          // Use accentColor with reduced opacity for unselected state
+          return AppConstants.accentColor.withOpacity(0.3);
         }),
-      ),
-
-      // Progress Indicator Theme
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppConstants.primaryColor,
-        linearTrackColor: AppConstants.textLight,
-        circularTrackColor: AppConstants.textLight,
-      ),
-
-      // Floating Action Button Theme
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: AppConstants.primaryColor,
-        foregroundColor: AppConstants.textWhite,
-        elevation: 4,
-      ),
-
-      // Bottom Navigation Bar Theme
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: Colors.white,
-        selectedItemColor: AppConstants.primaryColor,
-        unselectedItemColor: AppConstants.textSecondary,
-        type: BottomNavigationBarType.fixed,
-        elevation: 8,
-        selectedLabelStyle: GoogleFonts.roboto(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-        unselectedLabelStyle: GoogleFonts.roboto(
-          fontSize: 12,
-          fontWeight: FontWeight.normal,
-        ),
-      ),
-
-      // Snackbar Theme
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppConstants.textPrimary,
-        contentTextStyle: GoogleFonts.roboto(
-          fontSize: 14,
-          color: AppConstants.textWhite,
-        ),
-        actionTextColor: AppConstants.primaryColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadiusSmall),
-        ),
-        behavior: SnackBarBehavior.floating,
-      ),
-
-      // Dialog Theme
-      dialogTheme: DialogTheme(
-        backgroundColor: Colors.white,
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-        ),
-        titleTextStyle: GoogleFonts.roboto(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: AppConstants.textPrimary,
-        ),
-        contentTextStyle: GoogleFonts.roboto(
-          fontSize: 16,
-          color: AppConstants.textPrimary,
-        ),
-      ),
-
-      // Chip Theme
-      chipTheme: ChipThemeData(
-        backgroundColor: AppConstants.backgroundColor,
-        selectedColor: AppConstants.primaryColor,
-        labelStyle: GoogleFonts.roboto(
-          fontSize: 14,
-          color: AppConstants.textPrimary,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-        ),
       ),
     );
   }
-}
-
-// Custom widget styles
-class AppStyles {
-  static BoxDecoration cardDecoration = BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.1),
-        blurRadius: 8,
-        offset: const Offset(0, 2),
-      ),
-    ],
-  );
-
-  static BoxDecoration userTypeCardDecoration(Color color) => BoxDecoration(
-    color: color,
-    borderRadius: BorderRadius.circular(AppConstants.borderRadiusLarge),
-    boxShadow: [
-      BoxShadow(
-        color: color.withOpacity(0.3),
-        blurRadius: 8,
-        offset: const Offset(0, 4),
-      ),
-    ],
-  );
-
-  static InputDecoration searchInputDecoration(String hint) => InputDecoration(
-    hintText: hint,
-    prefixIcon: const Icon(Icons.search),
-    filled: true,
-    fillColor: Colors.white,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppConstants.borderRadiusXLarge),
-      borderSide: BorderSide.none,
-    ),
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: AppConstants.paddingMedium,
-      vertical: AppConstants.paddingSmall,
-    ),
-  );
-
-  static TextStyle get progressTextStyle => GoogleFonts.roboto(
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-    color: AppConstants.textSecondary,
-  );
-
-  static TextStyle get errorTextStyle =>
-      GoogleFonts.roboto(fontSize: 12, color: AppConstants.errorColor);
-
-  static TextStyle get successTextStyle =>
-      GoogleFonts.roboto(fontSize: 12, color: AppConstants.successColor);
 }

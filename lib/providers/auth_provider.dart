@@ -31,10 +31,12 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
 
       // Listen to auth state changes
-      SupabaseService.client.auth.onAuthStateChange.listen((data) {
-        _supabaseUser = data.user;
+      SupabaseService.client.auth.onAuthStateChange.listen((data) async {
+        _supabaseUser = data.event == AuthChangeEvent.signedIn
+            ? data.session?.user
+            : null;
         if (_supabaseUser != null) {
-          _loadUserProfile();
+          await _loadUserProfile();
         } else {
           _appUser = null;
         }
@@ -50,6 +52,9 @@ class AuthProvider extends ChangeNotifier {
       _isInitialized = true;
     } catch (e) {
       _errorMessage = 'Failed to initialize authentication: ${e.toString()}';
+      if (kDebugMode) {
+        print('Auth initialization error: $e');
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -65,10 +70,16 @@ class AuthProvider extends ChangeNotifier {
         );
         if (userProfile != null) {
           _appUser = models.User.fromJson(userProfile);
+        } else {
+          // User profile doesn't exist, might be a new user
+          _appUser = null;
         }
       }
     } catch (e) {
       _errorMessage = 'Failed to load user profile: ${e.toString()}';
+      if (kDebugMode) {
+        print('Load user profile error: $e');
+      }
     }
   }
 
@@ -101,6 +112,8 @@ class AuthProvider extends ChangeNotifier {
 
       if (response.user != null) {
         _supabaseUser = response.user;
+        // Wait a bit for the database trigger to create the profile
+        await Future.delayed(const Duration(milliseconds: 500));
         await _loadUserProfile();
         return true;
       }
@@ -108,6 +121,9 @@ class AuthProvider extends ChangeNotifier {
       return false;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Sign up error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -136,9 +152,13 @@ class AuthProvider extends ChangeNotifier {
         return true;
       }
 
+      _errorMessage = 'Invalid email or password';
       return false;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Sign in error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -167,9 +187,13 @@ class AuthProvider extends ChangeNotifier {
         return true;
       }
 
+      _errorMessage = 'Invalid phone number or password';
       return false;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Phone sign in error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -188,6 +212,9 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Send OTP error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -214,18 +241,25 @@ class AuthProvider extends ChangeNotifier {
         _supabaseUser = response.user;
         await _loadUserProfile();
 
-        // Update phone verification status
-        await SupabaseService.updatePhoneVerificationStatus(
-          userId: _supabaseUser!.id,
-          isVerified: true,
-        );
+        // Update phone verification status if user profile exists
+        if (_appUser != null) {
+          await SupabaseService.updatePhoneVerificationStatus(
+            userId: _supabaseUser!.id,
+            isVerified: true,
+          );
+          await _loadUserProfile(); // Reload to get updated status
+        }
 
         return true;
       }
 
+      _errorMessage = 'Invalid OTP code';
       return false;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Verify OTP error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -243,11 +277,17 @@ class AuthProvider extends ChangeNotifier {
       final success = await SupabaseService.signInWithGoogle();
       if (success) {
         _supabaseUser = SupabaseService.currentUser;
-        await _loadUserProfile();
+        if (_supabaseUser != null) {
+          await _loadUserProfile();
+        }
+        return true;
       }
-      return success;
+      return false;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Google sign in error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -265,11 +305,17 @@ class AuthProvider extends ChangeNotifier {
       final success = await SupabaseService.signInWithFacebook();
       if (success) {
         _supabaseUser = SupabaseService.currentUser;
-        await _loadUserProfile();
+        if (_supabaseUser != null) {
+          await _loadUserProfile();
+        }
+        return true;
       }
-      return success;
+      return false;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Facebook sign in error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -287,11 +333,17 @@ class AuthProvider extends ChangeNotifier {
       final success = await SupabaseService.signInWithApple();
       if (success) {
         _supabaseUser = SupabaseService.currentUser;
-        await _loadUserProfile();
+        if (_supabaseUser != null) {
+          await _loadUserProfile();
+        }
+        return true;
       }
-      return success;
+      return false;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Apple sign in error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -310,6 +362,9 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Password reset error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -331,6 +386,9 @@ class AuthProvider extends ChangeNotifier {
       return response.user != null;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Update password error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -356,9 +414,13 @@ class AuthProvider extends ChangeNotifier {
         return true;
       }
 
+      _errorMessage = 'User not authenticated';
       return false;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Update user profile error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -380,12 +442,18 @@ class AuthProvider extends ChangeNotifier {
           userId: _supabaseUser!.id,
           profileData: profileData,
         );
+        // Reload user profile to get the updated data
+        await _loadUserProfile();
         return true;
       }
 
+      _errorMessage = 'User not authenticated';
       return false;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Create worker profile error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -407,12 +475,18 @@ class AuthProvider extends ChangeNotifier {
           userId: _supabaseUser!.id,
           profileData: profileData,
         );
+        // Reload user profile to get the updated data
+        await _loadUserProfile();
         return true;
       }
 
+      _errorMessage = 'User not authenticated';
       return false;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Create household profile error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -434,12 +508,18 @@ class AuthProvider extends ChangeNotifier {
           userId: _supabaseUser!.id,
           profileData: profileData,
         );
+        // Reload user profile to get the updated data
+        await _loadUserProfile();
         return true;
       }
 
+      _errorMessage = 'User not authenticated';
       return false;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Create admin profile error: $e');
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -461,9 +541,13 @@ class AuthProvider extends ChangeNotifier {
         return true;
       }
 
+      _errorMessage = 'User not authenticated';
       return false;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Update email verification error: $e');
+      }
       return false;
     }
   }
@@ -482,9 +566,13 @@ class AuthProvider extends ChangeNotifier {
         return true;
       }
 
+      _errorMessage = 'User not authenticated';
       return false;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Update phone verification error: $e');
+      }
       return false;
     }
   }
@@ -541,6 +629,9 @@ class AuthProvider extends ChangeNotifier {
       _appUser = null;
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Sign out error: $e');
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -551,16 +642,33 @@ class AuthProvider extends ChangeNotifier {
   Future<void> refreshUser() async {
     try {
       _isLoading = true;
+      _errorMessage = null;
       notifyListeners();
 
       if (_supabaseUser != null) {
         await _loadUserProfile();
+      } else {
+        _errorMessage = 'User not authenticated';
       }
     } catch (e) {
       _errorMessage = SupabaseService.getErrorMessage(e);
+      if (kDebugMode) {
+        print('Refresh user error: $e');
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  // Check if user needs to complete profile
+  bool needsProfileCompletion() {
+    return _supabaseUser != null && _appUser == null;
+  }
+
+  // Dispose method to clean up resources
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

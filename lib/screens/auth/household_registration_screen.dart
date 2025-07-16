@@ -12,8 +12,11 @@ class HouseholdRegistrationScreen extends StatefulWidget {
 class _HouseholdRegistrationScreenState
     extends State<HouseholdRegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
+  // ignore: unused_field
   String _fullName = '';
+  // ignore: unused_field
   String _email = '';
+  // ignore: unused_field
   String _phone = '';
 
   void _submit() {

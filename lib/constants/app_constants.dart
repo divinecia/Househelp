@@ -207,16 +207,14 @@ class AppConstants {
   static const String emergencyGenderViolence =
       '3512'; // Gender Based Violence (Isange Centers)
 
-  // Government Integration
-  static const String isangeOneCenterUrl = 'https://isange.gov.rw';
-  static const String rraUrl = 'https://rra.gov.rw';
-  static const String rraApiKey = 'YOUR_RRA_API_KEY'; // To be configured
+  // Government Integration via USSD
+  static const String isangeOneCenterUSSD = '*114#'; // Example USSD for Isange
+  static const String rraUSSD =
+      '*800#'; // Example USSD for Rwanda Revenue Authority
 
-  // Payment Integration
-  static const String flutterwavePublicKey = 'YOUR_FLUTTERWAVE_PUBLIC_KEY';
-  static const String flutterwaveSecretKey = 'YOUR_FLUTTERWAVE_SECRET_KEY';
-  static const String flutterwaveEncryptionKey =
-      'YOUR_FLUTTERWAVE_ENCRYPTION_KEY';
+  // Payment Integration via USSD
+  static const String mobileMoneyUSSD =
+      '*182#'; // Example USSD for Mobile Money payments
 
   // Tax Configuration
   static const double serviceTaxRate = 0.18; // 18% VAT

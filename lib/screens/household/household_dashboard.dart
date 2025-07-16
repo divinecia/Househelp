@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:househelp/utils/app_router.dart';
 import '../../constants/app_constants.dart';
 import '../../services/job_service.dart';
 import '../../services/referral_service.dart';
@@ -11,6 +12,7 @@ import 'post_job_screen.dart';
 import 'find_workers_screen.dart';
 import 'household_jobs_screen.dart';
 import 'household_profile_screen.dart';
+import 'dart:math';
 
 class HouseholdDashboard extends StatefulWidget {
   final String userId;
@@ -179,7 +181,7 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Welcome to HouseHelp',
                     style: TextStyle(
                       color: Colors.white,
@@ -198,7 +200,7 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
                 ],
               ),
             ),
-            Icon(Icons.home, color: Colors.white, size: 48),
+            const Icon(Icons.home, color: Colors.white, size: 48),
           ],
         ),
       ),
@@ -214,7 +216,7 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
         Expanded(
           child: _buildStatCard(
             'Posted Jobs',
-            jobStats['total_jobs'].toString(),
+            (jobStats['total_jobs'] ?? 0).toString(),
             Icons.work,
             Colors.blue,
           ),
@@ -223,7 +225,7 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
         Expanded(
           child: _buildStatCard(
             'Completed',
-            jobStats['completed_jobs'].toString(),
+            (jobStats['completed_jobs'] ?? 0).toString(),
             Icons.check_circle,
             Colors.green,
           ),
@@ -232,7 +234,7 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
         Expanded(
           child: _buildStatCard(
             'Loyalty Points',
-            loyaltyStats['total_points'].toString(),
+            (loyaltyStats['total_points'] ?? 0).toString(),
             Icons.star,
             Colors.orange,
           ),
@@ -277,6 +279,9 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
   }
 
   Widget _buildSpendingChart(Map<String, dynamic> jobStats) {
+    // Add null safety for spending data
+    final spendingData = jobStats['monthly_spending'] as List<dynamic>? ?? [];
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -296,74 +301,41 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
             const SizedBox(height: 16),
             SizedBox(
               height: 200,
-              child: BarChart(
-                BarChartData(
-                  alignment: BarChartAlignment.spaceAround,
-                  maxY: 100000,
-                  barTouchData: BarTouchData(enabled: false),
-                  titlesData: FlTitlesData(show: false),
-                  borderData: FlBorderData(show: false),
-                  barGroups: [
-                    BarChartGroupData(
-                      x: 0,
-                      barRods: [
-                        BarChartRodData(
-                          toY: 45000,
-                          color: AppConstants.primaryBlue,
-                        ),
-                      ],
+              child: spendingData.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No spending data available',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    )
+                  : BarChart(
+                      BarChartData(
+                        alignment: BarChartAlignment.spaceAround,
+                        maxY: 100000,
+                        barTouchData: BarTouchData(enabled: false),
+                        titlesData: const FlTitlesData(show: false),
+                        borderData: FlBorderData(show: false),
+                        barGroups: _generateBarGroups(spendingData),
+                      ),
                     ),
-                    BarChartGroupData(
-                      x: 1,
-                      barRods: [
-                        BarChartRodData(
-                          toY: 65000,
-                          color: AppConstants.primaryBlue,
-                        ),
-                      ],
-                    ),
-                    BarChartGroupData(
-                      x: 2,
-                      barRods: [
-                        BarChartRodData(
-                          toY: 55000,
-                          color: AppConstants.primaryBlue,
-                        ),
-                      ],
-                    ),
-                    BarChartGroupData(
-                      x: 3,
-                      barRods: [
-                        BarChartRodData(
-                          toY: 75000,
-                          color: AppConstants.primaryBlue,
-                        ),
-                      ],
-                    ),
-                    BarChartGroupData(
-                      x: 4,
-                      barRods: [
-                        BarChartRodData(
-                          toY: 85000,
-                          color: AppConstants.primaryBlue,
-                        ),
-                      ],
-                    ),
-                    BarChartGroupData(
-                      x: 5,
-                      barRods: [
-                        BarChartRodData(
-                          toY: 95000,
-                          color: AppConstants.primaryBlue,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  List<BarChartGroupData> _generateBarGroups(List<dynamic> spendingData) {
+    return List.generate(
+      min(spendingData.length, 6),
+      (index) => BarChartGroupData(
+        x: index,
+        barRods: [
+          BarChartRodData(
+            toY: (spendingData[index] as num?)?.toDouble() ?? 0,
+            color: AppConstants.primaryBlue,
+          ),
+        ],
       ),
     );
   }
@@ -390,7 +362,7 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
                 ),
                 TextButton(
                   onPressed: () => setState(() => _selectedIndex = 2),
-                  child: Text('View All'),
+                  child: const Text('View All'),
                 ),
               ],
             ),
@@ -416,6 +388,7 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppConstants.primaryBlue,
+                        foregroundColor: Colors.white,
                       ),
                       child: const Text('Post Your First Job'),
                     ),
@@ -456,9 +429,9 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
               Text('RWF ${job.hourlyRate!.toStringAsFixed(0)}/hr'),
           ],
         ),
-        trailing: PopupMenuButton(
+        trailing: PopupMenuButton<String>(
           itemBuilder: (context) => [
-            PopupMenuItem(
+            const PopupMenuItem(
               value: 'view',
               child: Row(
                 children: [
@@ -468,7 +441,7 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
                 ],
               ),
             ),
-            PopupMenuItem(
+            const PopupMenuItem(
               value: 'applications',
               child: Row(
                 children: [
@@ -479,7 +452,7 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
               ),
             ),
             if (job.status == JobStatus.pending)
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: 'cancel',
                 child: Row(
                   children: [
@@ -490,7 +463,7 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
                 ),
               ),
           ],
-          onSelected: (value) => _handleJobAction(job, value.toString()),
+          onSelected: (value) => _handleJobAction(job, value),
         ),
       ),
     );
@@ -563,10 +536,11 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppConstants.lightBlue,
+            foregroundColor: Colors.white,
             shape: const CircleBorder(),
             padding: const EdgeInsets.all(16),
           ),
-          child: Icon(icon, color: Colors.white),
+          child: Icon(icon),
         ),
         const SizedBox(height: 8),
         Text(
@@ -691,6 +665,7 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: color,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 8),
                   ),
                   child: const Text('Book Now', style: TextStyle(fontSize: 12)),
@@ -775,17 +750,20 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
   }
 
   void _showCancelJobDialog(Job job) {
+    final TextEditingController reasonController = TextEditingController();
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Cancel Job'),
+        title: const Text('Cancel Job'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('Are you sure you want to cancel "${job.title}"?'),
             const SizedBox(height: 16),
             TextField(
-              decoration: InputDecoration(
+              controller: reasonController,
+              decoration: const InputDecoration(
                 labelText: 'Reason for cancellation',
                 border: OutlineInputBorder(),
               ),
@@ -802,18 +780,30 @@ class _HouseholdDashboardState extends State<HouseholdDashboard> {
             onPressed: () async {
               Navigator.pop(context);
               try {
-                await JobService.cancelJob(job.id, 'Cancelled by household');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Job cancelled successfully')),
+                await JobService.cancelJob(
+                  job.id,
+                  reasonController.text.isEmpty
+                      ? 'Cancelled by household'
+                      : reasonController.text,
                 );
-                _loadDashboardData();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Job cancelled successfully')),
+                  );
+                  _loadDashboardData();
+                }
               } catch (e) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                if (mounted) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                }
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Cancel Job'),
           ),
         ],
