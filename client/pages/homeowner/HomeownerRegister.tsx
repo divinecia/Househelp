@@ -1,0 +1,594 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { registerUser } from "@/lib/auth";
+import type { HomeownerData } from "@/lib/auth";
+
+export default function HomeownerRegister() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState<Partial<HomeownerData>>({
+    homeComposition: { adults: false, children: false, elderly: false, pets: false },
+    termsAccepted: false,
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value, type } = e.currentTarget;
+    if (type === "checkbox") {
+      const checked = (e.target as HTMLInputElement).checked;
+      if (name.startsWith("homeComposition.")) {
+        const key = name.split(".")[1] as keyof typeof formData.homeComposition;
+        setFormData((prev) => ({
+          ...prev,
+          homeComposition: {
+            ...prev.homeComposition!,
+            [key]: checked,
+          },
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: checked,
+        }));
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.fullName) newErrors.fullName = "Full name is required";
+    if (!formData.contactNumber) newErrors.contactNumber = "Contact number is required";
+    if (!formData.email) newErrors.email = "Email is required";
+    if (!formData.password || formData.password.length < 6)
+      newErrors.password = "Password must be at least 6 characters";
+    if (!formData.homeAddress) newErrors.homeAddress = "Home address is required";
+    if (!formData.termsAccepted)
+      newErrors.termsAccepted = "You must accept the terms and conditions";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateForm()) {
+      try {
+        registerUser("homeowner", formData as HomeownerData);
+        navigate("/homeowner/login");
+      } catch (error) {
+        console.error("Registration failed:", error);
+      }
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-white flex flex-col">
+      <Header />
+      <main className="flex-1 py-12 md:py-16 bg-gradient-to-b from-white via-white to-gray-50">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+              Homeowner Registration
+            </h1>
+            <p className="text-muted-foreground">
+              Complete your profile to find the perfect household workers
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
+            {/* Personal Information */}
+            <fieldset className="mb-8 pb-8 border-b border-gray-200">
+              <legend className="text-lg font-semibold text-foreground mb-6">
+                Personal Information
+              </legend>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="fullName" className="block text-sm font-medium text-foreground mb-2">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="fullName"
+                    name="fullName"
+                    value={formData.fullName || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                  {errors.fullName && (
+                    <p className="text-destructive text-sm mt-1">{errors.fullName}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="age" className="block text-sm font-medium text-foreground mb-2">
+                    Age
+                  </label>
+                  <input
+                    type="number"
+                    id="age"
+                    name="age"
+                    value={formData.age || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label htmlFor="homeAddress" className="block text-sm font-medium text-foreground mb-2">
+                    Home Address *
+                  </label>
+                  <input
+                    type="text"
+                    id="homeAddress"
+                    name="homeAddress"
+                    value={formData.homeAddress || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                  {errors.homeAddress && (
+                    <p className="text-destructive text-sm mt-1">{errors.homeAddress}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="typeOfResidence" className="block text-sm font-medium text-foreground mb-2">
+                    Type of Residence
+                  </label>
+                  <select
+                    id="typeOfResidence"
+                    name="typeOfResidence"
+                    value={formData.typeOfResidence || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="">Select Type</option>
+                    <option value="studio">Studio</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="villa">Villa</option>
+                    <option value="mansion">Mansion</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="numberOfFamilyMembers" className="block text-sm font-medium text-foreground mb-2">
+                    Number of Family Members
+                  </label>
+                  <input
+                    type="number"
+                    id="numberOfFamilyMembers"
+                    name="numberOfFamilyMembers"
+                    value={formData.numberOfFamilyMembers || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+              </div>
+            </fieldset>
+
+            {/* Contact Information */}
+            <fieldset className="mb-8 pb-8 border-b border-gray-200">
+              <legend className="text-lg font-semibold text-foreground mb-6">
+                Contact Information
+              </legend>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="contactNumber" className="block text-sm font-medium text-foreground mb-2">
+                    Contact Number *
+                  </label>
+                  <input
+                    type="tel"
+                    id="contactNumber"
+                    name="contactNumber"
+                    value={formData.contactNumber || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                  {errors.contactNumber && (
+                    <p className="text-destructive text-sm mt-1">{errors.contactNumber}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                  {errors.email && (
+                    <p className="text-destructive text-sm mt-1">{errors.email}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+                    Password *
+                  </label>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    value={formData.password || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                  {errors.password && (
+                    <p className="text-destructive text-sm mt-1">{errors.password}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="nationalId" className="block text-sm font-medium text-foreground mb-2">
+                    National ID
+                  </label>
+                  <input
+                    type="text"
+                    id="nationalId"
+                    name="nationalId"
+                    value={formData.nationalId || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+              </div>
+            </fieldset>
+
+            {/* Home Composition */}
+            <fieldset className="mb-8 pb-8 border-b border-gray-200">
+              <legend className="text-lg font-semibold text-foreground mb-6">
+                Home Composition
+              </legend>
+              <div className="space-y-4">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="homeComposition.adults"
+                    checked={formData.homeComposition?.adults || false}
+                    onChange={handleChange}
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <span className="text-foreground">Adults</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="homeComposition.children"
+                    checked={formData.homeComposition?.children || false}
+                    onChange={handleChange}
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <span className="text-foreground">Children</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="homeComposition.elderly"
+                    checked={formData.homeComposition?.elderly || false}
+                    onChange={handleChange}
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <span className="text-foreground">Elderly</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="homeComposition.pets"
+                    checked={formData.homeComposition?.pets || false}
+                    onChange={handleChange}
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <span className="text-foreground">Pets</span>
+                </label>
+              </div>
+            </fieldset>
+
+            {/* Worker Requirements */}
+            <fieldset className="mb-8 pb-8 border-b border-gray-200">
+              <legend className="text-lg font-semibold text-foreground mb-6">
+                Worker Requirements
+              </legend>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="workerInfo" className="block text-sm font-medium text-foreground mb-2">
+                    Worker Info (Full-time/Part-time/Live-in)
+                  </label>
+                  <select
+                    id="workerInfo"
+                    name="workerInfo"
+                    value={formData.workerInfo || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="">Select Option</option>
+                    <option value="full-time">Full-time</option>
+                    <option value="part-time">Part-time</option>
+                    <option value="live-in">Live-in</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="numberOfWorkersNeeded" className="block text-sm font-medium text-foreground mb-2">
+                    Number of Workers Needed
+                  </label>
+                  <input
+                    type="number"
+                    id="numberOfWorkersNeeded"
+                    name="numberOfWorkersNeeded"
+                    value={formData.numberOfWorkersNeeded || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label htmlFor="specificDuties" className="block text-sm font-medium text-foreground mb-2">
+                    Specific Duties
+                  </label>
+                  <textarea
+                    id="specificDuties"
+                    name="specificDuties"
+                    value={formData.specificDuties || ""}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label htmlFor="workingHoursAndSchedule" className="block text-sm font-medium text-foreground mb-2">
+                    Working Hours and Schedule
+                  </label>
+                  <input
+                    type="text"
+                    id="workingHoursAndSchedule"
+                    name="workingHoursAndSchedule"
+                    value={formData.workingHoursAndSchedule || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="preferredGender" className="block text-sm font-medium text-foreground mb-2">
+                    Preferred Gender (if applicable)
+                  </label>
+                  <select
+                    id="preferredGender"
+                    name="preferredGender"
+                    value={formData.preferredGender || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="">No preference</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="languagePreference" className="block text-sm font-medium text-foreground mb-2">
+                    Language Preference
+                  </label>
+                  <input
+                    type="text"
+                    id="languagePreference"
+                    name="languagePreference"
+                    value={formData.languagePreference || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="wagesOffered" className="block text-sm font-medium text-foreground mb-2">
+                    Wages Offered
+                  </label>
+                  <input
+                    type="text"
+                    id="wagesOffered"
+                    name="wagesOffered"
+                    value={formData.wagesOffered || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="startDateRequired" className="block text-sm font-medium text-foreground mb-2">
+                    Start Date Required
+                  </label>
+                  <input
+                    type="date"
+                    id="startDateRequired"
+                    name="startDateRequired"
+                    value={formData.startDateRequired || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+              </div>
+            </fieldset>
+
+            {/* Additional Requirements */}
+            <fieldset className="mb-8 pb-8 border-b border-gray-200">
+              <legend className="text-lg font-semibold text-foreground mb-6">
+                Additional Requirements
+              </legend>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="reasonForHiring" className="block text-sm font-medium text-foreground mb-2">
+                    Reason for Hiring
+                  </label>
+                  <input
+                    type="text"
+                    id="reasonForHiring"
+                    name="reasonForHiring"
+                    value={formData.reasonForHiring || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="criminalRecord" className="block text-sm font-medium text-foreground mb-2">
+                    Criminal Record Check Required
+                  </label>
+                  <select
+                    id="criminalRecord"
+                    name="criminalRecord"
+                    value={formData.criminalRecord || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="">Select</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="paymentMode" className="block text-sm font-medium text-foreground mb-2">
+                    Preferred Payment Mode
+                  </label>
+                  <select
+                    id="paymentMode"
+                    name="paymentMode"
+                    value={formData.paymentMode || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="">Select Mode</option>
+                    <option value="bank">Bank Transfer</option>
+                    <option value="cash">Cash</option>
+                    <option value="mobile">Mobile Money</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="bankDetails" className="block text-sm font-medium text-foreground mb-2">
+                    Bank Details (if applicable)
+                  </label>
+                  <input
+                    type="text"
+                    id="bankDetails"
+                    name="bankDetails"
+                    value={formData.bankDetails || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="religious" className="block text-sm font-medium text-foreground mb-2">
+                    Religious Preferences
+                  </label>
+                  <input
+                    type="text"
+                    id="religious"
+                    name="religious"
+                    value={formData.religious || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="smokingDrinkingRestrictions" className="block text-sm font-medium text-foreground mb-2">
+                    Smoking/Drinking Restrictions
+                  </label>
+                  <input
+                    type="text"
+                    id="smokingDrinkingRestrictions"
+                    name="smokingDrinkingRestrictions"
+                    value={formData.smokingDrinkingRestrictions || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label htmlFor="specialRequirements" className="block text-sm font-medium text-foreground mb-2">
+                    Special Requirements
+                  </label>
+                  <textarea
+                    id="specialRequirements"
+                    name="specialRequirements"
+                    value={formData.specialRequirements || ""}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label htmlFor="specificSkillsNeeded" className="block text-sm font-medium text-foreground mb-2">
+                    Specific Skills Needed
+                  </label>
+                  <textarea
+                    id="specificSkillsNeeded"
+                    name="specificSkillsNeeded"
+                    value={formData.specificSkillsNeeded || ""}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+              </div>
+            </fieldset>
+
+            {/* Terms and Conditions */}
+            <div className="mb-8">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="termsAccepted"
+                  checked={formData.termsAccepted || false}
+                  onChange={handleChange}
+                  className="mt-1 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <span className="text-sm text-foreground">
+                  I agree to the terms and conditions *
+                </span>
+              </label>
+              {errors.termsAccepted && (
+                <p className="text-destructive text-sm mt-2">{errors.termsAccepted}</p>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Complete Registration
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                className="flex-1 px-6 py-3 border border-gray-300 text-foreground font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Back to Home
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}
