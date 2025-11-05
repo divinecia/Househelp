@@ -40,9 +40,9 @@ export default function Index() {
             />
             <ServiceCard
               icon={Home}
-              title="Household"
+              title="Homeowner"
               bgColor="household"
-              onClick={() => handleRoleSelect("household")}
+              onClick={() => handleRoleSelect("homeowner")}
             />
             <ServiceCard
               icon={Settings}
