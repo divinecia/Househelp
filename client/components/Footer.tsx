@@ -9,7 +9,7 @@ export default function Footer({ className }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className={cn("bg-gray-50 border-t border-gray-200", className)}>
+    <footer id="footer" className={cn("bg-gray-50 border-t border-gray-200", className)}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Company Info */}
