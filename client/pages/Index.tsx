@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import ServiceCard from "@/components/ServiceCard";
+import ServicesSection from "@/components/ServicesSection";
 import Footer from "@/components/Footer";
 import { Wrench, Home, Settings } from "lucide-react";
 
@@ -15,8 +16,8 @@ export default function Index() {
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
 
-      {/* Main Content Section */}
-      <main className="flex-1 py-20 md:py-32 bg-gradient-to-b from-white via-white to-gray-50">
+      {/* Home Section */}
+      <main id="home" className="flex-1 py-12 md:py-16 bg-gradient-to-b from-white via-white to-gray-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Heading Section */}
           <div className="text-center mb-16">
@@ -29,7 +30,7 @@ export default function Index() {
             </p>
           </div>
 
-          {/* Service Cards Grid */}
+          {/* Role Selection Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-12">
             <ServiceCard
               icon={Wrench}
@@ -63,7 +64,7 @@ export default function Index() {
 
           {/* Selection Feedback */}
           {selectedRole && (
-            <div className="mt-12 p-8 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/20 text-center">
+            <div className="mt-8 p-8 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/20 text-center">
               <p className="text-base text-primary font-semibold">
                 You selected: <span className="font-bold capitalize text-primary text-lg">{selectedRole}</span>
               </p>
@@ -74,6 +75,9 @@ export default function Index() {
           )}
         </div>
       </main>
+
+      {/* Services Section */}
+      <ServicesSection />
 
       {/* Footer */}
       <Footer />
