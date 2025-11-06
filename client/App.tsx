@@ -13,16 +13,19 @@ import NotFound from "./pages/NotFound";
 import WorkerRegister from "./pages/worker/WorkerRegister";
 import WorkerLogin from "./pages/worker/WorkerLogin";
 import WorkerDashboard from "./pages/worker/WorkerDashboard";
+import WorkerForgotPassword from "./pages/worker/WorkerForgotPassword";
 
 // Homeowner pages
 import HomeownerRegister from "./pages/homeowner/HomeownerRegister";
 import HomeownerLogin from "./pages/homeowner/HomeownerLogin";
 import HomeownerDashboard from "./pages/homeowner/HomeownerDashboard";
+import HomeownerForgotPassword from "./pages/homeowner/HomeownerForgotPassword";
 
 // Admin pages
 import AdminRegister from "./pages/admin/AdminRegister";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminForgotPassword from "./pages/admin/AdminForgotPassword";
 
 const queryClient = new QueryClient();
 
