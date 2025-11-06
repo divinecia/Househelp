@@ -37,7 +37,6 @@ export default function Footer({ className }: FooterProps) {
             <h3 className="font-semibold text-foreground">Navigation</h3>
             <nav className="flex flex-col gap-2">
               <a href="#home" className="text-muted-foreground hover:text-primary text-sm transition">Home</a>
-              <a href="#about" className="text-muted-foreground hover:text-primary text-sm transition">About Us</a>
               <a href="#services" className="text-muted-foreground hover:text-primary text-sm transition">Services</a>
               <a href="#contact" className="text-muted-foreground hover:text-primary text-sm transition">Contact</a>
             </nav>
