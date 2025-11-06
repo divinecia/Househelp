@@ -100,13 +100,22 @@ export default function HomeownerLogin() {
               Create New Account
             </button>
 
-            <button
-              type="button"
-              onClick={() => navigate("/")}
-              className="w-full px-6 py-3 text-primary font-semibold mt-4 hover:underline"
-            >
-              Back to Home
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => navigate("/homeowner/forgot-password")}
+                className="flex-1 px-6 py-3 text-primary font-semibold hover:underline"
+              >
+                Forgot Password?
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                className="flex-1 px-6 py-3 text-primary font-semibold hover:underline"
+              >
+                Back to Home
+              </button>
+            </div>
           </form>
         </div>
       </main>
