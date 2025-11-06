@@ -114,7 +114,7 @@ export default function ServicesSection({ className }: ServicesSectionProps) {
     <section
       id="services"
       className={cn(
-        "py-20 md:py-28 bg-gradient-to-b from-gray-50 to-white",
+        "py-12 md:py-20 bg-gradient-to-b from-gray-50 to-white",
         className
       )}
     >
