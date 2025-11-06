@@ -63,7 +63,16 @@ export default function WorkerRegister() {
     if (!formData.password || formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
     if (!formData.phoneNumber) newErrors.phoneNumber = "Phone number is required";
-    if (!formData.nationalId) newErrors.nationalId = "National ID is required";
+    if (!formData.nationalId) {
+      newErrors.nationalId = "National ID is required";
+    } else {
+      const id = formData.nationalId.replace(/\s/g, "");
+      const isValid10Digit = /^1\d{9}$/.test(id);
+      const isValid16Digit = /^\d{16}$/.test(id);
+      if (!isValid10Digit && !isValid16Digit) {
+        newErrors.nationalId = "National ID must be in format: 1 followed by 9 digits or 16 digits";
+      }
+    }
     if (!formData.termsAccepted)
       newErrors.termsAccepted = "You must accept the terms and conditions";
     setErrors(newErrors);
