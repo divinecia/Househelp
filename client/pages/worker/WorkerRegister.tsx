@@ -4,12 +4,15 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { registerUser } from "@/lib/auth";
 import type { WorkerData } from "@/lib/auth";
+import { X } from "lucide-react";
 
 export default function WorkerRegister() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<Partial<WorkerData>>({
     termsAccepted: false,
   });
+  const [languages, setLanguages] = useState<Array<{ language: string; level: string }>>([]);
+  const [newLanguage, setNewLanguage] = useState({ language: "", level: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (
@@ -31,6 +34,27 @@ export default function WorkerRegister() {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+    if (e.target.files && e.target.files[0]) {
+      const fileName = e.target.files[0].name;
+      setFormData((prev) => ({
+        ...prev,
+        [fieldName]: fileName,
+      }));
+    }
+  };
+
+  const addLanguage = () => {
+    if (newLanguage.language && newLanguage.level) {
+      setLanguages([...languages, newLanguage]);
+      setNewLanguage({ language: "", level: "" });
+    }
+  };
+
+  const removeLanguage = (index: number) => {
+    setLanguages(languages.filter((_, i) => i !== index));
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.fullName) newErrors.fullName = "Full name is required";
@@ -50,7 +74,11 @@ export default function WorkerRegister() {
     e.preventDefault();
     if (validateForm()) {
       try {
-        registerUser("worker", formData as WorkerData);
+        const dataToSubmit = {
+          ...formData,
+          languageProficiency: languages.map(l => `${l.language} (${l.level})`).join(", "),
+        } as WorkerData;
+        registerUser("worker", dataToSubmit);
         navigate("/worker/login");
       } catch (error) {
         console.error("Registration failed:", error);
@@ -211,7 +239,7 @@ export default function WorkerRegister() {
 
                 <div>
                   <label htmlFor="nationalId" className="block text-sm font-medium text-foreground mb-2">
-                    National ID *
+                    National ID (1 XXXXXXXXX) *
                   </label>
                   <input
                     type="text"
@@ -219,6 +247,7 @@ export default function WorkerRegister() {
                     name="nationalId"
                     value={formData.nationalId || ""}
                     onChange={handleChange}
+                    placeholder="1 123456789"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   {errors.nationalId && (
@@ -251,44 +280,95 @@ export default function WorkerRegister() {
 
                 <div>
                   <label htmlFor="workExperience" className="block text-sm font-medium text-foreground mb-2">
-                    Work Experience (Years)
+                    Work Experience: {formData.workExperience || 0} years
                   </label>
                   <input
-                    type="text"
+                    type="range"
                     id="workExperience"
                     name="workExperience"
-                    value={formData.workExperience || ""}
+                    min="0"
+                    max="10"
+                    value={formData.workExperience || 0}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">0 to 10+ years</p>
                 </div>
 
                 <div>
                   <label htmlFor="expectedWages" className="block text-sm font-medium text-foreground mb-2">
-                    Expected Wages (Per Hour/Day)
+                    Expected Wages
                   </label>
-                  <input
-                    type="text"
-                    id="expectedWages"
-                    name="expectedWages"
-                    value={formData.expectedWages || ""}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Amount"
+                      value={formData.expectedWages?.split(" ")[0] || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          expectedWages: e.target.value + " " + (formData.expectedWages?.split(" ")[1] || "per hour"),
+                        }))
+                      }
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                    <select
+                      value={formData.expectedWages?.split(" ")[1] || "per hour"}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          expectedWages: (formData.expectedWages?.split(" ")[0] || "") + " " + e.target.value,
+                        }))
+                      }
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    >
+                      <option value="per hour">Per Hour</option>
+                      <option value="per day">Per Day</option>
+                      <option value="per month">Per Month</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div>
                   <label htmlFor="workingHoursAndDays" className="block text-sm font-medium text-foreground mb-2">
                     Working Hours and Days
                   </label>
-                  <input
-                    type="text"
-                    id="workingHoursAndDays"
-                    name="workingHoursAndDays"
-                    value={formData.workingHoursAndDays || ""}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="time"
+                        placeholder="Start time"
+                        value={formData.workingHoursAndDays?.split("-")[0]?.trim() || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            workingHoursAndDays: e.target.value + " - " + (formData.workingHoursAndDays?.split("-")[1]?.trim() || ""),
+                          }))
+                        }
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      />
+                      <input
+                        type="time"
+                        placeholder="End time"
+                        value={formData.workingHoursAndDays?.split("-")[1]?.trim() || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            workingHoursAndDays: (formData.workingHoursAndDays?.split("-")[0]?.trim() || "") + " - " + e.target.value,
+                          }))
+                        }
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+                        <label key={day} className="flex items-center gap-2 cursor-pointer">
+                          <input type="checkbox" className="w-4 h-4 rounded" />
+                          <span className="text-sm">{day}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -301,53 +381,113 @@ export default function WorkerRegister() {
                     name="educationQualification"
                     value={formData.educationQualification || ""}
                     onChange={handleChange}
+                    placeholder="e.g., High School, Bachelor's Degree"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="trainingCertificate" className="block text-sm font-medium text-foreground mb-2">
-                    Training Certificate
+                  <label htmlFor="educationDoc" className="block text-sm font-medium text-foreground mb-2">
+                    Upload Education Certificate
                   </label>
                   <input
-                    type="text"
-                    id="trainingCertificate"
-                    name="trainingCertificate"
-                    value={formData.trainingCertificate || ""}
-                    onChange={handleChange}
+                    type="file"
+                    id="educationDoc"
+                    onChange={(e) => handleFileChange(e, "educationCertificate")}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    accept=".pdf,.doc,.docx,.jpg,.png"
                   />
+                  {formData.educationCertificate && (
+                    <p className="text-xs text-primary mt-1">✓ {formData.educationCertificate}</p>
+                  )}
                 </div>
 
                 <div>
-                  <label htmlFor="languageProficiency" className="block text-sm font-medium text-foreground mb-2">
-                    Language Proficiency
+                  <label htmlFor="trainingDoc" className="block text-sm font-medium text-foreground mb-2">
+                    Upload Training Certificate
                   </label>
                   <input
-                    type="text"
-                    id="languageProficiency"
-                    name="languageProficiency"
-                    value={formData.languageProficiency || ""}
-                    onChange={handleChange}
+                    type="file"
+                    id="trainingDoc"
+                    onChange={(e) => handleFileChange(e, "trainingCertificate")}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    accept=".pdf,.doc,.docx,.jpg,.png"
                   />
+                  {formData.trainingCertificate && (
+                    <p className="text-xs text-primary mt-1">✓ {formData.trainingCertificate}</p>
+                  )}
                 </div>
 
                 <div>
-                  <label htmlFor="criminalRecord" className="block text-sm font-medium text-foreground mb-2">
-                    Criminal Record
+                  <label htmlFor="criminalDoc" className="block text-sm font-medium text-foreground mb-2">
+                    Upload Criminal Record Check
                   </label>
+                  <input
+                    type="file"
+                    id="criminalDoc"
+                    onChange={(e) => handleFileChange(e, "criminalRecord")}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    accept=".pdf,.doc,.docx,.jpg,.png"
+                  />
+                  {formData.criminalRecord && (
+                    <p className="text-xs text-primary mt-1">✓ {formData.criminalRecord}</p>
+                  )}
+                </div>
+              </div>
+            </fieldset>
+
+            {/* Language Proficiency */}
+            <fieldset className="mb-8 pb-8 border-b border-gray-200">
+              <legend className="text-lg font-semibold text-foreground mb-6">
+                Language Proficiency
+              </legend>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Language"
+                    value={newLanguage.language}
+                    onChange={(e) => setNewLanguage({ ...newLanguage, language: e.target.value })}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
                   <select
-                    id="criminalRecord"
-                    name="criminalRecord"
-                    value={formData.criminalRecord || ""}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    value={newLanguage.level}
+                    onChange={(e) => setNewLanguage({ ...newLanguage, level: e.target.value })}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   >
-                    <option value="">Select</option>
-                    <option value="no">No</option>
-                    <option value="yes">Yes</option>
+                    <option value="">Select Level</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Fluent">Fluent</option>
+                    <option value="Native">Native</option>
                   </select>
+                  <button
+                    type="button"
+                    onClick={addLanguage}
+                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  {languages.map((lang, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center p-3 bg-primary/5 rounded-lg border border-primary/20"
+                    >
+                      <span className="text-foreground">
+                        {lang.language} - {lang.level}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeLanguage(index)}
+                        className="text-destructive hover:text-destructive/80"
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
             </fieldset>
@@ -355,12 +495,32 @@ export default function WorkerRegister() {
             {/* Health and Emergency */}
             <fieldset className="mb-8 pb-8 border-b border-gray-200">
               <legend className="text-lg font-semibold text-foreground mb-6">
-                Health and Emergency
+                Health and Insurance
               </legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="insuranceCompany" className="block text-sm font-medium text-foreground mb-2">
+                    Insurance Company
+                  </label>
+                  <select
+                    id="insuranceCompany"
+                    name="insuranceCompany"
+                    value={formData.insuranceCompany || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="">Select Insurance Company</option>
+                    <option value="RSSB">RSSB</option>
+                    <option value="SORAS">SORAS</option>
+                    <option value="RAMA">RAMA</option>
+                    <option value="None">None</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
                 <div className="md:col-span-2">
                   <label htmlFor="healthCondition" className="block text-sm font-medium text-foreground mb-2">
-                    Health Condition / Insurance
+                    Health Conditions / Medical Notes
                   </label>
                   <textarea
                     id="healthCondition"
@@ -368,6 +528,7 @@ export default function WorkerRegister() {
                     value={formData.healthCondition || ""}
                     onChange={handleChange}
                     rows={3}
+                    placeholder="Any medical conditions or allergies we should know about?"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
