@@ -41,16 +41,19 @@ const App = () => (
           {/* Worker Routes */}
           <Route path="/worker/register" element={<WorkerRegister />} />
           <Route path="/worker/login" element={<WorkerLogin />} />
+          <Route path="/worker/forgot-password" element={<WorkerForgotPassword />} />
           <Route path="/worker/dashboard" element={<WorkerDashboard />} />
 
           {/* Homeowner Routes */}
           <Route path="/homeowner/register" element={<HomeownerRegister />} />
           <Route path="/homeowner/login" element={<HomeownerLogin />} />
+          <Route path="/homeowner/forgot-password" element={<HomeownerForgotPassword />} />
           <Route path="/homeowner/dashboard" element={<HomeownerDashboard />} />
 
           {/* Admin Routes */}
           <Route path="/admin/register" element={<AdminRegister />} />
           <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
