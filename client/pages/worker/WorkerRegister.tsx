@@ -239,7 +239,7 @@ export default function WorkerRegister() {
 
                 <div>
                   <label htmlFor="nationalId" className="block text-sm font-medium text-foreground mb-2">
-                    National ID (1 XXXXXXXXX) *
+                    National ID (1 XXXXXXXXX or 16 digits) *
                   </label>
                   <input
                     type="text"
@@ -247,9 +247,10 @@ export default function WorkerRegister() {
                     name="nationalId"
                     value={formData.nationalId || ""}
                     onChange={handleChange}
-                    placeholder="1 123456789"
+                    placeholder="1 123456789 or 1234567890123456"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">Format: 1 followed by 9 digits or 16 digits</p>
                   {errors.nationalId && (
                     <p className="text-destructive text-sm mt-1">{errors.nationalId}</p>
                   )}
