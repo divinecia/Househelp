@@ -11,6 +11,10 @@ export default function HomeownerRegister() {
     homeComposition: { adults: false, children: false, elderly: false, pets: false },
     termsAccepted: false,
   });
+  const [homeCompositionDetails, setHomeCompositionDetails] = useState<
+    Array<{ type: string; count: number; age: string }>
+  >([]);
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (
@@ -44,6 +48,12 @@ export default function HomeownerRegister() {
     }
   };
 
+  const handleDayToggle = (day: string) => {
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+    );
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.fullName) newErrors.fullName = "Full name is required";
@@ -62,13 +72,20 @@ export default function HomeownerRegister() {
     e.preventDefault();
     if (validateForm()) {
       try {
-        registerUser("homeowner", formData as HomeownerData);
+        const dataToSubmit = {
+          ...formData,
+          homeCompositionDetails: homeCompositionDetails.map(d => `${d.count} ${d.type}(s) - ${d.age ? d.age + " years old" : "age not specified"}`).join(", "),
+          selectedDays: selectedDays.join(", "),
+        } as HomeownerData;
+        registerUser("homeowner", dataToSubmit);
         navigate("/homeowner/login");
       } catch (error) {
         console.error("Registration failed:", error);
       }
     }
   };
+
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -253,46 +270,76 @@ export default function HomeownerRegister() {
                 Home Composition
               </legend>
               <div className="space-y-4">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="homeComposition.adults"
-                    checked={formData.homeComposition?.adults || false}
-                    onChange={handleChange}
-                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                  <span className="text-foreground">Adults</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="homeComposition.children"
-                    checked={formData.homeComposition?.children || false}
-                    onChange={handleChange}
-                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                  <span className="text-foreground">Children</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="homeComposition.elderly"
-                    checked={formData.homeComposition?.elderly || false}
-                    onChange={handleChange}
-                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                  <span className="text-foreground">Elderly</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="homeComposition.pets"
-                    checked={formData.homeComposition?.pets || false}
-                    onChange={handleChange}
-                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                  <span className="text-foreground">Pets</span>
-                </label>
+                <div className="space-y-3">
+                  {["Adults", "Children", "Elderly", "Pets"].map((type) => (
+                    <div key={type} className="flex items-center gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer w-24">
+                        <input
+                          type="checkbox"
+                          checked={homeCompositionDetails.some((d) => d.type === type)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setHomeCompositionDetails([
+                                ...homeCompositionDetails,
+                                { type, count: 1, age: "" },
+                              ]);
+                            } else {
+                              setHomeCompositionDetails(
+                                homeCompositionDetails.filter((d) => d.type !== type)
+                              );
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <span className="text-foreground">{type}</span>
+                      </label>
+                      {homeCompositionDetails.find((d) => d.type === type) && (
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            min="1"
+                            placeholder="Count"
+                            value={
+                              homeCompositionDetails.find((d) => d.type === type)
+                                ?.count || 1
+                            }
+                            onChange={(e) => {
+                              setHomeCompositionDetails(
+                                homeCompositionDetails.map((d) =>
+                                  d.type === type
+                                    ? { ...d, count: parseInt(e.target.value) }
+                                    : d
+                                )
+                              );
+                            }}
+                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                          />
+                          {type !== "Pets" && (
+                            <input
+                              type="number"
+                              min="0"
+                              placeholder="Age"
+                              value={
+                                homeCompositionDetails.find((d) => d.type === type)
+                                  ?.age || ""
+                              }
+                              onChange={(e) => {
+                                setHomeCompositionDetails(
+                                  homeCompositionDetails.map((d) =>
+                                    d.type === type
+                                      ? { ...d, age: e.target.value }
+                                      : d
+                                  )
+                                );
+                              }}
+                              className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </fieldset>
 
@@ -349,17 +396,55 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label htmlFor="workingHoursAndSchedule" className="block text-sm font-medium text-foreground mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-4">
                     Working Hours and Schedule
                   </label>
-                  <input
-                    type="text"
-                    id="workingHoursAndSchedule"
-                    name="workingHoursAndSchedule"
-                    value={formData.workingHoursAndSchedule || ""}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
+                  <div className="space-y-4">
+                    <div className="flex gap-2">
+                      <input
+                        type="time"
+                        placeholder="Start time"
+                        value={formData.workingHoursAndSchedule?.split("-")[0]?.trim() || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            workingHoursAndSchedule:
+                              e.target.value + " - " +
+                              (formData.workingHoursAndSchedule?.split("-")[1]?.trim() || ""),
+                          }))
+                        }
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      />
+                      <input
+                        type="time"
+                        placeholder="End time"
+                        value={formData.workingHoursAndSchedule?.split("-")[1]?.trim() || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            workingHoursAndSchedule:
+                              (formData.workingHoursAndSchedule?.split("-")[0]?.trim() || "") +
+                              " - " +
+                              e.target.value,
+                          }))
+                        }
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      {days.map((day) => (
+                        <label key={day} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedDays.includes(day)}
+                            onChange={() => handleDayToggle(day)}
+                            className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm">{day.slice(0, 3)}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -510,14 +595,19 @@ export default function HomeownerRegister() {
                   <label htmlFor="smokingDrinkingRestrictions" className="block text-sm font-medium text-foreground mb-2">
                     Smoking/Drinking Restrictions
                   </label>
-                  <input
-                    type="text"
+                  <select
                     id="smokingDrinkingRestrictions"
                     name="smokingDrinkingRestrictions"
                     value={formData.smokingDrinkingRestrictions || ""}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
+                  >
+                    <option value="">Select Tolerance</option>
+                    <option value="no_smoking_no_drinking">No smoking, No drinking</option>
+                    <option value="smoking_allowed">Smoking allowed</option>
+                    <option value="drinking_allowed">Drinking allowed</option>
+                    <option value="both_allowed">Both allowed</option>
+                  </select>
                 </div>
 
                 <div className="md:col-span-2">
