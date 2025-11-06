@@ -302,7 +302,7 @@ export default function WorkerRegister() {
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      placeholder="Amount"
+                      placeholder="1/2"
                       value={formData.expectedWages?.split(" ")[0] || ""}
                       onChange={(e) =>
                         setFormData((prev) => ({

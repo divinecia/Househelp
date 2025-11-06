@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import ServiceCard from "@/components/ServiceCard";
 import ServicesSection from "@/components/ServicesSection";
 import Footer from "@/components/Footer";
-import { Wrench, Home, Settings } from "lucide-react";
+import { UserRound, Home, Settings } from "lucide-react";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ export default function Index() {
           {/* Role Selection Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-16">
             <ServiceCard
-              icon={Wrench}
+              icon={UserRound}
               title="Worker"
               bgColor="worker"
               onClick={() => handleRoleSelect("worker")}
