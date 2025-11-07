@@ -125,6 +125,81 @@ CREATE TABLE IF NOT EXISTS public.messages (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
+-- Training/Courses Table
+CREATE TABLE IF NOT EXISTS public.trainings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  category TEXT NOT NULL CHECK (category IN ('beginner', 'intermediate', 'expert')),
+  instructor TEXT,
+  duration INTEGER,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'archived')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+-- Worker Training Enrollment
+CREATE TABLE IF NOT EXISTS public.worker_trainings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  worker_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  training_id UUID NOT NULL REFERENCES public.trainings(id) ON DELETE CASCADE,
+  status TEXT NOT NULL CHECK (status IN ('enrolled', 'in_progress', 'completed')) DEFAULT 'enrolled',
+  progress_percentage INTEGER DEFAULT 0,
+  certificate_url TEXT,
+  started_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  completed_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+-- Services Table
+CREATE TABLE IF NOT EXISTS public.services (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  description TEXT,
+  icon TEXT,
+  baseRate DECIMAL(10, 2),
+  active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+-- Worker Tasks/Todo Table
+CREATE TABLE IF NOT EXISTS public.worker_tasks (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  worker_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  due_date DATE,
+  completed BOOLEAN DEFAULT FALSE,
+  frequency TEXT CHECK (frequency IN ('daily', 'weekly', 'monthly')) DEFAULT 'daily',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+-- Reports/Issues Table
+CREATE TABLE IF NOT EXISTS public.reports (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  report_type TEXT NOT NULL CHECK (report_type IN ('system_issue', 'worker_behavior', 'review', 'rating')),
+  title TEXT NOT NULL,
+  description TEXT,
+  target_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'resolved', 'closed')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
+-- Platform Settings/KPI Table
+CREATE TABLE IF NOT EXISTS public.platform_stats (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  metric_name TEXT NOT NULL UNIQUE,
+  metric_value DECIMAL(15, 2),
+  metric_description TEXT,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
+);
+
 -- Create Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_payments_user_id ON public.payments(user_id);
 CREATE INDEX IF NOT EXISTS idx_payments_status ON public.payments(status);
@@ -139,6 +214,13 @@ CREATE INDEX IF NOT EXISTS idx_bookings_worker_id ON public.bookings(worker_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_status ON public.bookings(status);
 CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON public.messages(sender_id);
 CREATE INDEX IF NOT EXISTS idx_messages_recipient_id ON public.messages(recipient_id);
+CREATE INDEX IF NOT EXISTS idx_trainings_category ON public.trainings(category);
+CREATE INDEX IF NOT EXISTS idx_worker_trainings_worker_id ON public.worker_trainings(worker_id);
+CREATE INDEX IF NOT EXISTS idx_worker_trainings_training_id ON public.worker_trainings(training_id);
+CREATE INDEX IF NOT EXISTS idx_worker_tasks_worker_id ON public.worker_tasks(worker_id);
+CREATE INDEX IF NOT EXISTS idx_reports_user_id ON public.reports(user_id);
+CREATE INDEX IF NOT EXISTS idx_reports_target_user_id ON public.reports(target_user_id);
+CREATE INDEX IF NOT EXISTS idx_services_active ON public.services(active);
 
 -- Enable RLS (Row Level Security)
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
