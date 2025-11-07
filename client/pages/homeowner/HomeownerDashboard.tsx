@@ -1,13 +1,23 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getUser, logoutUser } from "@/lib/auth";
 import type { HomeownerData } from "@/lib/auth";
+import { Home, Briefcase, Calendar, User, MoreVertical, LogOut, Star } from "lucide-react";
+import HomeownerHome from "@/components/homeowner/HomeownerHome";
+import HomeownerJobs from "@/components/homeowner/HomeownerJobs";
+import HomeownerBooking from "@/components/homeowner/HomeownerBooking";
+import HomeownerProfile from "@/components/homeowner/HomeownerProfile";
+import HomeownerMore from "@/components/homeowner/HomeownerMore";
+
+type HomeownerSection = "home" | "jobs" | "booking" | "profile" | "more";
 
 export default function HomeownerDashboard() {
   const navigate = useNavigate();
   const user = getUser("homeowner") as HomeownerData;
+  const [activeSection, setActiveSection] = useState<HomeownerSection>("home");
+  const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -20,167 +30,165 @@ export default function HomeownerDashboard() {
     navigate("/");
   };
 
+  const renderSection = () => {
+    switch (activeSection) {
+      case "home":
+        return <HomeownerHome />;
+      case "jobs":
+        return <HomeownerJobs />;
+      case "booking":
+        return <HomeownerBooking />;
+      case "profile":
+        return <HomeownerProfile />;
+      case "more":
+        return <HomeownerMore onLogout={handleLogout} />;
+      default:
+        return <HomeownerHome />;
+    }
+  };
+
   if (!user) {
     return null;
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col pb-24">
       <Header />
-      <main className="flex-1 py-12 md:py-16 bg-gradient-to-b from-white via-white to-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header Section */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                Welcome, {user.fullName}!
-              </h1>
-              <p className="text-muted-foreground">
-                Homeowner Dashboard
-              </p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="mt-4 md:mt-0 px-6 py-2 bg-destructive text-white font-semibold rounded-lg hover:bg-destructive/90 transition-colors"
-            >
-              Logout
-            </button>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="p-4 md:p-8 max-w-6xl mx-auto">
+          {/* Header Bar */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-foreground capitalize">
+              {activeSection === "home"
+                ? "Dashboard"
+                : activeSection === "jobs"
+                ? "My Jobs"
+                : activeSection === "booking"
+                ? "Bookings"
+                : activeSection === "profile"
+                ? "My Profile"
+                : "More"}
+            </h1>
+            <p className="text-muted-foreground mt-2">Welcome back, {user.fullName}!</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Profile Information */}
-            <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-foreground mb-6">
-                Profile Information
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Full Name</p>
-                  <p className="text-foreground font-medium">{user.fullName}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="text-foreground font-medium">{user.email}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Contact Number</p>
-                  <p className="text-foreground font-medium">{user.contactNumber}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Age</p>
-                  <p className="text-foreground font-medium">{user.age || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Home Address</p>
-                  <p className="text-foreground font-medium">{user.homeAddress}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Type of Residence</p>
-                  <p className="text-foreground font-medium capitalize">{user.typeOfResidence || "Not specified"}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Home Information */}
-            <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-foreground mb-6">
-                Home Information
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Number of Family Members</p>
-                  <p className="text-foreground font-medium">{user.numberOfFamilyMembers || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Home Composition</p>
-                  <div className="text-foreground font-medium">
-                    {user.homeComposition && (
-                      <ul className="list-disc list-inside">
-                        {user.homeComposition.adults && <li>Adults</li>}
-                        {user.homeComposition.children && <li>Children</li>}
-                        {user.homeComposition.elderly && <li>Elderly</li>}
-                        {user.homeComposition.pets && <li>Pets</li>}
-                      </ul>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Worker Requirements */}
-            <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-foreground mb-6">
-                Worker Requirements
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Worker Type</p>
-                  <p className="text-foreground font-medium capitalize">{user.workerInfo || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Number of Workers Needed</p>
-                  <p className="text-foreground font-medium">{user.numberOfWorkersNeeded || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Preferred Gender</p>
-                  <p className="text-foreground font-medium capitalize">{user.preferredGender || "No preference"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Language Preference</p>
-                  <p className="text-foreground font-medium">{user.languagePreference || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Wages Offered</p>
-                  <p className="text-foreground font-medium">{user.wagesOffered || "Not specified"}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Additional Details */}
-            <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-foreground mb-6">
-                Additional Details
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Start Date Required</p>
-                  <p className="text-foreground font-medium">{user.startDateRequired || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Reason for Hiring</p>
-                  <p className="text-foreground font-medium">{user.reasonForHiring || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Criminal Record Check</p>
-                  <p className="text-foreground font-medium capitalize">{user.criminalRecord || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Payment Mode</p>
-                  <p className="text-foreground font-medium capitalize">{user.paymentMode || "Not specified"}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="mt-12 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20 p-8">
-            <h2 className="text-xl font-semibold text-foreground mb-6">
-              Quick Actions
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button className="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors">
-                Post a Job
-              </button>
-              <button className="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors">
-                Browse Workers
-              </button>
-              <button className="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors">
-                View Applications
-              </button>
-            </div>
-          </div>
+          {/* Content */}
+          {renderSection()}
         </div>
       </main>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
+        <div className="flex justify-around items-center h-20 max-w-6xl mx-auto">
+          <button
+            onClick={() => {
+              setActiveSection("home");
+              setShowMore(false);
+            }}
+            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+              activeSection === "home"
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Home size={24} />
+            <span className="text-xs font-medium">Home</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveSection("jobs");
+              setShowMore(false);
+            }}
+            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+              activeSection === "jobs"
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Briefcase size={24} />
+            <span className="text-xs font-medium">Jobs</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveSection("booking");
+              setShowMore(false);
+            }}
+            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+              activeSection === "booking"
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Calendar size={24} />
+            <span className="text-xs font-medium">Booking</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveSection("profile");
+              setShowMore(false);
+            }}
+            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+              activeSection === "profile"
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <User size={24} />
+            <span className="text-xs font-medium">Profile</span>
+          </button>
+
+          <div className="relative">
+            <button
+              onClick={() => setShowMore(!showMore)}
+              className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+                activeSection === "more"
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <MoreVertical size={24} />
+              <span className="text-xs font-medium">More</span>
+            </button>
+
+            {showMore && (
+              <div className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                <button
+                  onClick={() => {
+                    setActiveSection("more");
+                    setShowMore(false);
+                  }}
+                  className="w-full px-4 py-2 text-left hover:bg-gray-50 text-sm font-medium flex items-center gap-2"
+                >
+                  <Star size={16} />
+                  Rate Worker
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveSection("more");
+                    setShowMore(false);
+                  }}
+                  className="w-full px-4 py-2 text-left hover:bg-gray-50 text-sm font-medium"
+                >
+                  Report Issue
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2 text-left hover:bg-red-50 text-red-600 text-sm font-medium flex items-center gap-2"
+                >
+                  <LogOut size={16} />
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </nav>
+
       <Footer />
     </div>
   );
