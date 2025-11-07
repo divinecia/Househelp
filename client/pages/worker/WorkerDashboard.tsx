@@ -1,13 +1,23 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getUser, logoutUser } from "@/lib/auth";
 import type { WorkerData } from "@/lib/auth";
+import { Home, CheckSquare, User, BookOpen, MoreVertical, LogOut } from "lucide-react";
+import WorkerHome from "@/components/worker/WorkerHome";
+import WorkerTasks from "@/components/worker/WorkerTasks";
+import WorkerProfile from "@/components/worker/WorkerProfile";
+import WorkerTraining from "@/components/worker/WorkerTraining";
+import WorkerMore from "@/components/worker/WorkerMore";
+
+type WorkerSection = "home" | "tasks" | "profile" | "training" | "more";
 
 export default function WorkerDashboard() {
   const navigate = useNavigate();
   const user = getUser("worker") as WorkerData;
+  const [activeSection, setActiveSection] = useState<WorkerSection>("home");
+  const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -20,162 +30,134 @@ export default function WorkerDashboard() {
     navigate("/");
   };
 
+  const renderSection = () => {
+    switch (activeSection) {
+      case "home":
+        return <WorkerHome />;
+      case "tasks":
+        return <WorkerTasks />;
+      case "profile":
+        return <WorkerProfile />;
+      case "training":
+        return <WorkerTraining />;
+      case "more":
+        return <WorkerMore onLogout={handleLogout} />;
+      default:
+        return <WorkerHome />;
+    }
+  };
+
   if (!user) {
     return null;
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col pb-24">
       <Header />
-      <main className="flex-1 py-12 md:py-16 bg-gradient-to-b from-white via-white to-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header Section */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                Welcome, {user.fullName}!
-              </h1>
-              <p className="text-muted-foreground">
-                Worker Dashboard
-              </p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="mt-4 md:mt-0 px-6 py-2 bg-destructive text-white font-semibold rounded-lg hover:bg-destructive/90 transition-colors"
-            >
-              Logout
-            </button>
+      
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="p-4 md:p-8 max-w-6xl mx-auto">
+          {/* Header Bar */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-foreground capitalize">
+              {activeSection === "home" ? "My Jobs" : activeSection === "tasks" ? "My Tasks" : activeSection === "profile" ? "My Profile" : activeSection === "training" ? "Training" : "More"}
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Welcome back, {user.fullName}!
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Profile Information */}
-            <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-foreground mb-6">
-                Profile Information
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Full Name</p>
-                  <p className="text-foreground font-medium">{user.fullName}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="text-foreground font-medium">{user.email}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Phone Number</p>
-                  <p className="text-foreground font-medium">{user.phoneNumber}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Gender</p>
-                  <p className="text-foreground font-medium capitalize">{user.gender}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Marital Status</p>
-                  <p className="text-foreground font-medium capitalize">{user.maritalStatus}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">National ID</p>
-                  <p className="text-foreground font-medium">{user.nationalId}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Professional Information */}
-            <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-foreground mb-6">
-                Professional Information
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Type of Work</p>
-                  <p className="text-foreground font-medium">{user.typeOfWork || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Work Experience</p>
-                  <p className="text-foreground font-medium">{user.workExperience || "Not specified"} years</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Expected Wages</p>
-                  <p className="text-foreground font-medium">{user.expectedWages || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Working Hours and Days</p>
-                  <p className="text-foreground font-medium">{user.workingHoursAndDays || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Education Qualification</p>
-                  <p className="text-foreground font-medium">{user.educationQualification || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Language Proficiency</p>
-                  <p className="text-foreground font-medium">{user.languageProficiency || "Not specified"}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Additional Information */}
-            <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-foreground mb-6">
-                Additional Information
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Training Certificate</p>
-                  <p className="text-foreground font-medium">{user.trainingCertificate || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Criminal Record</p>
-                  <p className="text-foreground font-medium capitalize">{user.criminalRecord || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Health Condition</p>
-                  <p className="text-foreground font-medium">{user.healthCondition || "Not specified"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Emergency Contact</p>
-                  <p className="text-foreground font-medium">{user.emergencyName || "Not specified"}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Bank Information */}
-            <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-foreground mb-6">
-                Bank Information
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Bank Account Number</p>
-                  <p className="text-foreground font-medium">••••••••{user.bankAccountNumber?.slice(-4)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Account Holder</p>
-                  <p className="text-foreground font-medium">{user.accountHolder || "Not specified"}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="mt-12 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20 p-8">
-            <h2 className="text-xl font-semibold text-foreground mb-6">
-              Quick Actions
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button className="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors">
-                Browse Jobs
-              </button>
-              <button className="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors">
-                View Earnings
-              </button>
-              <button className="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors">
-                Update Profile
-              </button>
-            </div>
-          </div>
+          {/* Content */}
+          {renderSection()}
         </div>
       </main>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
+        <div className="flex justify-around items-center h-20 max-w-6xl mx-auto">
+          <button
+            onClick={() => { setActiveSection("home"); setShowMore(false); }}
+            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+              activeSection === "home"
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Home size={24} />
+            <span className="text-xs font-medium">Home</span>
+          </button>
+
+          <button
+            onClick={() => { setActiveSection("tasks"); setShowMore(false); }}
+            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+              activeSection === "tasks"
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <CheckSquare size={24} />
+            <span className="text-xs font-medium">Tasks</span>
+          </button>
+
+          <button
+            onClick={() => { setActiveSection("profile"); setShowMore(false); }}
+            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+              activeSection === "profile"
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <User size={24} />
+            <span className="text-xs font-medium">Profile</span>
+          </button>
+
+          <button
+            onClick={() => { setActiveSection("training"); setShowMore(false); }}
+            className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+              activeSection === "training"
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <BookOpen size={24} />
+            <span className="text-xs font-medium">Training</span>
+          </button>
+
+          <div className="relative">
+            <button
+              onClick={() => setShowMore(!showMore)}
+              className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+                activeSection === "more"
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <MoreVertical size={24} />
+              <span className="text-xs font-medium">More</span>
+            </button>
+
+            {showMore && (
+              <div className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                <button
+                  onClick={() => { setActiveSection("more"); setShowMore(false); }}
+                  className="w-full px-4 py-2 text-left hover:bg-gray-50 text-sm font-medium"
+                >
+                  Report Issue
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2 text-left hover:bg-red-50 text-red-600 text-sm font-medium flex items-center gap-2"
+                >
+                  <LogOut size={16} />
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </nav>
+
       <Footer />
     </div>
   );
