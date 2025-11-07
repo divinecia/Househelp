@@ -1,0 +1,322 @@
+import { useState } from "react";
+import { User, Save, X } from "lucide-react";
+
+export default function HomeownerProfile() {
+  const [isEditing, setIsEditing] = useState(false);
+  const [profileData, setProfileData] = useState({
+    age: "32",
+    homeAddress: "KG 123 St, Kigali",
+    typeOfResidence: "apartment",
+    numberOfFamilyMembers: "4",
+    homeComposition: "2 Adults, 2 Children",
+    workerInfo: "Full-time",
+    specificDuties: "Cleaning, Cooking, Childcare",
+    workingHoursAndSchedule: "08:00 - 17:00, Mon-Fri",
+    numberOfWorkersNeeded: "2",
+    preferredGender: "Female",
+    languagePreference: "English, Kinyarwanda",
+    wagesOffered: "50,000 - 100,000 RWF",
+    reasonForHiring: "Household management assistance",
+    specialRequirements: "Must have experience with children",
+    startDateRequired: "2024-02-01",
+    criminalRecord: "Yes, cleared",
+    preferredPaymentMode: "Bank Transfer",
+    bankDetails: "Sample Bank, Account: ****5678",
+    religious: "Christian",
+    smokingDrinkingRestrictions: "No smoking",
+    specificSkillsNeeded: "Childcare, Cooking, Organization",
+  });
+
+  const [tempData, setTempData] = useState(profileData);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setTempData(profileData);
+  };
+
+  const handleSave = () => {
+    setProfileData(tempData);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setTempData(profileData);
+    setIsEditing(false);
+  };
+
+  const handleChange = (field: string, value: string) => {
+    setTempData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Profile Picture Section */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div className="flex items-center gap-6">
+          <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center border-4 border-primary">
+            <User size={60} className="text-primary" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Alice Johnson</h2>
+            <p className="text-muted-foreground">Homeowner Profile</p>
+            {!isEditing && (
+              <button
+                onClick={handleEdit}
+                className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Edit Profile
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Profile Information */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-foreground mb-6">Profile Information</h3>
+
+        {isEditing ? (
+          <form className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Age</label>
+                <input
+                  type="number"
+                  value={tempData.age}
+                  onChange={(e) => handleChange("age", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Home Address</label>
+                <input
+                  type="text"
+                  value={tempData.homeAddress}
+                  onChange={(e) => handleChange("homeAddress", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Type of Residence</label>
+                <select
+                  value={tempData.typeOfResidence}
+                  onChange={(e) => handleChange("typeOfResidence", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="studio">Studio</option>
+                  <option value="apartment">Apartment</option>
+                  <option value="villa">Villa</option>
+                  <option value="mansion">Mansion</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Number of Family Members</label>
+                <input
+                  type="number"
+                  value={tempData.numberOfFamilyMembers}
+                  onChange={(e) => handleChange("numberOfFamilyMembers", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-foreground mb-2">Home Composition</label>
+                <input
+                  type="text"
+                  value={tempData.homeComposition}
+                  onChange={(e) => handleChange("homeComposition", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Worker Info</label>
+                <select
+                  value={tempData.workerInfo}
+                  onChange={(e) => handleChange("workerInfo", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Live-in">Live-in</option>
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-foreground mb-2">Specific Duties</label>
+                <textarea
+                  value={tempData.specificDuties}
+                  onChange={(e) => handleChange("specificDuties", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  rows={3}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-foreground mb-2">Working Hours and Schedule</label>
+                <input
+                  type="text"
+                  value={tempData.workingHoursAndSchedule}
+                  onChange={(e) => handleChange("workingHoursAndSchedule", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Number of Workers Needed</label>
+                <input
+                  type="number"
+                  value={tempData.numberOfWorkersNeeded}
+                  onChange={(e) => handleChange("numberOfWorkersNeeded", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Preferred Gender</label>
+                <select
+                  value={tempData.preferredGender}
+                  onChange={(e) => handleChange("preferredGender", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="No preference">No preference</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Language Preference</label>
+                <input
+                  type="text"
+                  value={tempData.languagePreference}
+                  onChange={(e) => handleChange("languagePreference", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Wages Offered</label>
+                <input
+                  type="text"
+                  value={tempData.wagesOffered}
+                  onChange={(e) => handleChange("wagesOffered", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Reason for Hiring</label>
+                <input
+                  type="text"
+                  value={tempData.reasonForHiring}
+                  onChange={(e) => handleChange("reasonForHiring", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-foreground mb-2">Special Requirements</label>
+                <textarea
+                  value={tempData.specialRequirements}
+                  onChange={(e) => handleChange("specialRequirements", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  rows={2}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Start Date Required</label>
+                <input
+                  type="date"
+                  value={tempData.startDateRequired}
+                  onChange={(e) => handleChange("startDateRequired", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Criminal Record</label>
+                <input
+                  type="text"
+                  value={tempData.criminalRecord}
+                  onChange={(e) => handleChange("criminalRecord", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Preferred Payment Mode</label>
+                <select
+                  value={tempData.preferredPaymentMode}
+                  onChange={(e) => handleChange("preferredPaymentMode", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Mobile Money">Mobile Money</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Bank Details</label>
+                <input
+                  type="text"
+                  value={tempData.bankDetails}
+                  onChange={(e) => handleChange("bankDetails", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Religious Preferences</label>
+                <input
+                  type="text"
+                  value={tempData.religious}
+                  onChange={(e) => handleChange("religious", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Smoking/Drinking Restrictions</label>
+                <input
+                  type="text"
+                  value={tempData.smokingDrinkingRestrictions}
+                  onChange={(e) => handleChange("smokingDrinkingRestrictions", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-foreground mb-2">Specific Skills Needed</label>
+                <textarea
+                  value={tempData.specificSkillsNeeded}
+                  onChange={(e) => handleChange("specificSkillsNeeded", e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  rows={2}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={handleSave}
+                className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+              >
+                <Save size={18} />
+                Save Changes
+              </button>
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="flex-1 px-4 py-2 border border-gray-300 text-foreground rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+              >
+                <X size={18} />
+                Cancel
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="space-y-4">
+            {Object.entries(profileData).map(([key, value]) => (
+              <div key={key} className="border-b border-gray-200 pb-4 last:border-0">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                  {key
+                    .replace(/([A-Z])/g, " $1")
+                    .replace(/^./, (str) => str.toUpperCase())
+                    .trim()}
+                </p>
+                <p className="text-foreground font-medium">{value}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
