@@ -1,13 +1,35 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getUser, logoutUser } from "@/lib/auth";
 import type { AdminData } from "@/lib/auth";
+import {
+  BarChart3,
+  Users,
+  Home,
+  BookOpen,
+  Calendar,
+  FileText,
+  Menu,
+  X,
+  LogOut,
+  LayoutDashboard,
+} from "lucide-react";
+import AdminOverview from "@/components/admin/AdminOverview";
+import AdminWorkers from "@/components/admin/AdminWorkers";
+import AdminHomeowners from "@/components/admin/AdminHomeowners";
+import AdminTraining from "@/components/admin/AdminTraining";
+import AdminBooking from "@/components/admin/AdminBooking";
+import AdminReports from "@/components/admin/AdminReports";
+
+type AdminSection = "overview" | "workers" | "homeowners" | "training" | "booking" | "reports";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const user = getUser("admin") as AdminData;
+  const [activeSection, setActiveSection] = useState<AdminSection>("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     if (!user) {
@@ -20,191 +42,106 @@ export default function AdminDashboard() {
     navigate("/");
   };
 
+  const menuItems = [
+    { id: "overview", label: "Overview", icon: LayoutDashboard },
+    { id: "workers", label: "Workers", icon: Users },
+    { id: "homeowners", label: "Homeowners", icon: Home },
+    { id: "training", label: "Training", icon: BookOpen },
+    { id: "booking", label: "Booking", icon: Calendar },
+    { id: "reports", label: "Reports", icon: FileText },
+  ];
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case "overview":
+        return <AdminOverview />;
+      case "workers":
+        return <AdminWorkers />;
+      case "homeowners":
+        return <AdminHomeowners />;
+      case "training":
+        return <AdminTraining />;
+      case "booking":
+        return <AdminBooking />;
+      case "reports":
+        return <AdminReports />;
+      default:
+        return <AdminOverview />;
+    }
+  };
+
   if (!user) {
     return null;
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
-      <main className="flex-1 py-12 md:py-16 bg-gradient-to-b from-white via-white to-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header Section */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                Welcome, {user.fullName}!
-              </h1>
-              <p className="text-muted-foreground">
-                Admin Dashboard
-              </p>
-            </div>
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <aside
+          className={`bg-white border-r border-gray-200 transition-all duration-300 ${
+            sidebarOpen ? "w-64" : "w-20"
+          } overflow-y-auto`}
+        >
+          <div className="p-4 border-b border-gray-200">
             <button
-              onClick={handleLogout}
-              className="mt-4 md:mt-0 px-6 py-2 bg-destructive text-white font-semibold rounded-lg hover:bg-destructive/90 transition-colors"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              Logout
+              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
 
-          {/* Admin Profile */}
-          <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm mb-8">
-            <h2 className="text-xl font-semibold text-foreground mb-6">
-              Profile Information
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <p className="text-sm text-muted-foreground">Full Name</p>
-                <p className="text-foreground font-medium">{user.fullName}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="text-foreground font-medium">{user.email}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Contact Number</p>
-                <p className="text-foreground font-medium">{user.contactNumber}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Gender</p>
-                <p className="text-foreground font-medium capitalize">{user.gender}</p>
-              </div>
-            </div>
+          <nav className="p-4 space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveSection(item.id as AdminSection)}
+                  className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
+                    activeSection === item.id
+                      ? "bg-primary text-white"
+                      : "text-foreground hover:bg-gray-100"
+                  }`}
+                >
+                  <Icon size={20} />
+                  {sidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="absolute bottom-4 left-4 right-4">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-destructive hover:bg-red-50 transition-colors"
+            >
+              <LogOut size={20} />
+              {sidebarOpen && <span className="text-sm font-medium">Logout</span>}
+            </button>
           </div>
+        </aside>
 
-          {/* Platform Statistics */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-              <p className="text-sm text-muted-foreground mb-2">Total Users</p>
-              <p className="text-3xl font-bold text-primary">0</p>
-              <p className="text-xs text-muted-foreground mt-2">Registered users</p>
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-6 md:p-8">
+            {/* Header Bar */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-foreground capitalize">
+                {activeSection === "overview" ? "Dashboard" : activeSection}
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Welcome, {user.fullName}! Manage your platform here.
+              </p>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-              <p className="text-sm text-muted-foreground mb-2">Active Workers</p>
-              <p className="text-3xl font-bold text-primary">0</p>
-              <p className="text-xs text-muted-foreground mt-2">Currently active</p>
-            </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-              <p className="text-sm text-muted-foreground mb-2">Active Jobs</p>
-              <p className="text-3xl font-bold text-primary">0</p>
-              <p className="text-xs text-muted-foreground mt-2">Pending assignments</p>
-            </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-              <p className="text-sm text-muted-foreground mb-2">Platform Revenue</p>
-              <p className="text-3xl font-bold text-primary">$0</p>
-              <p className="text-xs text-muted-foreground mt-2">This month</p>
-            </div>
+
+            {/* Content */}
+            {renderSection()}
           </div>
-
-          {/* Management Sections */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* User Management */}
-            <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-foreground mb-6">
-                User Management
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                Manage all platform users including workers, homeowners, and other admins.
-              </p>
-              <div className="space-y-3">
-                <button className="w-full px-4 py-2 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors">
-                  View All Users
-                </button>
-                <button className="w-full px-4 py-2 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors">
-                  Manage Workers
-                </button>
-                <button className="w-full px-4 py-2 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors">
-                  Manage Homeowners
-                </button>
-              </div>
-            </div>
-
-            {/* Job Management */}
-            <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-foreground mb-6">
-                Job Management
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                Monitor and manage all job postings and assignments on the platform.
-              </p>
-              <div className="space-y-3">
-                <button className="w-full px-4 py-2 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors">
-                  View All Jobs
-                </button>
-                <button className="w-full px-4 py-2 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors">
-                  Pending Assignments
-                </button>
-                <button className="w-full px-4 py-2 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors">
-                  Completed Jobs
-                </button>
-              </div>
-            </div>
-
-            {/* Content Management */}
-            <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-foreground mb-6">
-                Content Management
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                Update platform content, help articles, and FAQs.
-              </p>
-              <div className="space-y-3">
-                <button className="w-full px-4 py-2 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors">
-                  Manage Pages
-                </button>
-                <button className="w-full px-4 py-2 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors">
-                  Manage FAQ
-                </button>
-                <button className="w-full px-4 py-2 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors">
-                  System Settings
-                </button>
-              </div>
-            </div>
-
-            {/* Reports & Analytics */}
-            <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-foreground mb-6">
-                Reports & Analytics
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                View comprehensive reports and analytics about platform performance.
-              </p>
-              <div className="space-y-3">
-                <button className="w-full px-4 py-2 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors">
-                  View Analytics
-                </button>
-                <button className="w-full px-4 py-2 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors">
-                  Generate Reports
-                </button>
-                <button className="w-full px-4 py-2 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/10 transition-colors">
-                  User Feedback
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="mt-12 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20 p-8">
-            <h2 className="text-xl font-semibold text-foreground mb-6">
-              Quick Overview
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Platform Status</p>
-                <p className="text-lg font-semibold text-green-600">Operational</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Last System Check</p>
-                <p className="text-lg font-semibold text-foreground">Just now</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">Pending Actions</p>
-                <p className="text-lg font-semibold text-primary">0</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
+        </main>
+      </div>
       <Footer />
     </div>
   );
