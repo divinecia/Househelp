@@ -1,0 +1,172 @@
+import { useState } from "react";
+import { Trash2, Edit2, Plus } from "lucide-react";
+
+interface Worker {
+  id: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  typeOfWork: string;
+  status: "active" | "inactive";
+  joinsDate: string;
+}
+
+export default function AdminWorkers() {
+  const [workers, setWorkers] = useState<Worker[]>([
+    {
+      id: "1",
+      fullName: "John Doe",
+      email: "john@example.com",
+      phoneNumber: "+250 123 456 789",
+      typeOfWork: "Cleaning",
+      status: "active",
+      joinsDate: "2024-01-15",
+    },
+    {
+      id: "2",
+      fullName: "Jane Smith",
+      email: "jane@example.com",
+      phoneNumber: "+250 987 654 321",
+      typeOfWork: "Cooking",
+      status: "active",
+      joinsDate: "2024-01-20",
+    },
+  ]);
+
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    typeOfWork: "",
+  });
+
+  const handleAddWorker = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.fullName && formData.email) {
+      const newWorker: Worker = {
+        id: Date.now().toString(),
+        ...formData,
+        status: "active",
+        joinsDate: new Date().toISOString().split("T")[0],
+      };
+      setWorkers([...workers, newWorker]);
+      setFormData({ fullName: "", email: "", phoneNumber: "", typeOfWork: "" });
+      setShowForm(false);
+    }
+  };
+
+  const handleDeleteWorker = (id: string) => {
+    setWorkers(workers.filter((w) => w.id !== id));
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Add Worker Button */}
+      <button
+        onClick={() => setShowForm(!showForm)}
+        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+      >
+        <Plus size={18} />
+        Add New Worker
+      </button>
+
+      {/* Form */}
+      {showForm && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-foreground mb-4">Add New Worker</h3>
+          <form onSubmit={handleAddWorker} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={formData.fullName}
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              required
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              required
+            />
+            <input
+              type="tel"
+              placeholder="Phone Number"
+              value={formData.phoneNumber}
+              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+            <input
+              type="text"
+              placeholder="Type of Work"
+              value={formData.typeOfWork}
+              onChange={(e) => setFormData({ ...formData, typeOfWork: e.target.value })}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+            <button
+              type="submit"
+              className="md:col-span-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Add Worker
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Workers Table */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Name</th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Email</th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Phone</th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Type of Work</th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Status</th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Joined</th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {workers.map((worker) => (
+                <tr key={worker.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 text-sm text-foreground font-medium">{worker.fullName}</td>
+                  <td className="px-6 py-4 text-sm text-muted-foreground">{worker.email}</td>
+                  <td className="px-6 py-4 text-sm text-muted-foreground">{worker.phoneNumber}</td>
+                  <td className="px-6 py-4 text-sm text-muted-foreground">{worker.typeOfWork}</td>
+                  <td className="px-6 py-4 text-sm">
+                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                      {worker.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-muted-foreground">{worker.joinsDate}</td>
+                  <td className="px-6 py-4 text-sm">
+                    <div className="flex gap-2">
+                      <button
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteWorker(worker.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
