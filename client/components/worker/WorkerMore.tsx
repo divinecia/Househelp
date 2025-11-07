@@ -1,0 +1,123 @@
+import { useState } from "react";
+import { AlertCircle, LogOut, Send, X } from "lucide-react";
+
+interface MoreMenuProps {
+  onLogout: () => void;
+}
+
+export default function WorkerMore({ onLogout }: MoreMenuProps) {
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportData, setReportData] = useState({
+    issue: "",
+    description: "",
+  });
+
+  const handleSubmitReport = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Report submitted:", reportData);
+    setReportData({ issue: "", description: "" });
+    setShowReportForm(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Report Issue Section */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+          <AlertCircle className="w-5 h-5" />
+          Report an Issue
+        </h2>
+
+        {!showReportForm ? (
+          <button
+            onClick={() => setShowReportForm(true)}
+            className="w-full px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors font-medium"
+          >
+            Open Report Form
+          </button>
+        ) : (
+          <form onSubmit={handleSubmitReport} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Issue Type
+              </label>
+              <select
+                value={reportData.issue}
+                onChange={(e) => setReportData({ ...reportData, issue: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                required
+              >
+                <option value="">Select an issue type</option>
+                <option value="payment">Payment Issue</option>
+                <option value="booking">Booking Problem</option>
+                <option value="technical">Technical Issue</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Description
+              </label>
+              <textarea
+                value={reportData.description}
+                onChange={(e) => setReportData({ ...reportData, description: e.target.value })}
+                placeholder="Please describe the issue in detail..."
+                rows={5}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                required
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium flex items-center justify-center gap-2"
+              >
+                <Send size={18} />
+                Submit Report
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowReportForm(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-foreground rounded-lg hover:bg-gray-50 transition-colors font-medium flex items-center justify-center gap-2"
+              >
+                <X size={18} />
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+
+      {/* Account Section */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Account</h2>
+
+        <button
+          onClick={onLogout}
+          className="w-full px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium flex items-center justify-center gap-2"
+        >
+          <LogOut size={18} />
+          Logout
+        </button>
+      </div>
+
+      {/* Help & Support */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Help & Support</h2>
+        <div className="space-y-2">
+          <button className="w-full text-left px-4 py-2 text-primary hover:bg-primary/10 rounded-lg transition-colors">
+            FAQ
+          </button>
+          <button className="w-full text-left px-4 py-2 text-primary hover:bg-primary/10 rounded-lg transition-colors">
+            Contact Support
+          </button>
+          <button className="w-full text-left px-4 py-2 text-primary hover:bg-primary/10 rounded-lg transition-colors">
+            About HouseHelp
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
