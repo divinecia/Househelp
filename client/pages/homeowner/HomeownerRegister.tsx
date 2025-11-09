@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { registerUser } from "@/lib/auth";
+import { registerUserViaAPI } from "@/lib/auth";
 import type { HomeownerData } from "@/lib/auth";
+import { toast } from "sonner";
 
 export default function HomeownerRegister() {
   const navigate = useNavigate();
