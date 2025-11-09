@@ -112,3 +112,45 @@ export const logoutUser = (role: string) => {
 export const isAuthenticated = (role: string) => {
   return !!localStorage.getItem(`${role}_current_user`);
 };
+
+// Register user via API (for database persistence)
+export const registerUserViaAPI = async (role: string, data: UserData) => {
+  try {
+    const endpoint =
+      role === "homeowner"
+        ? "/api/homeowners"
+        : role === "worker"
+          ? "/api/workers"
+          : "/api/admin";
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Registration failed");
+    }
+
+    const result = await response.json();
+
+    // Also save to localStorage for quick access
+    const users = JSON.parse(localStorage.getItem(`${role}_users`) || "[]");
+    const newUser = {
+      id: result.data?.id || Date.now().toString(),
+      ...data,
+    };
+    users.push(newUser);
+    localStorage.setItem(`${role}_users`, JSON.stringify(users));
+    localStorage.setItem(`${role}_current_user`, newUser.id);
+
+    return result.data || newUser;
+  } catch (error) {
+    console.error("API registration error:", error);
+    throw error;
+  }
+};
