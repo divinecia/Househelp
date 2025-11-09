@@ -69,18 +69,30 @@ export default function HomeownerRegister() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
       try {
         const dataToSubmit = {
           ...formData,
-          homeCompositionDetails: homeCompositionDetails.map(d => `${d.count} ${d.type}(s) - ${d.age ? d.age + " years old" : "age not specified"}`).join(", "),
+          homeCompositionDetails: homeCompositionDetails
+            .map(
+              (d) =>
+                `${d.count} ${d.type}(s) - ${d.age ? d.age + " years old" : "age not specified"}`
+            )
+            .join(", "),
           selectedDays: selectedDays.join(", "),
         } as HomeownerData;
-        registerUser("homeowner", dataToSubmit);
-        navigate("/homeowner/login");
+
+        await registerUserViaAPI("homeowner", dataToSubmit);
+        toast.success("Registration successful! Redirecting to login...");
+        setTimeout(() => {
+          navigate("/homeowner/login");
+        }, 1000);
       } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Registration failed";
+        toast.error(errorMessage);
         console.error("Registration failed:", error);
       }
     }
