@@ -28,33 +28,35 @@ export interface HomeownerData {
   contactNumber: string;
   email: string;
   password: string;
-  age: string;
+  age?: string;
   homeAddress: string;
-  typeOfResidence: string;
-  numberOfFamilyMembers: string;
-  homeComposition: {
+  typeOfResidence?: string;
+  numberOfFamilyMembers?: string;
+  homeComposition?: {
     adults: boolean;
     children: boolean;
     elderly: boolean;
     pets: boolean;
   };
-  nationalId: string;
-  workerInfo: string;
-  specificDuties: string;
-  workingHoursAndSchedule: string;
-  numberOfWorkersNeeded: string;
-  preferredGender: string;
-  languagePreference: string;
-  wagesOffered: string;
-  reasonForHiring: string;
-  specialRequirements: string;
-  startDateRequired: string;
-  criminalRecord: string;
-  paymentMode: string;
-  bankDetails: string;
-  religious: string;
-  smokingDrinkingRestrictions: string;
-  specificSkillsNeeded: string;
+  homeCompositionDetails?: string;
+  nationalId?: string;
+  workerInfo?: string;
+  specificDuties?: string;
+  workingHoursAndSchedule?: string;
+  numberOfWorkersNeeded?: string;
+  preferredGender?: string;
+  languagePreference?: string;
+  wagesOffered?: string;
+  reasonForHiring?: string;
+  specialRequirements?: string;
+  startDateRequired?: string;
+  criminalRecord?: string;
+  paymentMode?: string;
+  bankDetails?: string;
+  religious?: string;
+  smokingDrinkingRestrictions?: string;
+  specificSkillsNeeded?: string;
+  selectedDays?: string;
   termsAccepted: boolean;
 }
 
