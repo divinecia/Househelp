@@ -1,9 +1,10 @@
 import { Router, Request, Response } from "express";
 import axios from "axios";
+import { supabase } from "../lib/supabase";
 
 const router = Router();
 
-const FLUTTERWAVE_SECRET_KEY = process.env.VITE_FLUTTERWAVE_SECRET_KEY || "";
+const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY || "";
 const FLUTTERWAVE_API_BASE = "https://api.flutterwave.com/v3";
 
 interface PaymentVerificationRequest {
@@ -30,6 +31,77 @@ interface FlutterwaveVerificationResponse {
   };
 }
 
+/**
+ * Create a payment record
+ */
+router.post("/", async (req: Request, res: Response) => {
+  try {
+    const { bookingId, amount, paymentMethod, transactionRef, description, status } = req.body;
+
+    // Validation
+    if (!bookingId || !amount || !paymentMethod) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required fields: bookingId, amount, paymentMethod",
+      });
+    }
+
+    if (!["flutterwave", "bank_transfer", "cash"].includes(paymentMethod)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid payment method",
+      });
+    }
+
+    // Insert payment record
+    const { data: paymentData, error: paymentError } = await supabase
+      .from("payments")
+      .insert([
+        {
+          booking_id: bookingId,
+          amount,
+          payment_method: paymentMethod,
+          transaction_ref: transactionRef || null,
+          status: status || "pending",
+          description: description || null,
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single();
+
+    if (paymentError) {
+      return res.status(400).json({
+        success: false,
+        error: "Failed to create payment: " + paymentError.message,
+      });
+    }
+
+    // Update booking payment status if needed
+    if (bookingId) {
+      await supabase
+        .from("bookings")
+        .update({ payment_status: status || "pending" })
+        .eq("id", bookingId);
+    }
+
+    return res.status(201).json({
+      success: true,
+      data: paymentData,
+      message: "Payment created successfully",
+    });
+  } catch (error: any) {
+    console.error("Payment creation error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Failed to create payment",
+    });
+  }
+});
+
+/**
+ * Verify payment with Flutterwave
+ */
 router.post("/verify", async (req: Request, res: Response) => {
   try {
     const { transactionId } = req.body as PaymentVerificationRequest;
