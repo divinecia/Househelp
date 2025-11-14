@@ -33,12 +33,20 @@ interface PaymentData {
   description: string;
 }
 
+interface CurrentUser {
+  id: string;
+  email: string;
+  phoneNumber?: string;
+  contactNumber?: string;
+}
+
 export default function HomeownerPayment() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [paymentMethods, setPaymentMethods] = useState<
     Array<{ id: string; name: string }>
   >([]);
@@ -58,6 +66,7 @@ export default function HomeownerPayment() {
   useEffect(() => {
     fetchBookings();
     loadPaymentMethods();
+    fetchCurrentUser();
 
     // Check for payment callback
     const transactionId = searchParams.get("transaction_id");
@@ -65,6 +74,17 @@ export default function HomeownerPayment() {
       verifyPaymentCallback(transactionId);
     }
   }, [searchParams]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const result = await getCurrentUser();
+      if (result.success && result.data) {
+        setCurrentUser(result.data as CurrentUser);
+      }
+    } catch (error) {
+      console.error("Failed to fetch current user:", error);
+    }
+  };
 
   const loadPaymentMethods = async () => {
     setIsLoadingMethods(true);
