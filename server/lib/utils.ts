@@ -1,7 +1,9 @@
 /**
  * Convert camelCase keys to snake_case
  */
-export const camelToSnakeCase = (obj: Record<string, any>): Record<string, any> => {
+export const camelToSnakeCase = (
+  obj: Record<string, any>,
+): Record<string, any> => {
   const newObj: Record<string, any> = {};
 
   for (const [key, value] of Object.entries(obj)) {
@@ -15,7 +17,9 @@ export const camelToSnakeCase = (obj: Record<string, any>): Record<string, any> 
 /**
  * Map field names from client camelCase to database snake_case
  */
-export const mapWorkerFields = (data: Record<string, any>): Record<string, any> => {
+export const mapWorkerFields = (
+  data: Record<string, any>,
+): Record<string, any> => {
   const fieldMap: Record<string, string> = {
     fullName: "full_name",
     dateOfBirth: "date_of_birth",
@@ -59,7 +63,9 @@ export const mapWorkerFields = (data: Record<string, any>): Record<string, any> 
 /**
  * Map field names from client camelCase to database snake_case for homeowners
  */
-export const mapHomeownerFields = (data: Record<string, any>): Record<string, any> => {
+export const mapHomeownerFields = (
+  data: Record<string, any>,
+): Record<string, any> => {
   const fieldMap: Record<string, string> = {
     fullName: "full_name",
     contactNumber: "contact_number",
@@ -110,7 +116,9 @@ export const mapHomeownerFields = (data: Record<string, any>): Record<string, an
 /**
  * Map field names from client camelCase to database snake_case for admins
  */
-export const mapAdminFields = (data: Record<string, any>): Record<string, any> => {
+export const mapAdminFields = (
+  data: Record<string, any>,
+): Record<string, any> => {
   const fieldMap: Record<string, string> = {
     fullName: "full_name",
     contactNumber: "contact_number",

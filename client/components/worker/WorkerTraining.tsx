@@ -24,27 +24,42 @@ export default function WorkerTraining() {
         const response = await apiGet("/trainings");
 
         if (response.success && response.data && Array.isArray(response.data)) {
-          const trainingsData: Training[] = response.data.map((training: any) => {
-            const categoryLower = (training.category || "beginner").toLowerCase();
-            let category: "beginner" | "intermediate" | "expert" = "beginner";
+          const trainingsData: Training[] = response.data.map(
+            (training: any) => {
+              const categoryLower = (
+                training.category || "beginner"
+              ).toLowerCase();
+              let category: "beginner" | "intermediate" | "expert" = "beginner";
 
-            if (categoryLower.includes("advanced") || categoryLower.includes("intermediate")) {
-              category = "intermediate";
-            } else if (categoryLower.includes("expert") || categoryLower.includes("professional")) {
-              category = "expert";
-            }
+              if (
+                categoryLower.includes("advanced") ||
+                categoryLower.includes("intermediate")
+              ) {
+                category = "intermediate";
+              } else if (
+                categoryLower.includes("expert") ||
+                categoryLower.includes("professional")
+              ) {
+                category = "expert";
+              }
 
-            return {
-              id: training.id,
-              title: training.title,
-              category,
-              status: (training.status || "pending") as "pending" | "in_progress" | "completed",
-              progress: training.progress || 0,
-              hasCertificate: !!training.certificate_url,
-              skills: training.description ? training.description.split(",").map(s => s.trim()) : [],
-              description: training.description,
-            };
-          });
+              return {
+                id: training.id,
+                title: training.title,
+                category,
+                status: (training.status || "pending") as
+                  | "pending"
+                  | "in_progress"
+                  | "completed",
+                progress: training.progress || 0,
+                hasCertificate: !!training.certificate_url,
+                skills: training.description
+                  ? training.description.split(",").map((s) => s.trim())
+                  : [],
+                description: training.description,
+              };
+            },
+          );
 
           setTrainings(trainingsData);
         } else {
@@ -87,8 +102,12 @@ export default function WorkerTraining() {
     }
   };
 
-  const completedCount = trainings.filter((t) => t.status === "completed").length;
-  const inProgressCount = trainings.filter((t) => t.status === "in_progress").length;
+  const completedCount = trainings.filter(
+    (t) => t.status === "completed",
+  ).length;
+  const inProgressCount = trainings.filter(
+    (t) => t.status === "in_progress",
+  ).length;
   const pendingCount = trainings.filter((t) => t.status === "pending").length;
 
   if (loading) {
@@ -96,7 +115,10 @@ export default function WorkerTraining() {
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm animate-pulse h-20" />
+            <div
+              key={i}
+              className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm animate-pulse h-20"
+            />
           ))}
         </div>
       </div>
@@ -108,7 +130,9 @@ export default function WorkerTraining() {
       {/* Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-          <p className="text-sm text-muted-foreground mb-1">Courses Completed</p>
+          <p className="text-sm text-muted-foreground mb-1">
+            Courses Completed
+          </p>
           <p className="text-2xl font-bold text-green-600">{completedCount}</p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
@@ -123,28 +147,39 @@ export default function WorkerTraining() {
 
       {/* Training Courses */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-foreground">Available Trainings</h2>
+        <h2 className="text-lg font-semibold text-foreground">
+          Available Trainings
+        </h2>
         {trainings.length === 0 ? (
           <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm text-center text-muted-foreground">
             <p>No trainings available</p>
           </div>
         ) : (
           trainings.map((training) => (
-            <div key={training.id} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+            <div
+              key={training.id}
+              className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm"
+            >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     {getStatusIcon(training.status)}
-                    <h3 className="text-lg font-semibold text-foreground">{training.title}</h3>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      {training.title}
+                    </h3>
                   </div>
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium capitalize ${getCategoryColor(training.category)}`}>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium capitalize ${getCategoryColor(training.category)}`}
+                  >
                     {training.category}
                   </span>
                 </div>
                 {training.hasCertificate && (
                   <div className="text-center">
                     <Award className="w-8 h-8 text-yellow-500 mx-auto mb-1" />
-                    <p className="text-xs font-medium text-yellow-600">Certificate</p>
+                    <p className="text-xs font-medium text-yellow-600">
+                      Certificate
+                    </p>
                   </div>
                 )}
               </div>
@@ -153,7 +188,9 @@ export default function WorkerTraining() {
                 <div className="my-4">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-sm text-muted-foreground">Progress</p>
-                    <p className="text-sm font-bold text-primary">{training.progress}%</p>
+                    <p className="text-sm font-bold text-primary">
+                      {training.progress}%
+                    </p>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
@@ -166,17 +203,26 @@ export default function WorkerTraining() {
 
               {training.description && (
                 <div className="py-4 border-t border-gray-200">
-                  <p className="text-sm font-medium text-foreground mb-2">Description:</p>
-                  <p className="text-sm text-muted-foreground">{training.description}</p>
+                  <p className="text-sm font-medium text-foreground mb-2">
+                    Description:
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {training.description}
+                  </p>
                 </div>
               )}
 
               {training.skills.length > 0 && (
                 <div className="py-4 border-t border-gray-200">
-                  <p className="text-sm font-medium text-foreground mb-2">Skills Covered:</p>
+                  <p className="text-sm font-medium text-foreground mb-2">
+                    Skills Covered:
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {training.skills.map((skill, index) => (
-                      <span key={index} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium"
+                      >
                         {skill}
                       </span>
                     ))}
@@ -186,7 +232,9 @@ export default function WorkerTraining() {
 
               <div className="flex gap-2 mt-4">
                 <button className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
-                  {training.status === "completed" ? "Review Course" : "Continue Learning"}
+                  {training.status === "completed"
+                    ? "Review Course"
+                    : "Continue Learning"}
                 </button>
                 {training.status === "pending" && (
                   <button className="flex-1 px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary/5 transition-colors text-sm font-medium">

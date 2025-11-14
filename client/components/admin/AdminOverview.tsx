@@ -1,5 +1,16 @@
 import { useState, useEffect } from "react";
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import { Users, DollarSign, Calendar, TrendingUp } from "lucide-react";
 import { apiGet } from "../../lib/api-client";
 
@@ -38,21 +49,46 @@ export default function AdminOverview() {
         // Fetch bookings
         const bookingsRes = await apiGet("/bookings");
         const allBookings = bookingsRes.data || [];
-        const activeBookings = allBookings.filter((b: any) => b.status === "in_progress" || b.status === "confirmed").length;
+        const activeBookings = allBookings.filter(
+          (b: any) => b.status === "in_progress" || b.status === "confirmed",
+        ).length;
 
         // Fetch payments for revenue calculation
         const paymentsRes = await apiGet("/payments");
         const payments = paymentsRes.data || [];
         const totalRevenue = payments
           .filter((p: any) => p.status === "success")
-          .reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0);
+          .reduce(
+            (sum: number, p: any) => sum + (parseFloat(p.amount) || 0),
+            0,
+          );
 
         // Update KPIs
         setKpis([
-          { label: "Total Workers", value: totalWorkers.toString(), icon: Users, trend: "+12%" },
-          { label: "Active Homeowners", value: totalHomeowners.toString(), icon: Users, trend: "+8%" },
-          { label: "Total Revenue", value: `RWF ${totalRevenue.toLocaleString()}`, icon: DollarSign, trend: "+23%" },
-          { label: "Active Bookings", value: activeBookings.toString(), icon: Calendar, trend: "+15%" },
+          {
+            label: "Total Workers",
+            value: totalWorkers.toString(),
+            icon: Users,
+            trend: "+12%",
+          },
+          {
+            label: "Active Homeowners",
+            value: totalHomeowners.toString(),
+            icon: Users,
+            trend: "+8%",
+          },
+          {
+            label: "Total Revenue",
+            value: `RWF ${totalRevenue.toLocaleString()}`,
+            icon: DollarSign,
+            trend: "+23%",
+          },
+          {
+            label: "Active Bookings",
+            value: activeBookings.toString(),
+            icon: Calendar,
+            trend: "+15%",
+          },
         ]);
 
         // Prepare chart data by month
@@ -111,15 +147,23 @@ export default function AdminOverview() {
         }
 
         // Add recent completed bookings
-        const completedBooking = allBookings.find((b: any) => b.status === "completed");
+        const completedBooking = allBookings.find(
+          (b: any) => b.status === "completed",
+        );
         if (completedBooking) {
-          activities.push(`Booking completed: ${completedBooking.service_type}`);
+          activities.push(
+            `Booking completed: ${completedBooking.service_type}`,
+          );
         }
 
         // Add recent successful payments
-        const successfulPayment = payments.find((p: any) => p.status === "success");
+        const successfulPayment = payments.find(
+          (p: any) => p.status === "success",
+        );
         if (successfulPayment) {
-          activities.push(`Payment received: RWF ${parseFloat(successfulPayment.amount).toLocaleString()}`);
+          activities.push(
+            `Payment received: RWF ${parseFloat(successfulPayment.amount).toLocaleString()}`,
+          );
         }
 
         // Add trainings
@@ -129,13 +173,17 @@ export default function AdminOverview() {
           activities.push(`New training course added: ${trainings[0].title}`);
         }
 
-        setRecentActivities(activities.length > 0 ? activities : [
-          "New worker registered: John Doe",
-          "New homeowner joined: Jane Smith",
-          "Booking completed: Cleaning service",
-          "Payment received: RWF 25,000",
-          "New training course added: Advanced Cleaning",
-        ]);
+        setRecentActivities(
+          activities.length > 0
+            ? activities
+            : [
+                "New worker registered: John Doe",
+                "New homeowner joined: Jane Smith",
+                "Booking completed: Cleaning service",
+                "Payment received: RWF 25,000",
+                "New training course added: Advanced Cleaning",
+              ],
+        );
       } catch (error) {
         console.error("Error fetching admin overview data:", error);
         // Fall back to default values on error
@@ -152,7 +200,10 @@ export default function AdminOverview() {
       <div className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm animate-pulse">
+            <div
+              key={i}
+              className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm animate-pulse"
+            >
               <div className="h-4 bg-gray-200 rounded w-24 mb-4" />
               <div className="h-8 bg-gray-200 rounded w-16" />
             </div>
@@ -169,14 +220,23 @@ export default function AdminOverview() {
         {kpis.map((kpi, index) => {
           const Icon = kpi.icon;
           return (
-            <div key={index} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+            <div
+              key={index}
+              className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm"
+            >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-muted-foreground">{kpi.label}</h3>
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  {kpi.label}
+                </h3>
                 <Icon className="w-5 h-5 text-primary" />
               </div>
               <div className="flex items-baseline justify-between">
-                <p className="text-2xl font-bold text-foreground">{kpi.value}</p>
-                <span className="text-sm font-medium text-green-600">{kpi.trend}</span>
+                <p className="text-2xl font-bold text-foreground">
+                  {kpi.value}
+                </p>
+                <span className="text-sm font-medium text-green-600">
+                  {kpi.trend}
+                </span>
               </div>
             </div>
           );
@@ -187,7 +247,9 @@ export default function AdminOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue Chart */}
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Revenue Trend</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">
+            Revenue Trend
+          </h3>
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={chartData}>
@@ -206,13 +268,17 @@ export default function AdminOverview() {
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-80 flex items-center justify-center text-gray-400">No data available</div>
+            <div className="h-80 flex items-center justify-center text-gray-400">
+              No data available
+            </div>
           )}
         </div>
 
         {/* Bookings & Workers Chart */}
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Growth Metrics</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">
+            Growth Metrics
+          </h3>
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData}>
@@ -226,17 +292,24 @@ export default function AdminOverview() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-80 flex items-center justify-center text-gray-400">No data available</div>
+            <div className="h-80 flex items-center justify-center text-gray-400">
+              No data available
+            </div>
           )}
         </div>
       </div>
 
       {/* Recent Activity */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Recent Activity</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">
+          Recent Activity
+        </h3>
         <div className="space-y-3">
           {recentActivities.map((activity, index) => (
-            <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+            <div
+              key={index}
+              className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+            >
               <div className="w-2 h-2 bg-primary rounded-full" />
               <p className="text-sm text-foreground">{activity}</p>
             </div>

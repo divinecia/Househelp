@@ -26,7 +26,7 @@ interface RequestOptions extends RequestInit {
  */
 async function apiRequest<T>(
   endpoint: string,
-  options: RequestOptions = {}
+  options: RequestOptions = {},
 ): Promise<ApiResponse<T>> {
   const { skipAuth = false, ...fetchOptions } = options;
 
@@ -106,7 +106,7 @@ export async function apiGet<T>(endpoint: string): Promise<ApiResponse<T>> {
  */
 export async function apiPost<T>(
   endpoint: string,
-  body: any
+  body: any,
 ): Promise<ApiResponse<T>> {
   return apiRequest<T>(endpoint, {
     method: "POST",
@@ -119,7 +119,7 @@ export async function apiPost<T>(
  */
 export async function apiPut<T>(
   endpoint: string,
-  body: any
+  body: any,
 ): Promise<ApiResponse<T>> {
   return apiRequest<T>(endpoint, {
     method: "PUT",
@@ -141,7 +141,7 @@ export async function apiDelete<T>(endpoint: string): Promise<ApiResponse<T>> {
  */
 export async function apiPatch<T>(
   endpoint: string,
-  body: any
+  body: any,
 ): Promise<ApiResponse<T>> {
   return apiRequest<T>(endpoint, {
     method: "PATCH",

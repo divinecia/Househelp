@@ -107,11 +107,13 @@ function ServiceItem({ service }: ServiceItemProps) {
         <div
           className={cn(
             "absolute inset-0 bg-gradient-to-br from-primary/90 to-primary/80 rounded-xl flex flex-col items-center justify-center gap-3 transition-opacity duration-300",
-            isHovered ? "opacity-100" : "opacity-0 pointer-events-none"
+            isHovered ? "opacity-100" : "opacity-0 pointer-events-none",
           )}
         >
           <div className="text-white text-4xl font-bold">{service.workers}</div>
-          <div className="text-white/90 text-sm font-medium">workers available</div>
+          <div className="text-white/90 text-sm font-medium">
+            workers available
+          </div>
         </div>
       </div>
     </div>
@@ -133,27 +135,38 @@ export default function ServicesSection({ className }: ServicesSectionProps) {
         const response = await apiGet("/services");
 
         if (response.success && response.data && Array.isArray(response.data)) {
-          const fetchedServices: Service[] = response.data.map((service: any) => {
-            const serviceNameLower = service.name.toLowerCase();
-            let icon = serviceIconMap.cleaning;
+          const fetchedServices: Service[] = response.data.map(
+            (service: any) => {
+              const serviceNameLower = service.name.toLowerCase();
+              let icon = serviceIconMap.cleaning;
 
-            if (serviceNameLower.includes("cook")) icon = serviceIconMap.cooking;
-            else if (serviceNameLower.includes("wash")) icon = serviceIconMap.washing;
-            else if (serviceNameLower.includes("clean")) icon = serviceIconMap.cleaning;
-            else if (serviceNameLower.includes("garden")) icon = serviceIconMap.gardening;
-            else if (serviceNameLower.includes("elderly")) icon = serviceIconMap.elderly;
-            else if (serviceNameLower.includes("pet")) icon = serviceIconMap.pet;
-            else if (serviceNameLower.includes("child")) icon = serviceIconMap.child;
-            else if (serviceNameLower.includes("laundry")) icon = serviceIconMap.laundry;
+              if (serviceNameLower.includes("cook"))
+                icon = serviceIconMap.cooking;
+              else if (serviceNameLower.includes("wash"))
+                icon = serviceIconMap.washing;
+              else if (serviceNameLower.includes("clean"))
+                icon = serviceIconMap.cleaning;
+              else if (serviceNameLower.includes("garden"))
+                icon = serviceIconMap.gardening;
+              else if (serviceNameLower.includes("elderly"))
+                icon = serviceIconMap.elderly;
+              else if (serviceNameLower.includes("pet"))
+                icon = serviceIconMap.pet;
+              else if (serviceNameLower.includes("child"))
+                icon = serviceIconMap.child;
+              else if (serviceNameLower.includes("laundry"))
+                icon = serviceIconMap.laundry;
 
-            return {
-              id: service.id,
-              name: service.name,
-              icon,
-              workers: service.workers || Math.floor(Math.random() * 200) + 50,
-              description: service.description,
-            };
-          });
+              return {
+                id: service.id,
+                name: service.name,
+                icon,
+                workers:
+                  service.workers || Math.floor(Math.random() * 200) + 50,
+                description: service.description,
+              };
+            },
+          );
 
           setServices(fetchedServices);
         }
@@ -173,7 +186,7 @@ export default function ServicesSection({ className }: ServicesSectionProps) {
       id="services"
       className={cn(
         "py-12 md:py-20 bg-gradient-to-b from-gray-50 to-white",
-        className
+        className,
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -182,14 +195,18 @@ export default function ServicesSection({ className }: ServicesSectionProps) {
             Our Services
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Explore our range of professional household services. Hover over each service to see how many qualified workers are available.
+            Explore our range of professional household services. Hover over
+            each service to see how many qualified workers are available.
           </p>
         </div>
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-white border border-gray-200 rounded-xl p-8 h-48 animate-pulse" />
+              <div
+                key={i}
+                className="bg-white border border-gray-200 rounded-xl p-8 h-48 animate-pulse"
+              />
             ))}
           </div>
         ) : (

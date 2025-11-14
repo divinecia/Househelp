@@ -1,6 +1,10 @@
 import { Router, Request, Response } from "express";
 import { supabase } from "../lib/supabase";
-import { mapWorkerFields, mapHomeownerFields, mapAdminFields } from "../lib/utils";
+import {
+  mapWorkerFields,
+  mapHomeownerFields,
+  mapAdminFields,
+} from "../lib/utils";
 
 const router = Router();
 
@@ -112,10 +116,11 @@ router.post("/login", async (req: Request, res: Response) => {
     }
 
     // Sign in user
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data: authData, error: authError } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
     if (authError) {
       return res.status(401).json({

@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { Search, MapPin, Star, TrendingUp } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { apiGet } from "../../lib/api-client";
 
 interface Service {
@@ -41,21 +49,25 @@ export default function HomeownerHome() {
         // Fetch services
         const servicesRes = await apiGet("/services");
         if (servicesRes.success && servicesRes.data) {
-          const servicesData = Array.isArray(servicesRes.data) ? servicesRes.data : [];
+          const servicesData = Array.isArray(servicesRes.data)
+            ? servicesRes.data
+            : [];
           setServices(
             servicesData.map((service: any) => ({
               id: service.id,
               name: service.name,
               workers: service.workers || Math.floor(Math.random() * 50) + 15,
               description: service.description,
-            }))
+            })),
           );
         }
 
         // Fetch trainings
         const trainingsRes = await apiGet("/trainings");
         if (trainingsRes.success && trainingsRes.data) {
-          const trainingsData = Array.isArray(trainingsRes.data) ? trainingsRes.data : [];
+          const trainingsData = Array.isArray(trainingsRes.data)
+            ? trainingsRes.data
+            : [];
           setCourses(
             trainingsData.map((training: any) => ({
               id: training.id,
@@ -65,7 +77,7 @@ export default function HomeownerHome() {
               start_date: training.start_date,
               end_date: training.end_date,
               duration: training.duration || "2 weeks",
-            }))
+            })),
           );
         }
 
@@ -90,9 +102,24 @@ export default function HomeownerHome() {
           { id: "8", name: "Laundry & Ironing", workers: 44 },
         ]);
         setCourses([
-          { id: "1", title: "How to Manage Household Staff", name: "How to Manage Household Staff", duration: "3 weeks" },
-          { id: "2", title: "Safety & Hygiene Best Practices", name: "Safety & Hygiene Best Practices", duration: "2 weeks" },
-          { id: "3", title: "Effective Communication Skills", name: "Effective Communication Skills", duration: "4 weeks" },
+          {
+            id: "1",
+            title: "How to Manage Household Staff",
+            name: "How to Manage Household Staff",
+            duration: "3 weeks",
+          },
+          {
+            id: "2",
+            title: "Safety & Hygiene Best Practices",
+            name: "Safety & Hygiene Best Practices",
+            duration: "2 weeks",
+          },
+          {
+            id: "3",
+            title: "Effective Communication Skills",
+            name: "Effective Communication Skills",
+            duration: "4 weeks",
+          },
         ]);
       } finally {
         setLoading(false);
@@ -106,10 +133,15 @@ export default function HomeownerHome() {
     <div className="space-y-8">
       {/* Advanced Search Bar */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Find Services</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">
+          Find Services
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
-            <Search className="absolute left-3 top-3 text-muted-foreground" size={18} />
+            <Search
+              className="absolute left-3 top-3 text-muted-foreground"
+              size={18}
+            />
             <input
               type="text"
               placeholder="Search by skill..."
@@ -138,11 +170,16 @@ export default function HomeownerHome() {
 
       {/* Our Services */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Our Services</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">
+          Our Services
+        </h2>
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="p-4 bg-gray-100 rounded-lg animate-pulse h-20" />
+              <div
+                key={i}
+                className="p-4 bg-gray-100 rounded-lg animate-pulse h-20"
+              />
             ))}
           </div>
         ) : (
@@ -153,7 +190,9 @@ export default function HomeownerHome() {
                 className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg border border-primary/20 hover:shadow-md transition-shadow cursor-pointer"
               >
                 <p className="font-medium text-foreground">{service.name}</p>
-                <p className="text-sm text-muted-foreground">{service.workers} workers</p>
+                <p className="text-sm text-muted-foreground">
+                  {service.workers} workers
+                </p>
               </div>
             ))}
           </div>
@@ -162,20 +201,34 @@ export default function HomeownerHome() {
 
       {/* Training Courses */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Training Courses for Homeowners</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">
+          Training Courses for Homeowners
+        </h2>
         {loading ? (
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="p-4 bg-gray-100 rounded-lg animate-pulse h-20" />
+              <div
+                key={i}
+                className="p-4 bg-gray-100 rounded-lg animate-pulse h-20"
+              />
             ))}
           </div>
         ) : (
           <div className="space-y-3">
             {courses.map((course) => (
-              <div key={course.id} className="p-4 border border-gray-200 rounded-lg hover:border-primary transition-colors">
-                <p className="font-medium text-foreground">{course.name || course.title}</p>
-                <p className="text-sm text-muted-foreground">Duration: {course.duration}</p>
-                <button className="mt-2 text-sm text-primary hover:underline">Enroll Now</button>
+              <div
+                key={course.id}
+                className="p-4 border border-gray-200 rounded-lg hover:border-primary transition-colors"
+              >
+                <p className="font-medium text-foreground">
+                  {course.name || course.title}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Duration: {course.duration}
+                </p>
+                <button className="mt-2 text-sm text-primary hover:underline">
+                  Enroll Now
+                </button>
               </div>
             ))}
           </div>
@@ -214,15 +267,24 @@ export default function HomeownerHome() {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Our Mission & Vision</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">
+            Our Mission & Vision
+          </h3>
           <div className="space-y-4 text-sm text-foreground">
             <div>
               <p className="font-medium text-primary mb-1">Mission</p>
-              <p>To connect trusted household professionals with families who deserve quality service and peace of mind.</p>
+              <p>
+                To connect trusted household professionals with families who
+                deserve quality service and peace of mind.
+              </p>
             </div>
             <div>
               <p className="font-medium text-primary mb-1">Vision</p>
-              <p>To transform household management through technology, building a community where both service providers and homeowners thrive together.</p>
+              <p>
+                To transform household management through technology, building a
+                community where both service providers and homeowners thrive
+                together.
+              </p>
             </div>
           </div>
         </div>
@@ -230,7 +292,9 @@ export default function HomeownerHome() {
 
       {/* Satisfaction Trend */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Customer Satisfaction Trend</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">
+          Customer Satisfaction Trend
+        </h3>
         {loading ? (
           <div className="h-80 bg-gray-100 rounded-lg animate-pulse" />
         ) : (

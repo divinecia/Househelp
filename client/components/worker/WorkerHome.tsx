@@ -19,7 +19,9 @@ interface Job {
 export default function WorkerHome() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [homeownersMap, setHomeownersMap] = useState<Record<string, string>>({});
+  const [homeownersMap, setHomeownersMap] = useState<Record<string, string>>(
+    {},
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,11 +30,15 @@ export default function WorkerHome() {
 
         // Fetch bookings (jobs)
         const bookingsRes = await apiGet("/bookings");
-        const bookings = Array.isArray(bookingsRes.data) ? bookingsRes.data : [];
+        const bookings = Array.isArray(bookingsRes.data)
+          ? bookingsRes.data
+          : [];
 
         // Fetch homeowners to map IDs to names
         const homeownersRes = await apiGet("/homeowners");
-        const homeowners = Array.isArray(homeownersRes.data) ? homeownersRes.data : [];
+        const homeowners = Array.isArray(homeownersRes.data)
+          ? homeownersRes.data
+          : [];
 
         const homeownerMap: Record<string, string> = {};
         homeowners.forEach((homeowner: any) => {
@@ -119,7 +125,10 @@ export default function WorkerHome() {
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm animate-pulse h-20" />
+            <div
+              key={i}
+              className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm animate-pulse h-20"
+            />
           ))}
         </div>
       </div>
@@ -132,15 +141,21 @@ export default function WorkerHome() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
           <p className="text-sm text-muted-foreground mb-1">Assigned Jobs</p>
-          <p className="text-2xl font-bold text-foreground">{assignedJobsCount}</p>
+          <p className="text-2xl font-bold text-foreground">
+            {assignedJobsCount}
+          </p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
           <p className="text-sm text-muted-foreground mb-1">In Progress</p>
-          <p className="text-2xl font-bold text-orange-600">{inProgressCount}</p>
+          <p className="text-2xl font-bold text-orange-600">
+            {inProgressCount}
+          </p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
           <p className="text-sm text-muted-foreground mb-1">Total Earnings</p>
-          <p className="text-2xl font-bold text-green-600">{totalEarnings.toLocaleString()} RWF</p>
+          <p className="text-2xl font-bold text-green-600">
+            {totalEarnings.toLocaleString()} RWF
+          </p>
         </div>
       </div>
 
@@ -153,32 +168,53 @@ export default function WorkerHome() {
           </div>
         ) : (
           jobs.map((job) => (
-            <div key={job.id} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div
+              key={job.id}
+              className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow"
+            >
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-foreground">{job.title || job.service_type}</h3>
-                  <p className="text-sm text-muted-foreground">For: {job.homeowner}</p>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {job.title || job.service_type}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    For: {job.homeowner}
+                  </p>
                 </div>
-                <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(job.status)}`}>
+                <div
+                  className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(job.status)}`}
+                >
                   {getStatusIcon(job.status)}
-                  <span className="capitalize">{job.status.replace("_", " ")}</span>
+                  <span className="capitalize">
+                    {job.status.replace("_", " ")}
+                  </span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 py-4 border-t border-b border-gray-200">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Scheduled Date</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Scheduled Date
+                  </p>
                   <p className="font-medium text-foreground">
-                    {job.scheduledDate ? new Date(job.scheduledDate).toLocaleDateString() : "-"}
+                    {job.scheduledDate
+                      ? new Date(job.scheduledDate).toLocaleDateString()
+                      : "-"}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Amount</p>
-                  <p className="font-medium text-foreground">{(job.budget || 0).toLocaleString()} RWF</p>
+                  <p className="font-medium text-foreground">
+                    {(job.budget || 0).toLocaleString()} RWF
+                  </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Your Earnings</p>
-                  <p className="font-medium text-green-600">{((job.budget || 0) * 0.85).toLocaleString()} RWF</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Your Earnings
+                  </p>
+                  <p className="font-medium text-green-600">
+                    {((job.budget || 0) * 0.85).toLocaleString()} RWF
+                  </p>
                 </div>
               </div>
 
@@ -186,11 +222,12 @@ export default function WorkerHome() {
                 <button className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
                   View Details
                 </button>
-                {job.status === "completed" && job.payment_status === "unpaid" && (
-                  <button className="flex-1 px-4 py-2 border border-green-300 text-green-700 rounded-lg hover:bg-green-50 transition-colors text-sm font-medium">
-                    Request Payment
-                  </button>
-                )}
+                {job.status === "completed" &&
+                  job.payment_status === "unpaid" && (
+                    <button className="flex-1 px-4 py-2 border border-green-300 text-green-700 rounded-lg hover:bg-green-50 transition-colors text-sm font-medium">
+                      Request Payment
+                    </button>
+                  )}
               </div>
             </div>
           ))
