@@ -147,6 +147,21 @@ export default function AdminOverview() {
     fetchData();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-24 mb-4" />
+              <div className="h-8 bg-gray-200 rounded w-16" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* KPI Cards */}
@@ -173,38 +188,46 @@ export default function AdminOverview() {
         {/* Revenue Chart */}
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-foreground mb-4">Revenue Trend</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={mockData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="revenue" 
-                stroke="#007bff" 
-                name="Revenue (RWF)"
-                strokeWidth={2}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#007bff"
+                  name="Revenue (RWF)"
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-80 flex items-center justify-center text-gray-400">No data available</div>
+          )}
         </div>
 
         {/* Bookings & Workers Chart */}
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-foreground mb-4">Growth Metrics</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={mockData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="workers" fill="#007bff" name="Workers" />
-              <Bar dataKey="bookings" fill="#28a745" name="Bookings" />
-            </BarChart>
-          </ResponsiveContainer>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="workers" fill="#007bff" name="Workers" />
+                <Bar dataKey="bookings" fill="#28a745" name="Bookings" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-80 flex items-center justify-center text-gray-400">No data available</div>
+          )}
         </div>
       </div>
 
@@ -212,13 +235,7 @@ export default function AdminOverview() {
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
         <h3 className="text-lg font-semibold text-foreground mb-4">Recent Activity</h3>
         <div className="space-y-3">
-          {[
-            "New worker registered: John Doe",
-            "New homeowner joined: Jane Smith",
-            "Booking completed: Cleaning service",
-            "Payment received: RWF 25,000",
-            "New training course added: Advanced Cleaning",
-          ].map((activity, index) => (
+          {recentActivities.map((activity, index) => (
             <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <div className="w-2 h-2 bg-primary rounded-full" />
               <p className="text-sm text-foreground">{activity}</p>
