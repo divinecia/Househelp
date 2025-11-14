@@ -207,11 +207,16 @@ export default function HomeownerProfile() {
                 <select
                   value={tempData.preferredGender}
                   onChange={(e) => handleChange("preferredGender", e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  disabled={loadingOptions}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                 >
+                  <option value="">{loadingOptions ? "Loading..." : "Select Gender"}</option>
                   <option value="No preference">No preference</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
+                  {gendersList.map((gender) => (
+                    <option key={gender.id} value={gender.name}>
+                      {gender.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -273,11 +278,15 @@ export default function HomeownerProfile() {
                 <select
                   value={tempData.preferredPaymentMode}
                   onChange={(e) => handleChange("preferredPaymentMode", e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  disabled={loadingOptions}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                 >
-                  <option value="Bank Transfer">Bank Transfer</option>
-                  <option value="Cash">Cash</option>
-                  <option value="Mobile Money">Mobile Money</option>
+                  <option value="">{loadingOptions ? "Loading..." : "Select Payment Mode"}</option>
+                  {paymentModes.map((mode) => (
+                    <option key={mode.id} value={mode.name}>
+                      {mode.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
