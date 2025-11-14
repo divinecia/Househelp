@@ -90,6 +90,7 @@ export const validateBookingData = (req: Request, res: Response, next: NextFunct
     return res.status(400).json({
       success: false,
       error: errors.join("; "),
+      received_fields: Object.keys(req.body),
     });
   }
 
