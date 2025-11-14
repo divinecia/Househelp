@@ -108,33 +108,40 @@ export default function HomeownerRegister() {
           getPaymentMethods(),
           getSmokingDrinkingOptions(),
         ]);
-        if (residences.success && residences.data && residences.data.length > 0)
+        if (residences.success && residences.data && residences.data.length > 0) {
           setResidenceTypes(residences.data);
-        if (workerInfoOpts.success && workerInfoOpts.data && workerInfoOpts.data.length > 0)
+        } else {
+          console.error("Failed to load residence types from database");
+        }
+        if (workerInfoOpts.success && workerInfoOpts.data && workerInfoOpts.data.length > 0) {
           setWorkerInfos(workerInfoOpts.data);
+        } else {
+          console.error("Failed to load worker info options from database");
+        }
         if (genders.success && genders.data && genders.data.length > 0) {
           setGendersList(genders.data);
         } else {
-          // Fallback gender options
-          setGendersList([
-            { id: "1", name: "Male" },
-            { id: "2", name: "Female" },
-            { id: "3", name: "Other" },
-          ]);
+          console.error("Failed to load genders from database");
+          toast.error("Failed to load form options. Please refresh the page.");
         }
-        if (criminalRecords.success && criminalRecords.data && criminalRecords.data.length > 0)
+        if (criminalRecords.success && criminalRecords.data && criminalRecords.data.length > 0) {
           setCriminalRecordOptions(criminalRecords.data);
-        if (payments.success && payments.data && payments.data.length > 0) setPaymentModes(payments.data);
-        if (smokingDrinking.success && smokingDrinking.data && smokingDrinking.data.length > 0)
+        } else {
+          console.error("Failed to load criminal record options from database");
+        }
+        if (payments.success && payments.data && payments.data.length > 0) {
+          setPaymentModes(payments.data);
+        } else {
+          console.error("Failed to load payment methods from database");
+        }
+        if (smokingDrinking.success && smokingDrinking.data && smokingDrinking.data.length > 0) {
           setSmokingDrinkingOptions(smokingDrinking.data);
+        } else {
+          console.error("Failed to load smoking/drinking options from database");
+        }
       } catch (error) {
         console.error("Failed to load options:", error);
-        // Fallback gender options if API fails
-        setGendersList([
-          { id: "1", name: "Male" },
-          { id: "2", name: "Female" },
-          { id: "3", name: "Other" },
-        ]);
+        toast.error("Failed to load form options. Please refresh the page.");
       } finally {
         setLoadingOptions(false);
       }

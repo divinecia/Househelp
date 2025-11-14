@@ -24,21 +24,12 @@ export default function AdminRegister() {
         if (result.success && result.data && result.data.length > 0) {
           setGenders(result.data);
         } else {
-          // Fallback gender options if API returns empty
-          setGenders([
-            { id: "1", name: "Male" },
-            { id: "2", name: "Female" },
-            { id: "3", name: "Other" },
-          ]);
+          console.error("Failed to load genders from database");
+          toast.error("Failed to load gender options. Please refresh the page.");
         }
       } catch (error) {
         console.error("Failed to load genders:", error);
-        // Fallback gender options if API fails
-        setGenders([
-          { id: "1", name: "Male" },
-          { id: "2", name: "Female" },
-          { id: "3", name: "Other" },
-        ]);
+        toast.error("Failed to load gender options. Please refresh the page.");
       } finally {
         setIsLoadingGenders(false);
       }

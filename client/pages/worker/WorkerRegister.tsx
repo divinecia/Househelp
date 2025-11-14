@@ -101,27 +101,32 @@ export default function WorkerRegister() {
         if (genders.success && genders.data && genders.data.length > 0) {
           setGendersList(genders.data);
         } else {
-          // Fallback gender options
-          setGendersList([
-            { id: "1", name: "Male" },
-            { id: "2", name: "Female" },
-            { id: "3", name: "Other" },
-          ]);
+          console.error("Failed to load genders from database");
+          toast.error("Failed to load form options. Please refresh the page.");
         }
-        if (maritalStatus.success && maritalStatus.data && maritalStatus.data.length > 0)
+        if (maritalStatus.success && maritalStatus.data && maritalStatus.data.length > 0) {
           setMaritalStatuses(maritalStatus.data);
-        if (wages.success && wages.data && wages.data.length > 0) setWageUnits(wages.data);
-        if (levels.success && levels.data && levels.data.length > 0) setLanguageLevels(levels.data);
-        if (insurance.success && insurance.data && insurance.data.length > 0)
+        } else {
+          console.error("Failed to load marital statuses from database");
+        }
+        if (wages.success && wages.data && wages.data.length > 0) {
+          setWageUnits(wages.data);
+        } else {
+          console.error("Failed to load wage units from database");
+        }
+        if (levels.success && levels.data && levels.data.length > 0) {
+          setLanguageLevels(levels.data);
+        } else {
+          console.error("Failed to load language levels from database");
+        }
+        if (insurance.success && insurance.data && insurance.data.length > 0) {
           setInsuranceCompanies(insurance.data);
+        } else {
+          console.error("Failed to load insurance companies from database");
+        }
       } catch (error) {
         console.error("Failed to load options:", error);
-        // Fallback gender options if API fails
-        setGendersList([
-          { id: "1", name: "Male" },
-          { id: "2", name: "Female" },
-          { id: "3", name: "Other" },
-        ]);
+        toast.error("Failed to load form options. Please refresh the page.");
       } finally {
         setLoadingOptions(false);
       }
