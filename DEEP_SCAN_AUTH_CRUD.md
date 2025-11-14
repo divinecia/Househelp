@@ -1,6 +1,7 @@
 # Deep Scan Report - Authentication & CRUD Operations
 
 ## Date: November 14, 2024
+
 ## Status: 🔴 CRITICAL - RLS Policies blocking all registrations
 
 ---
@@ -10,6 +11,7 @@
 **Critical Issue Found:** Row-Level Security (RLS) policies are **blocking INSERT operations** during registration. When RLS is enabled on a table without an INSERT policy, **all inserts are denied by default**.
 
 **Affected Operations:**
+
 - ❌ REGISTRATION - All new users fail to register
 - ❌ INSERT operations on user_profiles, workers, homeowners
 - ✅ SELECT operations - Work fine if user is authenticated
@@ -31,6 +33,7 @@ HTTP Error 400
 ```
 
 **What This Means:**
+
 1. User creation in Supabase Auth succeeded ✅
 2. Attempt to INSERT into user_profiles table started ❌
 3. RLS policy check: "Does INSERT permission exist?" → NO
@@ -44,11 +47,12 @@ HTTP Error 400
 ### user_profiles Table
 
 **Current Policies:**
+
 ```sql
-✅ SELECT: CREATE POLICY "Users can view their own profile" 
+✅ SELECT: CREATE POLICY "Users can view their own profile"
            ON public.user_profiles FOR SELECT USING (auth.uid() = id);
 
-✅ UPDATE: CREATE POLICY "Users can update their own profile" 
+✅ UPDATE: CREATE POLICY "Users can update their own profile"
            ON public.user_profiles FOR UPDATE USING (auth.uid() = id);
 
 ❌ INSERT: NO POLICY EXISTS - ALL INSERTS BLOCKED
@@ -61,8 +65,9 @@ HTTP Error 400
 ### workers Table
 
 **Current Policies:**
+
 ```sql
-❌ FOR ALL: CREATE POLICY "Workers can view and manage their own data" 
+❌ FOR ALL: CREATE POLICY "Workers can view and manage their own data"
            ON public.workers FOR ALL USING (auth.uid() = user_id);
 
 Issue: "FOR ALL" includes SELECT, UPDATE, INSERT, DELETE
@@ -70,6 +75,7 @@ But references "user_id" instead of "id"
 ```
 
 **Actual Results:**
+
 - ❌ INSERT fails - auth.uid() doesn't match user_id (no policy explicitly checks this)
 - ⚠️ SELECT works - Only if user_id matches
 - ⚠️ UPDATE works - Only if user_id matches
@@ -80,8 +86,9 @@ But references "user_id" instead of "id"
 ### homeowners Table
 
 **Current Policies:**
+
 ```sql
-❌ FOR ALL: CREATE POLICY "Homeowners can view and manage their own data" 
+❌ FOR ALL: CREATE POLICY "Homeowners can view and manage their own data"
            ON public.homeowners FOR ALL USING (auth.uid() = user_id);
 
 Issue: Same as workers table
@@ -91,16 +98,16 @@ Issue: Same as workers table
 
 ### Other Tables
 
-| Table | SELECT | INSERT | UPDATE | DELETE | Issue |
-|-------|--------|--------|--------|--------|-------|
-| **user_profiles** | ✅ | ❌ | ✅ | ❌ | Missing INSERT & DELETE |
-| **workers** | ⚠️ | ⚠️ | ⚠️ | ⚠️ | Ambiguous FOR ALL policy |
-| **homeowners** | ⚠️ | ⚠️ | ⚠️ | ⚠️ | Ambiguous FOR ALL policy |
-| **admins** | ❌ | ❌ | ❌ | ❌ | No RLS table created |
-| **bookings** | ✅ | ⚠️ | ✅ | ❌ | DELETE missing |
-| **payments** | ✅ | ✅ | ❌ | ❌ | UPDATE & DELETE missing |
-| **notifications** | ✅ | ✅ | ✅ | ❌ | DELETE missing |
-| **messages** | ✅ | ✅ | ❌ | ❌ | UPDATE & DELETE missing |
+| Table             | SELECT | INSERT | UPDATE | DELETE | Issue                    |
+| ----------------- | ------ | ------ | ------ | ------ | ------------------------ |
+| **user_profiles** | ✅     | ❌     | ✅     | ❌     | Missing INSERT & DELETE  |
+| **workers**       | ⚠️     | ⚠️     | ⚠️     | ⚠️     | Ambiguous FOR ALL policy |
+| **homeowners**    | ⚠️     | ⚠️     | ⚠️     | ⚠️     | Ambiguous FOR ALL policy |
+| **admins**        | ❌     | ❌     | ❌     | ❌     | No RLS table created     |
+| **bookings**      | ✅     | ⚠️     | ✅     | ❌     | DELETE missing           |
+| **payments**      | ✅     | ✅     | ❌     | ❌     | UPDATE & DELETE missing  |
+| **notifications** | ✅     | ✅     | ✅     | ❌     | DELETE missing           |
+| **messages**      | ✅     | ✅     | ❌     | ❌     | UPDATE & DELETE missing  |
 
 ---
 
@@ -111,6 +118,7 @@ Issue: Same as workers table
 #### 1. User Registration Flow
 
 **Current Flow:**
+
 ```
 Frontend Register Form
   ↓
@@ -125,6 +133,7 @@ Step 3: INSERT into user_profiles
 ```
 
 **Why It Fails:**
+
 - auth.users account is created successfully
 - auth.uid() is now set to the new user's ID
 - Attempt to INSERT into user_profiles with id = auth.uid()
@@ -132,14 +141,17 @@ Step 3: INSERT into user_profiles
 - Default: DENY
 
 **Worker Registration:**
+
 - ❌ After user_profiles fails, never reaches workers INSERT
 
 **Homeowner Registration:**
+
 - ❌ After user_profiles fails, never reaches homeowners INSERT
 
 #### 2. Booking Creation
 
 **Current Flow:**
+
 ```
 Homeowner clicks "Create Booking"
   ↓
@@ -147,7 +159,7 @@ POST /api/bookings
   ↓
 INSERT into bookings (homeowner_id = auth.uid(), ...)
   ↓
-RLS Check: CREATE POLICY "Homeowners can create bookings" 
+RLS Check: CREATE POLICY "Homeowners can create bookings"
            FOR INSERT WITH CHECK (auth.uid() = homeowner_id)
   ↓ ✅ Works - Policy exists and condition matches
 ```
@@ -157,6 +169,7 @@ RLS Check: CREATE POLICY "Homeowners can create bookings"
 #### 3. Payment Creation
 
 **Current Flow:**
+
 ```
 User initiates payment
   ↓
@@ -178,6 +191,7 @@ RLS Check: CREATE POLICY "Users can create their own payments"
 #### 1. View Own Profile
 
 **Current Flow:**
+
 ```
 GET /api/auth/me
   ↓
@@ -193,6 +207,7 @@ RLS Check: CREATE POLICY "Users can view their own profile"
 #### 2. View Worker Profile (Admin)
 
 **Current Flow:**
+
 ```
 Admin goes to Admin Dashboard
   ↓
@@ -212,6 +227,7 @@ RLS Check: CREATE POLICY "Workers can view and manage their own data"
 #### 3. View Bookings
 
 **Current Flow:**
+
 ```
 GET /api/bookings
   ↓
@@ -231,6 +247,7 @@ RLS Check: CREATE POLICY "Users can view bookings they created or are assigned t
 #### 1. Update Own Profile
 
 **Current Flow:**
+
 ```
 User updates profile
   ↓
@@ -248,6 +265,7 @@ RLS Check: CREATE POLICY "Users can update their own profile"
 #### 2. Update Booking Status
 
 **Current Flow:**
+
 ```
 Worker accepts booking
   ↓
@@ -265,6 +283,7 @@ RLS Check: CREATE POLICY "Users can update bookings they own or are assigned to"
 #### 3. Update Payment Status
 
 **Current Flow:**
+
 ```
 Payment webhook received
   ↓
@@ -285,6 +304,7 @@ RLS Check: No UPDATE policy exists for payments
 #### 1. Delete Profile
 
 **Current Flow:**
+
 ```
 User deletes account
   ↓
@@ -299,6 +319,7 @@ RLS Check: No DELETE policy exists
 #### 2. Delete Booking
 
 **Current Flow:**
+
 ```
 User cancels booking
   ↓
@@ -319,28 +340,29 @@ RLS Check: No DELETE policy exists
 ```
 Step 1: POST /api/auth/register
   Input: { email, password, fullName, role, ... }
-  
+
 Step 2: Validate input
   ✅ All validations pass
-  
+
 Step 3: Check if email exists
   ✅ Query user_profiles → SELECT works
-  
+
 Step 4: Create auth user
   ✅ supabase.auth.signUp() → User created in auth.users
   ✅ auth.uid() is now set
-  
+
 Step 5: INSERT into user_profiles
   ❌ FAILS: "new row violates row-level security policy"
   Reason: No INSERT policy exists
-  
+
 Step 6: INSERT into [workers/homeowners/admins]
   Never reached due to Step 5 failure
-  
+
 Response: HTTP 400 Error
 ```
 
 **Why Users Can't Register:**
+
 - After auth.users is created, auth.uid() = new user's ID
 - System tries to INSERT into user_profiles with the new ID
 - RLS check: "Is there an INSERT policy?" → NO POLICY FOUND
@@ -354,18 +376,18 @@ Response: HTTP 400 Error
 ```
 Step 1: POST /api/auth/login
   Input: { email, password }
-  
+
 Step 2: Authenticate with Supabase Auth
   ✅ supabase.auth.signInWithPassword() → Works
   ✅ auth.uid() is set to existing user
-  
+
 Step 3: SELECT from user_profiles
   ✅ SELECT POLICY exists and condition matches
   ✅ Returns user's profile data
-  
+
 Step 4: Return session
   ✅ Token and user data returned
-  
+
 Result: Login works IF user profiles exist
 But registration failed, so no user profiles exist!
 ```
@@ -378,49 +400,50 @@ But registration failed, so no user profiles exist!
 
 ### Authentication Endpoints
 
-| Endpoint | Method | CRUD | Status | Issue |
-|----------|--------|------|--------|-------|
-| `/api/auth/register` | POST | C | ❌ | INSERT blocked by RLS |
-| `/api/auth/login` | POST | R | ⚠️ | SELECT works, but no users exist |
-| `/api/auth/me` | GET | R | ✅ | SELECT policy works |
-| `/api/auth/logout` | POST | - | ✅ | Client-side only |
-| `/api/auth/forgot-password` | POST | - | ✅ | Supabase email |
-| `/api/auth/reset-password` | POST | U | ⚠️ | UPDATE might work |
+| Endpoint                    | Method | CRUD | Status | Issue                            |
+| --------------------------- | ------ | ---- | ------ | -------------------------------- |
+| `/api/auth/register`        | POST   | C    | ❌     | INSERT blocked by RLS            |
+| `/api/auth/login`           | POST   | R    | ⚠️     | SELECT works, but no users exist |
+| `/api/auth/me`              | GET    | R    | ✅     | SELECT policy works              |
+| `/api/auth/logout`          | POST   | -    | ✅     | Client-side only                 |
+| `/api/auth/forgot-password` | POST   | -    | ✅     | Supabase email                   |
+| `/api/auth/reset-password`  | POST   | U    | ⚠️     | UPDATE might work                |
 
 ### Worker Endpoints
 
-| Endpoint | Method | CRUD | Status | Issue |
-|----------|--------|------|--------|-------|
-| `GET /api/workers` | GET | R | ⚠️ | Policy restricts to own data |
-| `GET /api/workers/:id` | GET | R | ⚠️ | Can't view others' profiles |
-| `POST /api/workers` | POST | C | ❌ | INSERT blocked during registration |
-| `PUT /api/workers/:id` | PUT | U | ⚠️ | Only own data |
-| `DELETE /api/workers/:id` | DELETE | D | ❌ | No DELETE policy |
+| Endpoint                  | Method | CRUD | Status | Issue                              |
+| ------------------------- | ------ | ---- | ------ | ---------------------------------- |
+| `GET /api/workers`        | GET    | R    | ⚠️     | Policy restricts to own data       |
+| `GET /api/workers/:id`    | GET    | R    | ⚠️     | Can't view others' profiles        |
+| `POST /api/workers`       | POST   | C    | ❌     | INSERT blocked during registration |
+| `PUT /api/workers/:id`    | PUT    | U    | ⚠️     | Only own data                      |
+| `DELETE /api/workers/:id` | DELETE | D    | ❌     | No DELETE policy                   |
 
 ### Homeowner Endpoints
 
-| Endpoint | Method | CRUD | Status | Issue |
-|----------|--------|------|--------|-------|
-| `GET /api/homeowners` | GET | R | ⚠️ | Policy restricts to own data |
-| `GET /api/homeowners/:id` | GET | R | ⚠️ | Can't view others' profiles |
-| `POST /api/homeowners` | POST | C | ❌ | INSERT blocked during registration |
-| `PUT /api/homeowners/:id` | PUT | U | ⚠️ | Only own data |
-| `DELETE /api/homeowners/:id` | DELETE | D | ❌ | No DELETE policy |
+| Endpoint                     | Method | CRUD | Status | Issue                              |
+| ---------------------------- | ------ | ---- | ------ | ---------------------------------- |
+| `GET /api/homeowners`        | GET    | R    | ⚠️     | Policy restricts to own data       |
+| `GET /api/homeowners/:id`    | GET    | R    | ⚠️     | Can't view others' profiles        |
+| `POST /api/homeowners`       | POST   | C    | ❌     | INSERT blocked during registration |
+| `PUT /api/homeowners/:id`    | PUT    | U    | ⚠️     | Only own data                      |
+| `DELETE /api/homeowners/:id` | DELETE | D    | ❌     | No DELETE policy                   |
 
 ### Booking Endpoints
 
-| Endpoint | Method | CRUD | Status | Issue |
-|----------|--------|------|--------|-------|
-| `GET /api/bookings` | GET | R | ✅ | Policy allows own bookings |
-| `POST /api/bookings` | POST | C | ✅ | Policy allows homeowner creation |
-| `PUT /api/bookings/:id` | PUT | U | ✅ | Policy allows updates |
-| `DELETE /api/bookings/:id` | DELETE | D | ❌ | No DELETE policy |
+| Endpoint                   | Method | CRUD | Status | Issue                            |
+| -------------------------- | ------ | ---- | ------ | -------------------------------- |
+| `GET /api/bookings`        | GET    | R    | ✅     | Policy allows own bookings       |
+| `POST /api/bookings`       | POST   | C    | ✅     | Policy allows homeowner creation |
+| `PUT /api/bookings/:id`    | PUT    | U    | ✅     | Policy allows updates            |
+| `DELETE /api/bookings/:id` | DELETE | D    | ❌     | No DELETE policy                 |
 
 ---
 
 ## Solution: RLS Policies Migration
 
 ### File Created:
+
 **`server/migrations/003_fix_rls_policies.sql`**
 
 This migration fixes all RLS issues by:
@@ -439,6 +462,7 @@ This migration fixes all RLS issues by:
 ### Key Changes:
 
 #### Before (BROKEN):
+
 ```sql
 CREATE POLICY "Users can create their own profile" ON public.user_profiles
   FOR INSERT WITH CHECK (auth.uid() = id);
@@ -446,6 +470,7 @@ CREATE POLICY "Users can create their own profile" ON public.user_profiles
 ```
 
 #### After (FIXED):
+
 ```sql
 CREATE POLICY "Users can create their own profile" ON public.user_profiles
   FOR INSERT WITH CHECK ((SELECT auth.uid()) = id);
@@ -459,6 +484,7 @@ CREATE POLICY "Users can create their own profile" ON public.user_profiles
 ### Step 1: Apply Migration to Supabase
 
 **Via Supabase Dashboard:**
+
 1. Go to SQL Editor
 2. Copy entire contents of `server/migrations/003_fix_rls_policies.sql`
 3. Paste into SQL Editor
@@ -488,21 +514,25 @@ CREATE POLICY "Users can create their own profile" ON public.user_profiles
 ### Step 4: Test CRUD Operations
 
 #### CREATE:
+
 - ✅ Register new accounts
 - ✅ Create bookings
 - ✅ Create payments
 
 #### READ:
+
 - ✅ View own profile
 - ✅ View own bookings
 - ✅ Admin view all users (after admin RLS fix)
 
 #### UPDATE:
+
 - ✅ Update own profile
 - ✅ Update booking status
 - ✅ Update payment status
 
 #### DELETE:
+
 - ✅ Delete own profile
 - ✅ Cancel bookings
 - ✅ Delete messages
@@ -555,18 +585,17 @@ CREATE POLICY "Users can view their own profile" ON public.user_profiles
 After applying the migration:
 
 ### Registration Tests
+
 - [ ] Admin Registration
   - [ ] Full form submits
   - [ ] User created in auth.users
   - [ ] Profile created in admins table
   - [ ] Redirects to login
-  
 - [ ] Worker Registration
   - [ ] Full form submits
   - [ ] User created in auth.users
   - [ ] Profiles created in user_profiles and workers tables
   - [ ] All fields saved correctly
-  
 - [ ] Homeowner Registration
   - [ ] Full form submits
   - [ ] User created in auth.users
@@ -574,28 +603,29 @@ After applying the migration:
   - [ ] All fields saved correctly
 
 ### Login Tests
+
 - [ ] Admin Login
   - [ ] Email/password accepted
   - [ ] Session token returned
   - [ ] Redirects to /admin/dashboard
-  
 - [ ] Worker Login
   - [ ] Email/password accepted
   - [ ] Session token returned
   - [ ] Redirects to /worker/dashboard
-  
 - [ ] Homeowner Login
   - [ ] Email/password accepted
   - [ ] Session token returned
   - [ ] Redirects to /homeowner/dashboard
 
 ### CRUD Operation Tests
+
 - [ ] CREATE: Can create bookings, payments
 - [ ] READ: Can view own data, bookings
 - [ ] UPDATE: Can update profile, booking status
 - [ ] DELETE: Can delete bookings, messages
 
 ### Error Tests
+
 - [ ] Invalid email format → error
 - [ ] Password too short → error
 - [ ] Email already registered → error
@@ -605,14 +635,14 @@ After applying the migration:
 
 ## Summary
 
-| Issue | Severity | Status | Fix |
-|-------|----------|--------|-----|
-| user_profiles INSERT blocked | 🔴 Critical | Fixed | Add INSERT policy |
-| workers/homeowners INSERT ambiguous | 🟠 High | Fixed | Split INTO/UPDATE/DELETE |
-| Missing DELETE policies | 🟠 High | Fixed | Add all DELETE policies |
-| UPDATE policies missing | 🟠 High | Fixed | Add UPDATE policies |
-| No admin RLS table | 🟠 High | Fixed | Create admin policies |
-| Public data not readable | 🟡 Medium | Fixed | Allow public SELECT |
+| Issue                               | Severity    | Status | Fix                      |
+| ----------------------------------- | ----------- | ------ | ------------------------ |
+| user_profiles INSERT blocked        | 🔴 Critical | Fixed  | Add INSERT policy        |
+| workers/homeowners INSERT ambiguous | 🟠 High     | Fixed  | Split INTO/UPDATE/DELETE |
+| Missing DELETE policies             | 🟠 High     | Fixed  | Add all DELETE policies  |
+| UPDATE policies missing             | 🟠 High     | Fixed  | Add UPDATE policies      |
+| No admin RLS table                  | 🟠 High     | Fixed  | Create admin policies    |
+| Public data not readable            | 🟡 Medium   | Fixed  | Allow public SELECT      |
 
 ---
 
