@@ -297,6 +297,19 @@ export async function verifyPayment(transactionId: string) {
   return apiPost("/payments/verify", { transactionId });
 }
 
+export async function initializePayPackPayment(data: {
+  amount: number;
+  phone: string;
+  description?: string;
+  reference?: string;
+}) {
+  return apiPost("/payments/paypack/initialize", data);
+}
+
+export async function verifyPayPackPayment(transactionId: string) {
+  return apiPost("/payments/paypack/verify", { transactionId });
+}
+
 // ============================================================
 // SERVICES API
 // ============================================================
