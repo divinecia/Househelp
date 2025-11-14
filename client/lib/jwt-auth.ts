@@ -125,34 +125,29 @@ export const refreshAccessToken = async (): Promise<string | null> => {
   }
 
   try {
-    // In production, call your backend endpoint
-    // const response = await fetch('/api/auth/refresh', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ refreshToken })
-    // });
-    // const data = await response.json();
-    // return data.accessToken;
-
-    // For now, simulate token refresh
-    const payload = decodeJWT(refreshToken);
-    if (!payload) return null;
-
-    const newToken = encodeJWT(
-      {
-        id: payload.id,
-        email: payload.email,
-        role: payload.role,
-      },
-      TOKEN_EXPIRY
-    );
-
-    storeTokens({
-      accessToken: newToken,
-      refreshToken,
+    const response = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken })
     });
 
-    return newToken;
+    if (!response.ok) {
+      clearTokens();
+      return null;
+    }
+
+    const data = await response.json();
+
+    if (data.success && data.data?.accessToken) {
+      storeTokens({
+        accessToken: data.data.accessToken,
+        refreshToken: data.data.refreshToken || refreshToken,
+      });
+      return data.data.accessToken;
+    }
+
+    clearTokens();
+    return null;
   } catch (error) {
     console.error("Token refresh failed:", error);
     clearTokens();
