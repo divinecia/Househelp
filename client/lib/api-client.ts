@@ -108,7 +108,10 @@ async function apiRequest<T>(
 /**
  * GET request
  */
-export async function apiGet<T>(endpoint: string, skipAuth = false): Promise<ApiResponse<T>> {
+export async function apiGet<T>(
+  endpoint: string,
+  skipAuth = false,
+): Promise<ApiResponse<T>> {
   return apiRequest<T>(endpoint, {
     method: "GET",
     skipAuth,

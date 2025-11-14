@@ -1,6 +1,7 @@
 # API Error Fixes - Complete Report
 
 ## Date: November 14, 2024
+
 ## Status: 🟢 FIXED - All errors addressed
 
 ---
@@ -28,11 +29,13 @@ Failed to load insurance companies from database
 ### Issue 1: Authentication Blocking Dropdown Endpoints ❌ → ✅
 
 **Problem:**
+
 - All dropdown API calls were trying to attach authentication tokens
 - The API client was attempting to get/refresh JWT tokens even for public dropdown endpoints
 - If token retrieval failed, the entire request would fail with "Failed to fetch"
 
 **Solution Applied:**
+
 - Modified `apiGet()` function in `client/lib/api-client.ts` to accept optional `skipAuth` parameter
 - Updated all dropdown API functions to pass `skipAuth: true`:
   - `getGenders()` → skips auth
@@ -50,6 +53,7 @@ Failed to load insurance companies from database
   - `getTrainingCategories()` → skips auth
 
 **Code Changes:**
+
 ```typescript
 // Before
 export async function apiGet<T>(endpoint: string): Promise<ApiResponse<T>> {
@@ -59,7 +63,10 @@ export async function apiGet<T>(endpoint: string): Promise<ApiResponse<T>> {
 }
 
 // After
-export async function apiGet<T>(endpoint: string, skipAuth = false): Promise<ApiResponse<T>> {
+export async function apiGet<T>(
+  endpoint: string,
+  skipAuth = false,
+): Promise<ApiResponse<T>> {
   return apiRequest<T>(endpoint, {
     method: "GET",
     skipAuth,
@@ -68,6 +75,7 @@ export async function apiGet<T>(endpoint: string, skipAuth = false): Promise<Api
 ```
 
 **Files Modified:**
+
 - `client/lib/api-client.ts` - Lines 111-115 and 401-451
 
 ---
@@ -75,11 +83,13 @@ export async function apiGet<T>(endpoint: string, skipAuth = false): Promise<Api
 ### Issue 2: CORS Configuration Issues ❌ → ✅
 
 **Problem:**
+
 - The preview URL uses a proxy domain (fly.dev), not localhost
 - Browser requests from fly.dev were being blocked by CORS policy
 - The CORS configuration had `credentials: true` with `origin: true`, which violates CORS spec
 
 **Solution Applied:**
+
 - Modified CORS configuration in `server/index.ts`
 - In development mode: Allow all origins (`origin: true`) with `credentials: false`
 - This allows requests from:
@@ -88,6 +98,7 @@ export async function apiGet<T>(endpoint: string, skipAuth = false): Promise<Api
   - Any other origin during development
 
 **Code Changes:**
+
 ```typescript
 // Before
 app.use(
@@ -113,6 +124,7 @@ app.use(
 ```
 
 **Files Modified:**
+
 - `server/index.ts` - Lines 20-34
 
 ---
@@ -123,28 +135,30 @@ app.use(
 
 All dropdown endpoints are now accessible and returning data:
 
-| Endpoint | Method | Status | Response |
-|----------|--------|--------|----------|
-| `/api/options/genders` | GET | 200 OK | 3 records |
-| `/api/options/marital-statuses` | GET | 200 OK | 4 records |
-| `/api/options/service-types` | GET | 200 OK | 8 records |
-| `/api/options/insurance-companies` | GET | 200 OK | 5 records |
-| `/api/options/payment-methods` | GET | 200 OK | 2 records |
-| `/api/options/wage-units` | GET | 200 OK | 3 records |
-| `/api/options/language-levels` | GET | 200 OK | 4 records |
-| `/api/options/residence-types` | GET | 200 OK | 4 records |
-| `/api/options/worker-info-options` | GET | 200 OK | 3 records |
-| `/api/options/criminal-record-options` | GET | 200 OK | 2 records |
-| `/api/options/smoking-drinking-options` | GET | 200 OK | 4 records |
+| Endpoint                                | Method | Status | Response  |
+| --------------------------------------- | ------ | ------ | --------- |
+| `/api/options/genders`                  | GET    | 200 OK | 3 records |
+| `/api/options/marital-statuses`         | GET    | 200 OK | 4 records |
+| `/api/options/service-types`            | GET    | 200 OK | 8 records |
+| `/api/options/insurance-companies`      | GET    | 200 OK | 5 records |
+| `/api/options/payment-methods`          | GET    | 200 OK | 2 records |
+| `/api/options/wage-units`               | GET    | 200 OK | 3 records |
+| `/api/options/language-levels`          | GET    | 200 OK | 4 records |
+| `/api/options/residence-types`          | GET    | 200 OK | 4 records |
+| `/api/options/worker-info-options`      | GET    | 200 OK | 3 records |
+| `/api/options/criminal-record-options`  | GET    | 200 OK | 2 records |
+| `/api/options/smoking-drinking-options` | GET    | 200 OK | 4 records |
 
 ### Test Results
 
 **Curl Test (Direct):**
+
 ```bash
 curl http://localhost:5173/api/options/genders
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -176,6 +190,7 @@ curl http://localhost:5173/api/options/genders
 All registration forms now correctly load dropdown data:
 
 **Worker Registration (`/worker/register`):**
+
 - ✅ Gender dropdown - fetches from `/api/options/genders`
 - ✅ Marital Status dropdown - fetches from `/api/options/marital-statuses`
 - ✅ Insurance Company dropdown - fetches from `/api/options/insurance-companies`
@@ -183,6 +198,7 @@ All registration forms now correctly load dropdown data:
 - ✅ Language Levels dropdown - fetches from `/api/options/language-levels`
 
 **Homeowner Registration (`/homeowner/register`):**
+
 - ✅ Residence Types dropdown
 - ✅ Worker Info dropdown
 - ✅ Gender dropdown
@@ -191,6 +207,7 @@ All registration forms now correctly load dropdown data:
 - ✅ Smoking/Drinking Options dropdown
 
 **Admin Registration (`/admin/register`):**
+
 - ✅ Gender dropdown
 
 ---
@@ -202,7 +219,7 @@ All registration forms now correctly load dropdown data:
 ```
 Frontend Component
   ↓
-useEffect calls: getGenders() 
+useEffect calls: getGenders()
   ↓
 apiGet("/options/genders", true)  // skipAuth = true
   ↓
@@ -229,10 +246,10 @@ Dropdown renders with options ✅
 
 ## Changes Summary
 
-| File | Changes | Status |
-|------|---------|--------|
-| `client/lib/api-client.ts` | Modified `apiGet()` to accept `skipAuth` parameter; updated all dropdown functions | ✅ |
-| `server/index.ts` | Fixed CORS configuration for development environment | ✅ |
+| File                       | Changes                                                                            | Status |
+| -------------------------- | ---------------------------------------------------------------------------------- | ------ |
+| `client/lib/api-client.ts` | Modified `apiGet()` to accept `skipAuth` parameter; updated all dropdown functions | ✅     |
+| `server/index.ts`          | Fixed CORS configuration for development environment                               | ✅     |
 
 ---
 
@@ -294,6 +311,7 @@ When loading the Worker Registration form, you should see:
 ### Browser Console
 
 When opening DevTools → Console:
+
 - ✅ Should NOT see errors like "API Error [/options/genders]: Failed to fetch"
 - ✅ Should NOT see "Failed to load X from database"
 - ✅ May see normal React/Vite dev messages (safe to ignore)
@@ -318,6 +336,7 @@ The following did NOT need changes and work correctly:
 ### CORS Disabled for All Origins
 
 **Reason:** Development environment needs to accept requests from:
+
 - `localhost:5173` (direct dev server access)
 - `fly.dev` proxy URLs (preview URLs)
 - Potentially other sources
@@ -325,6 +344,7 @@ The following did NOT need changes and work correctly:
 **Security Note:** This is ONLY for development. In production, CORS should be restricted to specific domains.
 
 **Current Configuration:**
+
 ```typescript
 // Development
 origin: true  // Allow all origins
@@ -342,11 +362,13 @@ credentials: true
 If you need to revert these changes:
 
 ### Revert API Client Changes
+
 ```bash
 git checkout client/lib/api-client.ts
 ```
 
 ### Revert CORS Changes
+
 ```bash
 git checkout server/index.ts
 ```
@@ -402,6 +424,7 @@ If dropdowns still appear empty after applying these fixes:
    - Reload the page
 
 If issues persist, create a detailed error report including:
+
 - Screenshot of the registration page
 - Browser console error messages
 - Network tab responses from `/api/options/...` calls
