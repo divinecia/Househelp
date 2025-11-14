@@ -126,52 +126,64 @@ export default function AdminWorkers() {
       {/* Workers Table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Name</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Email</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Phone</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Type of Work</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Status</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Joined</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {workers.map((worker) => (
-                <tr key={worker.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-foreground font-medium">{worker.fullName}</td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{worker.email}</td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{worker.phoneNumber}</td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{worker.typeOfWork}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                      {worker.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{worker.joinsDate}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <div className="flex gap-2">
-                      <button
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Edit"
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteWorker(worker.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
+          {isLoading ? (
+            <div className="p-6 text-center text-muted-foreground">Loading workers...</div>
+          ) : workers.length === 0 ? (
+            <div className="p-6 text-center text-muted-foreground">No workers found</div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Name</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Email</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Phone</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Type of Work</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Status</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Joined</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {workers.map((worker) => (
+                  <tr key={worker.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 text-sm text-foreground font-medium">{worker.full_name}</td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">{worker.email}</td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">{worker.phone_number}</td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">{worker.type_of_work}</td>
+                    <td className="px-6 py-4 text-sm">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        worker.status === 'active' ? 'bg-green-100 text-green-700' :
+                        worker.status === 'inactive' ? 'bg-gray-100 text-gray-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {worker.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">
+                      {new Date(worker.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      <div className="flex gap-2">
+                        <button
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteWorker(worker.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
