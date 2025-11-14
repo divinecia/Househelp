@@ -231,22 +231,26 @@ export default function HomeownerHome() {
       {/* Satisfaction Trend */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
         <h3 className="text-lg font-semibold text-foreground mb-4">Customer Satisfaction Trend</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={mockChartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
-            <Line
-              type="monotone"
-              dataKey="satisfaction"
-              stroke="#007bff"
-              strokeWidth={2}
-              dot={{ fill: "#007bff", r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        {loading ? (
+          <div className="h-80 bg-gray-100 rounded-lg animate-pulse" />
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="satisfaction"
+                stroke="#007bff"
+                strokeWidth={2}
+                dot={{ fill: "#007bff", r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );
