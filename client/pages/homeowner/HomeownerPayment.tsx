@@ -239,7 +239,7 @@ export default function HomeownerPayment() {
       setLoading(true);
 
       const response = await createPayment({
-        bookingID: paymentData.bookingId,
+        bookingId: paymentData.bookingId,
         amount: paymentData.amount,
         paymentMethod: paymentData.paymentMethod,
         description: paymentData.description,
