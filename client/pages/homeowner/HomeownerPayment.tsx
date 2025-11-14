@@ -192,11 +192,22 @@ export default function HomeownerPayment() {
         message: "Initializing payment...",
       });
 
+      if (!currentUser?.email) {
+        setPaymentStatus({
+          status: "failed",
+          message: "Unable to retrieve your email address",
+        });
+        toast.error("Unable to retrieve your email address");
+        setLoading(false);
+        return;
+      }
+
       // Initialize Flutterwave payment
+      const phoneNumber = currentUser.phoneNumber || currentUser.contactNumber || "";
       const flutterwaveResponse = await initializeFlutterwavePayment({
         amount: paymentData.amount,
-        email: "user@example.com", // Should get from logged-in user
-        phone_number: "1234567890",
+        email: currentUser.email,
+        phone_number: phoneNumber,
         currency: "RWF",
         tx_ref: `HouseHelp-${Date.now()}`,
         customizations: {
