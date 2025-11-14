@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertCircle, LogOut, Send, X } from "lucide-react";
 import { toast } from "sonner";
+import { getReportTypes } from "@/lib/api-client";
 
 interface MoreMenuProps {
   onLogout: () => void;
@@ -13,6 +14,25 @@ export default function WorkerMore({ onLogout }: MoreMenuProps) {
     description: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [reportTypes, setReportTypes] = useState<Array<{ id: string; name: string }>>([]);
+  const [isLoadingTypes, setIsLoadingTypes] = useState(false);
+
+  useEffect(() => {
+    const loadReportTypes = async () => {
+      setIsLoadingTypes(true);
+      try {
+        const result = await getReportTypes();
+        if (result.success && result.data) {
+          setReportTypes(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to load report types:", error);
+      } finally {
+        setIsLoadingTypes(false);
+      }
+    };
+    loadReportTypes();
+  }, []);
 
   const handleSubmitReport = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,14 +99,16 @@ export default function WorkerMore({ onLogout }: MoreMenuProps) {
               <select
                 value={reportData.issue}
                 onChange={(e) => setReportData({ ...reportData, issue: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                disabled={isLoadingTypes}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                 required
               >
-                <option value="">Select an issue type</option>
-                <option value="payment">Payment Issue</option>
-                <option value="booking">Booking Problem</option>
-                <option value="technical">Technical Issue</option>
-                <option value="other">Other</option>
+                <option value="">{isLoadingTypes ? "Loading..." : "Select an issue type"}</option>
+                {reportTypes.map((type) => (
+                  <option key={type.id} value={type.name}>
+                    {type.name}
+                  </option>
+                ))}
               </select>
             </div>
 
