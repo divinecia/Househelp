@@ -72,7 +72,7 @@ export default function WorkerRegister() {
         if (parsed.errors.length > 0) {
           newErrors.nationalId = parsed.errors[0];
         } else {
-          newErrors.nationalId = "National ID format is invalid. Use format: 1 followed by 9 digits or 16 digits (Rwanda National ID)";
+          newErrors.nationalId = "National ID format is invalid";
         }
       }
     }
@@ -317,7 +317,7 @@ export default function WorkerRegister() {
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      placeholder="25000"
+                      placeholder="2000"
                       value={formData.expectedWages?.split(" ")[0] || ""}
                       onChange={(e) =>
                         setFormData((prev) => ({
