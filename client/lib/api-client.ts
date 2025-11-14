@@ -195,6 +195,14 @@ export async function logoutUser() {
   return apiPost("/auth/logout", {});
 }
 
+export async function forgotPassword(email: string) {
+  return apiPost("/auth/forgot-password", { email });
+}
+
+export async function resetPassword(password: string, token: string) {
+  return apiPost("/auth/reset-password", { password, token });
+}
+
 // ============================================================
 // WORKERS API
 // ============================================================
