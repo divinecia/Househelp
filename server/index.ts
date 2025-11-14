@@ -20,13 +20,14 @@ export function createServer() {
   // Middleware
   // CORS configuration - allow requests from any origin for development
   // In production, you should restrict this to your domain
+  const corsOrigin = process.env.NODE_ENV === "production"
+    ? (process.env.ALLOWED_ORIGINS?.split(",") || ["https://example.com"])
+    : ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"];
+
   app.use(
     cors({
-      origin:
-        process.env.NODE_ENV === "production"
-          ? process.env.ALLOWED_ORIGINS?.split(",") || ["https://example.com"]
-          : "*", // Use * for development to allow all origins (no credentials needed for dropdown data)
-      credentials: false, // Set to false when origin is "*"
+      origin: corsOrigin,
+      credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
       allowedHeaders: ["Content-Type", "Authorization"],
     }),
