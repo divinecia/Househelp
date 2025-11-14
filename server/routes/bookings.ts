@@ -8,15 +8,18 @@ const router = Router();
 // Get all bookings
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const { homeownerID, workerID, status, limit = 50, offset = 0 } = req.query;
+    const { homeownerID, homeowner_id, workerID, worker_id, status, limit = 50, offset = 0 } = req.query;
     let query = supabase.from("bookings").select("*");
 
-    if (homeownerID) {
-      query = query.eq("homeowner_id", homeownerID);
+    // Accept both camelCase and snake_case
+    const homeownerId = homeownerID || homeowner_id;
+    if (homeownerId) {
+      query = query.eq("homeowner_id", homeownerId);
     }
 
-    if (workerID) {
-      query = query.eq("worker_id", workerID);
+    const workerId = workerID || worker_id;
+    if (workerId) {
+      query = query.eq("worker_id", workerId);
     }
 
     if (status) {
