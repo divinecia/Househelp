@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { supabase } from "../lib/supabase";
+import { mapWorkerFields, mapHomeownerFields, mapAdminFields } from "../lib/utils";
 
 const router = Router();
 
@@ -39,12 +40,17 @@ router.post("/register", async (req: Request, res: Response) => {
 
     // Create user profile based on role
     let profileTable = "user_profiles";
+    let mappedProfileData = profileData;
+
     if (role === "worker") {
       profileTable = "workers";
+      mappedProfileData = mapWorkerFields(profileData);
     } else if (role === "homeowner") {
       profileTable = "homeowners";
+      mappedProfileData = mapHomeownerFields(profileData);
     } else if (role === "admin") {
       profileTable = "admins";
+      mappedProfileData = mapAdminFields(profileData);
     }
 
     const { data: profileDataResult, error: profileError } = await supabase
@@ -53,9 +59,9 @@ router.post("/register", async (req: Request, res: Response) => {
         {
           id: authData.user.id,
           email,
-          fullName,
+          full_name: fullName,
           role,
-          ...profileData,
+          ...mappedProfileData,
           created_at: new Date().toISOString(),
         },
       ])
