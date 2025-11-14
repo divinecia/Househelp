@@ -192,13 +192,14 @@ export default function HomeownerProfile() {
           </div>
           <div>
             <h2 className="text-2xl font-bold text-foreground">
-              Alice Johnson
+              {user?.fullName || "Homeowner"}
             </h2>
             <p className="text-muted-foreground">Homeowner Profile</p>
             {!isEditing && (
               <button
                 onClick={handleEdit}
-                className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                disabled={isLoading}
+                className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
               >
                 Edit Profile
               </button>
