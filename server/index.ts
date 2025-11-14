@@ -24,9 +24,9 @@ export function createServer() {
     cors({
       origin:
         process.env.NODE_ENV === "production"
-          ? process.env.ALLOWED_ORIGINS?.split(",") || true
-          : true,
-      credentials: true,
+          ? process.env.ALLOWED_ORIGINS?.split(",") || ["https://example.com"]
+          : "*", // Use * for development to allow all origins (no credentials needed for dropdown data)
+      credentials: false, // Set to false when origin is "*"
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
       allowedHeaders: ["Content-Type", "Authorization"],
     }),
