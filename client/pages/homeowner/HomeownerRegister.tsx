@@ -255,13 +255,15 @@ export default function HomeownerRegister() {
                     name="typeOfResidence"
                     value={formData.typeOfResidence || ""}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    disabled={loadingOptions}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">Select Type</option>
-                    <option value="studio">Studio</option>
-                    <option value="apartment">Apartment</option>
-                    <option value="villa">Villa</option>
-                    <option value="mansion">Mansion</option>
+                    <option value="">{loadingOptions ? "Loading..." : "Select Type"}</option>
+                    {residenceTypes.map((type) => (
+                      <option key={type.id} value={type.name.toLowerCase()}>
+                        {type.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -453,12 +455,15 @@ export default function HomeownerRegister() {
                     name="workerInfo"
                     value={formData.workerInfo || ""}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    disabled={loadingOptions}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">Select Option</option>
-                    <option value="full-time">Full-time</option>
-                    <option value="part-time">Part-time</option>
-                    <option value="live-in">Live-in</option>
+                    <option value="">{loadingOptions ? "Loading..." : "Select Option"}</option>
+                    {workerInfos.map((info) => (
+                      <option key={info.id} value={info.name.toLowerCase().replace(/\s+/g, "-")}>
+                        {info.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -552,11 +557,15 @@ export default function HomeownerRegister() {
                     name="preferredGender"
                     value={formData.preferredGender || ""}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    disabled={loadingOptions}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
                     <option value="">No preference</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
+                    {gendersList.map((gender) => (
+                      <option key={gender.id} value={gender.name.toLowerCase()}>
+                        {gender.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -633,11 +642,15 @@ export default function HomeownerRegister() {
                     name="criminalRecord"
                     value={formData.criminalRecord || ""}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    disabled={loadingOptions}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">Select</option>
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
+                    <option value="">{loadingOptions ? "Loading..." : "Select"}</option>
+                    {criminalRecordOptions.map((option) => (
+                      <option key={option.id} value={option.name.toLowerCase()}>
+                        {option.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -650,12 +663,15 @@ export default function HomeownerRegister() {
                     name="paymentMode"
                     value={formData.paymentMode || ""}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    disabled={loadingOptions}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">Select Mode</option>
-                    <option value="bank">Bank Transfer</option>
-                    <option value="cash">Cash</option>
-                    <option value="mobile">Mobile Money</option>
+                    <option value="">{loadingOptions ? "Loading..." : "Select Mode"}</option>
+                    {paymentModes.map((mode) => (
+                      <option key={mode.id} value={mode.name.toLowerCase().replace(/\s+/g, "-")}>
+                        {mode.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -696,13 +712,15 @@ export default function HomeownerRegister() {
                     name="smokingDrinkingRestrictions"
                     value={formData.smokingDrinkingRestrictions || ""}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    disabled={loadingOptions}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">Select Tolerance</option>
-                    <option value="no_smoking_no_drinking">No smoking, No drinking</option>
-                    <option value="smoking_allowed">Smoking allowed</option>
-                    <option value="drinking_allowed">Drinking allowed</option>
-                    <option value="both_allowed">Both allowed</option>
+                    <option value="">{loadingOptions ? "Loading..." : "Select Tolerance"}</option>
+                    {smokingDrinkingOptions.map((option) => (
+                      <option key={option.id} value={option.name.toLowerCase().replace(/\s+/g, "_")}>
+                        {option.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
