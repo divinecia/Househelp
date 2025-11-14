@@ -5,7 +5,6 @@ import { createServer } from "./server";
 
 export default defineConfig(({ mode }) => ({
   server: {
-    middlewareMode: true,
     fs: {
       allow: ["./client", "./shared"],
       deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "server/**"],
