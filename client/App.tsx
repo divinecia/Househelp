@@ -22,6 +22,10 @@ import HomeownerRegister from "./pages/homeowner/HomeownerRegister";
 import HomeownerLogin from "./pages/homeowner/HomeownerLogin";
 import HomeownerDashboard from "./pages/homeowner/HomeownerDashboard";
 import HomeownerForgotPassword from "./pages/homeowner/HomeownerForgotPassword";
+import HomeownerBooking from "./pages/homeowner/HomeownerBooking";
+import HomeownerBookings from "./pages/homeowner/HomeownerBookings";
+import HomeownerPayment from "./pages/homeowner/HomeownerPayment";
+import HomeownerPayments from "./pages/homeowner/HomeownerPayments";
 
 // Admin pages
 import AdminRegister from "./pages/admin/AdminRegister";
@@ -51,6 +55,10 @@ const AppContent = () => (
           <Route path="/homeowner/login" element={<HomeownerLogin />} />
           <Route path="/homeowner/forgot-password" element={<HomeownerForgotPassword />} />
           <Route path="/homeowner/dashboard" element={<HomeownerDashboard />} />
+          <Route path="/homeowner/booking" element={<HomeownerBooking />} />
+          <Route path="/homeowner/bookings" element={<HomeownerBookings />} />
+          <Route path="/homeowner/payment" element={<HomeownerPayment />} />
+          <Route path="/homeowner/payments" element={<HomeownerPayments />} />
 
           {/* Admin Routes */}
           <Route path="/admin/register" element={<AdminRegister />} />
