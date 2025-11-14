@@ -116,19 +116,16 @@ export const isAuthenticated = (role: string) => {
 // Register user via API (for database persistence)
 export const registerUserViaAPI = async (role: string, data: UserData) => {
   try {
-    const endpoint =
-      role === "homeowner"
-        ? "/api/homeowners"
-        : role === "worker"
-          ? "/api/workers"
-          : "/api/admin";
-
-    const response = await fetch(endpoint, {
+    // Use the centralized auth endpoint for all roles
+    const response = await fetch("/api/auth/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        role,
+      }),
     });
 
     if (!response.ok) {
