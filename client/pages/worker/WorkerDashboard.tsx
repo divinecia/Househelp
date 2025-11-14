@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getUser, logoutUser } from "@/lib/auth";
+import { getUserRole } from "@/lib/jwt-auth";
 import type { WorkerData } from "@/lib/auth";
 import { Home, CheckSquare, User, BookOpen, MoreVertical, LogOut } from "lucide-react";
 import WorkerHome from "@/components/worker/WorkerHome";
