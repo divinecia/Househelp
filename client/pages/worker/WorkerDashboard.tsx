@@ -23,6 +23,14 @@ export default function WorkerDashboard() {
   useEffect(() => {
     if (!user) {
       navigate("/worker/login");
+      return;
+    }
+
+    // Verify user role is worker
+    const userRole = getUserRole();
+    if (userRole !== "worker") {
+      logoutUser("worker");
+      navigate("/worker/login");
     }
   }, [user, navigate]);
 
