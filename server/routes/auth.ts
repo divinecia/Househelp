@@ -70,6 +70,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
     if (profileError) {
       // Clean up auth user if profile creation fails
+      console.error(`Profile creation error for ${role}:`, profileError);
       await supabase.auth.admin.deleteUser(authData.user.id);
       return res.status(400).json({
         success: false,
