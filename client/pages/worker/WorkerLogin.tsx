@@ -41,12 +41,19 @@ export default function WorkerLogin() {
         return;
       }
 
-      // Store tokens if session exists
-      if (response.data?.session) {
-        storeTokens({
-          accessToken: response.data.session.access_token,
-          refreshToken: response.data.session.refresh_token || "",
-        });
+      // Store tokens and user info if session exists
+      if (response.data?.session && response.data?.user) {
+        storeTokens(
+          {
+            accessToken: response.data.session.access_token,
+            refreshToken: response.data.session.refresh_token || "",
+          },
+          {
+            id: response.data.user.id,
+            email: response.data.user.email,
+            role: response.data.user.role || "worker",
+          }
+        );
       }
 
       // Also login locally as fallback
