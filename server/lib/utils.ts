@@ -40,9 +40,15 @@ export const mapWorkerFields = (data: Record<string, any>): Record<string, any> 
     termsAccepted: "terms_accepted",
   };
 
+  const excludeFields = ["email", "password", "role", "fullName"];
   const mappedData: Record<string, any> = {};
 
   for (const [key, value] of Object.entries(data)) {
+    // Skip excluded fields and null/undefined values
+    if (excludeFields.includes(key) || value === null || value === undefined) {
+      continue;
+    }
+
     const dbKey = fieldMap[key] || key;
     mappedData[dbKey] = value;
   }
