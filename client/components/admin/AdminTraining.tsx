@@ -58,23 +58,14 @@ export default function AdminTraining() {
 
     setIsLoading(true);
     try {
-      const response = await fetch("/api/trainings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionStorage.getItem("auth_token") || ""}`,
-        },
-        body: JSON.stringify({
-          title: formData.title,
-          category: formData.category,
-          instructor: formData.instructor,
-          startDate: formData.startDate,
-          description: formData.description,
-          status: "active",
-        }),
+      const result = await apiPost("/trainings", {
+        title: formData.title,
+        category: formData.category,
+        instructor: formData.instructor,
+        start_date: formData.startDate,
+        description: formData.description,
+        status: "active",
       });
-
-      const result = await response.json();
 
       if (result.success) {
         toast.success("Training added successfully!");
