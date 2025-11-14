@@ -23,6 +23,7 @@ export default function AdminTraining() {
     instructor: "",
     startDate: "",
     description: "",
+    duration: 1,
   });
 
   useEffect(() => {
