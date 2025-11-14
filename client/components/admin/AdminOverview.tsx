@@ -11,7 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Users, DollarSign, Calendar, TrendingUp } from "lucide-react";
+import { Users, DollarSign, Calendar } from "lucide-react";
 import { apiGet } from "../../lib/api-client";
 
 interface ChartDataPoint {
