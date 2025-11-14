@@ -197,6 +197,13 @@ router.post("/webhook", async (req: Request, res: Response) => {
 
 router.get("/status/:transactionId", async (req: Request, res: Response) => {
   try {
+    if (!FLUTTERWAVE_SECRET_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: "Flutterwave configuration missing. FLUTTERWAVE_SECRET_KEY is not set.",
+      });
+    }
+
     const { transactionId } = req.params;
 
     const response = await axios.get(
