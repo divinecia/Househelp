@@ -101,21 +101,22 @@ export const validateBookingData = (req: Request, res: Response, next: NextFunct
  * Validate request body for payment creation
  */
 export const validatePaymentData = (req: Request, res: Response, next: NextFunction) => {
-  const { bookingId, amount, paymentMethod } = req.body;
+  const { booking_id, amount, payment_method } = req.body;
 
   const errors: string[] = [];
 
-  if (!bookingId) errors.push("bookingId is required");
+  if (!booking_id) errors.push("booking_id is required");
   if (!amount || !validateAmount(amount)) errors.push("amount must be a positive number");
-  if (!paymentMethod) errors.push("paymentMethod is required");
-  if (paymentMethod && !["flutterwave", "bank_transfer", "cash"].includes(paymentMethod)) {
-    errors.push("paymentMethod must be one of: flutterwave, bank_transfer, cash");
+  if (!payment_method) errors.push("payment_method is required");
+  if (payment_method && !["flutterwave", "bank_transfer", "cash"].includes(payment_method)) {
+    errors.push("payment_method must be one of: flutterwave, bank_transfer, cash");
   }
 
   if (errors.length > 0) {
     return res.status(400).json({
       success: false,
       error: errors.join("; "),
+      received_fields: Object.keys(req.body),
     });
   }
 
