@@ -1,0 +1,33 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="largegrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.3" flood-color="#000000"/>
+    </filter>
+  </defs>
+  <!-- Background -->
+  <rect width="512" height="512" fill="url(#largegrad1)" rx="120"/>
+  <!-- House icon with shadow -->
+  <g filter="url(#shadow)">
+    <!-- House body -->
+    <path d="M256 96L396 216V456H116V216Z" fill="white" stroke="white" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>
+    <!-- Roof -->
+    <path d="M256 96L116 216L396 216Z" fill="#e0e7ff" opacity="0.3" stroke="white" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Door -->
+    <rect x="220" y="288" width="72" height="168" fill="#1e40af" opacity="0.5" rx="6"/>
+    <circle cx="280" cy="372" r="8" fill="white" opacity="0.8"/>
+    <!-- Left window -->
+    <rect x="150" y="252" width="60" height="60" fill="#1e40af" opacity="0.5" rx="4"/>
+    <!-- Window frame -->
+    <line x1="180" y1="252" x2="180" y2="312" stroke="white" stroke-width="4" opacity="0.6"/>
+    <line x1="150" y1="282" x2="210" y2="282" stroke="white" stroke-width="4" opacity="0.6"/>
+    <!-- Right window -->
+    <rect x="302" y="252" width="60" height="60" fill="#1e40af" opacity="0.5" rx="4"/>
+    <!-- Window frame -->
+    <line x1="332" y1="252" x2="332" y2="312" stroke="white" stroke-width="4" opacity="0.6"/>
+    <line x1="302" y1="282" x2="362" y2="282" stroke="white" stroke-width="4" opacity="0.6"/>
+  </g>
+</svg>
