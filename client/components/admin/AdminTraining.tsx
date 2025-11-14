@@ -80,7 +80,7 @@ export default function AdminTraining() {
 
       if (result.success) {
         toast.success("Training added successfully!");
-        setFormData({ title: "", category: "beginner", instructor: "", startDate: "", description: "" });
+        setFormData({ title: "", category: "beginner", instructor: "", startDate: "", description: "", duration: 1 });
         setShowForm(false);
         await fetchTrainings();
       } else {
