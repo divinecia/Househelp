@@ -78,7 +78,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
     // Create user profile based on role
     let profileTable = "user_profiles";
-    let mappedProfileData = profileData;
+    let mappedProfileData: any = {};
 
     if (role === "worker") {
       profileTable = "workers";
@@ -88,7 +88,11 @@ router.post("/register", async (req: Request, res: Response) => {
       mappedProfileData = mapHomeownerFields(profileData);
     } else if (role === "admin") {
       profileTable = "admins";
-      mappedProfileData = mapAdminFields(profileData);
+      // For admin, only include contact_number and gender
+      mappedProfileData = {
+        contact_number: profileData.contact_number,
+        gender: profileData.gender,
+      };
     }
 
     const { data: profileDataResult, error: profileError } = await supabase
