@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AlertCircle, LogOut, Send, X } from "lucide-react";
 import { toast } from "sonner";
-import { getReportTypes } from "@/lib/api-client";
+import { getReportTypes, createReport } from "@/lib/api-client";
 
 interface MoreMenuProps {
   onLogout: () => void;
