@@ -50,7 +50,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 // Create booking
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", validateBookingData, async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase.from("bookings").insert([req.body]).select().single();
 
