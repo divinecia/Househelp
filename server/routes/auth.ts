@@ -13,17 +13,25 @@ const router = Router();
  */
 router.post("/register", async (req: Request, res: Response) => {
   try {
-    // Middleware converts camelCase to snake_case, so destructure using snake_case
-    const { email, password, full_name, role, ...profileData } = req.body;
+    // Handle both camelCase and snake_case for compatibility
+    const email = req.body.email;
+    const password = req.body.password;
+    const fullName = req.body.full_name || req.body.fullName;
+    const role = req.body.role;
+    const contactNumber = req.body.contact_number || req.body.contactNumber;
+    const gender = req.body.gender;
 
-    if (!email || !password || !full_name || !role) {
+    // Extract remaining profile data
+    const { email: _e, password: _p, full_name: _fn, fullName: _fN, role: _r, contact_number: _cn, contactNumber: _cN, gender: _g, ...profileData } = req.body;
+
+    if (!email || !password || !fullName || !role) {
+      console.error("Registration validation failed:", { email: !!email, password: !!password, fullName: !!fullName, role: !!role });
+      console.error("Request body:", JSON.stringify(req.body, null, 2));
       return res.status(400).json({
         success: false,
         error: "Missing required fields: email, password, fullName, role",
       });
     }
-
-    const fullName = full_name;
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -90,8 +98,8 @@ router.post("/register", async (req: Request, res: Response) => {
       profileTable = "admins";
       // For admin, only include contact_number and gender
       mappedProfileData = {
-        contact_number: profileData.contact_number,
-        gender: profileData.gender,
+        contact_number: contactNumber,
+        gender: gender,
       };
     }
 
