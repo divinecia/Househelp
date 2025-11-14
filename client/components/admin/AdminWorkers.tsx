@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Trash2, Edit2, Plus } from "lucide-react";
+import { Trash2, Edit2, Plus, Loader } from "lucide-react";
 import { getWorkers, deleteWorker } from "@/lib/api-client";
 import { toast } from "sonner";
 
