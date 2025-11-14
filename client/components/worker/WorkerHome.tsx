@@ -1,41 +1,82 @@
+import { useEffect, useState } from "react";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { apiGet } from "../../lib/api-client";
 
 interface Job {
   id: string;
-  title: string;
-  homeowner: string;
-  status: "assigned" | "in_progress" | "completed" | "payment_pending";
-  scheduledDate: string;
-  budget: number;
+  title?: string;
+  service_type?: string;
+  homeowner?: string;
+  homeowner_id?: string;
+  status: "pending" | "confirmed" | "in_progress" | "completed" | "cancelled";
+  scheduledDate?: string;
+  booking_date?: string;
+  budget?: number;
+  amount?: number;
+  payment_status?: string;
 }
 
 export default function WorkerHome() {
-  const jobs: Job[] = [
-    {
-      id: "1",
-      title: "House Cleaning",
-      homeowner: "Alice Johnson",
-      status: "in_progress",
-      scheduledDate: "2024-01-28",
-      budget: 50000,
-    },
-    {
-      id: "2",
-      title: "Cooking Services",
-      homeowner: "Bob Wilson",
-      status: "completed",
-      scheduledDate: "2024-01-27",
-      budget: 75000,
-    },
-    {
-      id: "3",
-      title: "Garden Maintenance",
-      homeowner: "Jane Doe",
-      status: "assigned",
-      scheduledDate: "2024-01-29",
-      budget: 40000,
-    },
-  ];
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [homeownersMap, setHomeownersMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch bookings (jobs)
+        const bookingsRes = await apiGet("/bookings");
+        const bookings = Array.isArray(bookingsRes.data) ? bookingsRes.data : [];
+
+        // Fetch homeowners to map IDs to names
+        const homeownersRes = await apiGet("/homeowners");
+        const homeowners = Array.isArray(homeownersRes.data) ? homeownersRes.data : [];
+
+        const homeownerMap: Record<string, string> = {};
+        homeowners.forEach((homeowner: any) => {
+          homeownerMap[homeowner.id] = homeowner.full_name || "Unknown";
+        });
+        setHomeownersMap(homeownerMap);
+
+        // Map bookings to jobs format
+        const jobsList: Job[] = bookings.map((booking: any) => ({
+          id: booking.id,
+          title: booking.service_type || "Service",
+          service_type: booking.service_type,
+          homeowner: homeownerMap[booking.homeowner_id] || "Unknown",
+          homeowner_id: booking.homeowner_id,
+          status: mapBookingStatus(booking.status),
+          scheduledDate: booking.booking_date,
+          booking_date: booking.booking_date,
+          budget: booking.amount ? parseFloat(booking.amount) : 0,
+          amount: booking.amount,
+          payment_status: booking.payment_status,
+        }));
+
+        setJobs(jobsList);
+      } catch (error) {
+        console.error("Error fetching worker home data:", error);
+        setJobs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const mapBookingStatus = (status: string): Job["status"] => {
+    const statusMap: Record<string, Job["status"]> = {
+      pending: "pending",
+      confirmed: "confirmed",
+      in_progress: "in_progress",
+      completed: "completed",
+      cancelled: "cancelled",
+    };
+    return statusMap[status] || "pending";
+  };
 
   const getStatusColor = (status: Job["status"]) => {
     switch (status) {
