@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Save, X } from "lucide-react";
+import { getMaritalStatuses } from "@/lib/api-client";
 
 export default function WorkerProfile() {
   const [isEditing, setIsEditing] = useState(false);
+  const [maritalStatuses, setMaritalStatuses] = useState<Array<{ id: string; name: string }>>([]);
+  const [isLoadingStatuses, setIsLoadingStatuses] = useState(false);
   const [profileData, setProfileData] = useState({
     maritalStatus: "single",
     typeOfWork: "Cleaning",
@@ -20,6 +23,23 @@ export default function WorkerProfile() {
   });
 
   const [tempData, setTempData] = useState(profileData);
+
+  useEffect(() => {
+    const loadStatuses = async () => {
+      setIsLoadingStatuses(true);
+      try {
+        const result = await getMaritalStatuses();
+        if (result.success && result.data) {
+          setMaritalStatuses(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to load marital statuses:", error);
+      } finally {
+        setIsLoadingStatuses(false);
+      }
+    };
+    loadStatuses();
+  }, []);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -78,12 +98,15 @@ export default function WorkerProfile() {
                   <select
                     value={tempData.maritalStatus}
                     onChange={(e) => handleChange("maritalStatus", e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    disabled={isLoadingStatuses}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="single">Single</option>
-                    <option value="married">Married</option>
-                    <option value="divorced">Divorced</option>
-                    <option value="widowed">Widowed</option>
+                    <option value="">{isLoadingStatuses ? "Loading..." : "Select Status"}</option>
+                    {maritalStatuses.map((status) => (
+                      <option key={status.id} value={status.name.toLowerCase()}>
+                        {status.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
