@@ -152,8 +152,21 @@ export default function HomeownerBooking() {
 
     try {
       setLoading(true);
+
+      // Get homeowner ID from JWT token
+      const token = getAccessToken();
+      const payload = token ? decodeJWT(token) : null;
+      const homeownerId = payload?.id;
+
+      if (!homeownerId) {
+        toast.error("Unable to determine your user ID. Please log in again.");
+        setLoading(false);
+        return;
+      }
+
       const response = await createBooking({
-        workerID: bookingData.workerId,
+        workerId: bookingData.workerId,
+        homeownerId: homeownerId,
         bookingDate: bookingData.bookingDate,
         startTime: bookingData.startTime,
         endTime: bookingData.endTime,
