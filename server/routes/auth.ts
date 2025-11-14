@@ -361,4 +361,98 @@ router.post("/logout", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * Request password reset
+ */
+router.post("/forgot-password", async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: "Email is required",
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid email format",
+      });
+    }
+
+    // Send password reset email via Supabase
+    // Note: Supabase will only send if email exists, but we always return success for security
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${req.headers.origin || 'http://localhost:5173'}/reset-password`,
+    });
+
+    if (error) {
+      console.error("Password reset error:", error);
+      // Don't expose whether email exists
+    }
+
+    return res.json({
+      success: true,
+      message: "If an account exists with this email, you will receive a password reset link.",
+    });
+  } catch (error: any) {
+    console.error("Forgot password error:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to process password reset request",
+    });
+  }
+});
+
+/**
+ * Reset password with token
+ */
+router.post("/reset-password", async (req: Request, res: Response) => {
+  try {
+    const { password, token } = req.body;
+
+    if (!password || !token) {
+      return res.status(400).json({
+        success: false,
+        error: "Password and token are required",
+      });
+    }
+
+    // Validate password strength
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        error: "Password must be at least 6 characters long",
+      });
+    }
+
+    // Update password using Supabase
+    const { error } = await supabase.auth.updateUser({
+      password: password,
+    });
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Password updated successfully",
+    });
+  } catch (error: any) {
+    console.error("Reset password error:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to reset password",
+    });
+  }
+});
+
 export default router;
