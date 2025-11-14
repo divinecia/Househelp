@@ -11,6 +11,7 @@ import trainingRoutes from "./routes/trainings";
 import reportRoutes from "./routes/reports";
 import serviceRoutes from "./routes/services";
 import optionsRoutes from "./routes/options";
+import normalizeRequestBody from "./middleware/normalize-request";
 
 export function createServer() {
   const app = express();
