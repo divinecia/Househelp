@@ -22,6 +22,37 @@ router.post("/register", async (req: Request, res: Response) => {
       });
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid email format",
+      });
+    }
+
+    // Validate password strength
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        error: "Password must be at least 6 characters long",
+      });
+    }
+
+    // Check if email already exists
+    const { data: existingUser } = await supabase
+      .from("user_profiles")
+      .select("id")
+      .eq("email", email)
+      .single();
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        error: "Email already registered",
+      });
+    }
+
     // Sign up user in Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
