@@ -1,54 +1,65 @@
+import { useEffect, useState } from "react";
 import { Award, BookOpen, BarChart2 } from "lucide-react";
+import { apiGet } from "../../lib/api-client";
 
 interface Training {
   id: string;
   title: string;
   category: "beginner" | "intermediate" | "expert";
-  status: "unfinished" | "recommended" | "completed";
+  status: "pending" | "in_progress" | "completed";
   progress: number;
   hasCertificate: boolean;
   skills: string[];
+  description?: string;
 }
 
 export default function WorkerTraining() {
-  const trainings: Training[] = [
-    {
-      id: "1",
-      title: "Basic Cleaning Techniques",
-      category: "beginner",
-      status: "completed",
-      progress: 100,
-      hasCertificate: true,
-      skills: ["Dusting", "Vacuuming", "Mopping"],
-    },
-    {
-      id: "2",
-      title: "Advanced Stain Removal",
-      category: "intermediate",
-      status: "in_progress",
-      progress: 65,
-      hasCertificate: false,
-      skills: ["Fabric Care", "Surface Treatment", "Chemical Safety"],
-    },
-    {
-      id: "3",
-      title: "Professional Home Organization",
-      category: "intermediate",
-      status: "recommended",
-      progress: 0,
-      hasCertificate: false,
-      skills: ["Space Planning", "Storage Solutions", "Decluttering"],
-    },
-    {
-      id: "4",
-      title: "Expert Cleaning for Luxury Homes",
-      category: "expert",
-      status: "recommended",
-      progress: 0,
-      hasCertificate: false,
-      skills: ["Premium Materials", "Delicate Handling", "High Standards"],
-    },
-  ];
+  const [trainings, setTrainings] = useState<Training[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrainings = async () => {
+      try {
+        setLoading(true);
+        const response = await apiGet("/trainings");
+
+        if (response.success && response.data && Array.isArray(response.data)) {
+          const trainingsData: Training[] = response.data.map((training: any) => {
+            const categoryLower = (training.category || "beginner").toLowerCase();
+            let category: "beginner" | "intermediate" | "expert" = "beginner";
+
+            if (categoryLower.includes("advanced") || categoryLower.includes("intermediate")) {
+              category = "intermediate";
+            } else if (categoryLower.includes("expert") || categoryLower.includes("professional")) {
+              category = "expert";
+            }
+
+            return {
+              id: training.id,
+              title: training.title,
+              category,
+              status: (training.status || "pending") as "pending" | "in_progress" | "completed",
+              progress: training.progress || 0,
+              hasCertificate: !!training.certificate_url,
+              skills: training.description ? training.description.split(",").map(s => s.trim()) : [],
+              description: training.description,
+            };
+          });
+
+          setTrainings(trainingsData);
+        } else {
+          setTrainings([]);
+        }
+      } catch (error) {
+        console.error("Error fetching trainings:", error);
+        setTrainings([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrainings();
+  }, []);
 
   const getCategoryColor = (category: string) => {
     switch (category) {
