@@ -57,7 +57,15 @@ async function apiRequest<T>(
       headers,
     });
 
-    const data = await response.json();
+    let data: any;
+    try {
+      data = await response.json();
+    } catch {
+      // Response is not JSON (could be HTML error page)
+      data = {
+        error: `HTTP Error: ${response.status}`,
+      };
+    }
 
     if (!response.ok) {
       // Handle 401 - token expired or invalid
@@ -76,6 +84,7 @@ async function apiRequest<T>(
     return data;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
+    console.error(`API Error [${endpoint}]:`, message);
     return {
       success: false,
       error: message,
