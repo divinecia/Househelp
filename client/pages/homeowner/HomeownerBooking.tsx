@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getWorkers, createBooking, getServiceTypes } from "@/lib/api-client";
+import { decodeJWT, getAccessToken } from "@/lib/jwt-auth";
 import { toast } from "sonner";
 import { Search, MapPin, Star, Calendar, Clock } from "lucide-react";
 
