@@ -40,10 +40,10 @@ interface FlutterwaveVerificationResponse {
 router.post("/", validatePaymentData, async (req: Request, res: Response) => {
   try {
     const {
-      bookingId,
+      booking_id,
       amount,
-      paymentMethod,
-      transactionRef,
+      payment_method,
+      transaction_ref,
       description,
       status,
     } = req.body;
@@ -53,10 +53,10 @@ router.post("/", validatePaymentData, async (req: Request, res: Response) => {
       .from("payments")
       .insert([
         {
-          booking_id: bookingId,
+          booking_id,
           amount,
-          payment_method: paymentMethod,
-          transaction_ref: transactionRef || null,
+          payment_method,
+          transaction_ref: transaction_ref || null,
           status: status || "pending",
           description: description || null,
           created_at: new Date().toISOString(),
@@ -73,11 +73,11 @@ router.post("/", validatePaymentData, async (req: Request, res: Response) => {
     }
 
     // Update booking payment status if needed
-    if (bookingId) {
+    if (booking_id) {
       await supabase
         .from("bookings")
         .update({ payment_status: status || "pending" })
-        .eq("id", bookingId);
+        .eq("id", booking_id);
     }
 
     return res.status(201).json({
