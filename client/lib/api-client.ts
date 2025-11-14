@@ -371,3 +371,59 @@ export async function updateReport(id: string, data: any) {
 export async function deleteReport(id: string) {
   return apiDelete(`/reports/${id}`);
 }
+
+// ============================================================
+// OPTIONS/DROPDOWNS API
+// ============================================================
+
+export async function getGenders() {
+  return apiGet("/options/genders");
+}
+
+export async function getMaritalStatuses() {
+  return apiGet("/options/marital-statuses");
+}
+
+export async function getServiceTypes() {
+  return apiGet("/options/service-types");
+}
+
+export async function getInsuranceCompanies() {
+  return apiGet("/options/insurance-companies");
+}
+
+export async function getPaymentMethods() {
+  return apiGet("/options/payment-methods");
+}
+
+export async function getReportTypes() {
+  return apiGet("/options/report-types");
+}
+
+export async function getTrainingCategories() {
+  return apiGet("/options/training-categories");
+}
+
+export async function getWageUnits() {
+  return apiGet("/options/wage-units");
+}
+
+export async function getLanguageLevels() {
+  return apiGet("/options/language-levels");
+}
+
+export async function getResidenceTypes() {
+  return apiGet("/options/residence-types");
+}
+
+export async function getWorkerInfoOptions() {
+  return apiGet("/options/worker-info-options");
+}
+
+export async function getCriminalRecordOptions() {
+  return apiGet("/options/criminal-record-options");
+}
+
+export async function getSmokingDrinkingOptions() {
+  return apiGet("/options/smoking-drinking-options");
+}
