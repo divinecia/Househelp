@@ -6,11 +6,13 @@ const router = Router();
 // Get all workers with filters
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const { typeOfWork, status, limit = 50, offset = 0 } = req.query;
+    const { typeOfWork, type_of_work, status, limit = 50, offset = 0 } = req.query;
     let query = supabase.from("workers").select("*");
 
-    if (typeOfWork) {
-      query = query.eq("typeOfWork", typeOfWork);
+    // Accept both camelCase and snake_case for type_of_work
+    const workType = typeOfWork || type_of_work;
+    if (workType) {
+      query = query.eq("type_of_work", workType);
     }
 
     if (status) {
