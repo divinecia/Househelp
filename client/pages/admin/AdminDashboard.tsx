@@ -35,6 +35,15 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!user) {
       navigate("/admin/login");
+      return;
+    }
+
+    // Verify user role is admin
+    const userRole = getUserRole();
+    if (userRole !== "admin") {
+      // User is logged in but not an admin
+      logoutUser("admin");
+      navigate("/");
     }
   }, [user, navigate]);
 
