@@ -58,9 +58,13 @@ export default function HomeownerBooking() {
       const result = await getServiceTypes();
       if (result.success && result.data) {
         setServiceTypes(result.data);
+      } else {
+        console.error("Failed to load service types from database");
+        toast.error("Failed to load service types. Please refresh the page.");
       }
     } catch (error) {
       console.error("Failed to load service types:", error);
+      toast.error("Failed to load service types. Please refresh the page.");
     } finally {
       setIsLoadingServices(false);
     }
