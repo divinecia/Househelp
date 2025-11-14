@@ -1,37 +1,58 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye } from "lucide-react";
+import { getHomeowners, getBookings } from "@/lib/api-client";
+import { toast } from "sonner";
 
 interface Homeowner {
   id: string;
-  fullName: string;
+  full_name: string;
   email: string;
-  homeAddress: string;
-  status: "active" | "inactive";
-  joinsDate: string;
+  home_address: string;
+  status: "active" | "inactive" | "suspended";
+  created_at: string;
   totalBookings: number;
 }
 
 export default function AdminHomeowners() {
-  const [homeowners] = useState<Homeowner[]>([
-    {
-      id: "1",
-      fullName: "Alice Johnson",
-      email: "alice@example.com",
-      homeAddress: "KG 123 St, Kigali",
-      status: "active",
-      joinsDate: "2024-01-10",
-      totalBookings: 5,
-    },
-    {
-      id: "2",
-      fullName: "Bob Wilson",
-      email: "bob@example.com",
-      homeAddress: "KN 456 Ave, Kigali",
-      status: "active",
-      joinsDate: "2024-01-25",
-      totalBookings: 3,
-    },
-  ]);
+  const [homeowners, setHomeowners] = useState<Homeowner[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    fetchHomeowners();
+  }, []);
+
+  const fetchHomeowners = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch homeowners
+      const homeownerRes = await getHomeowners();
+      if (homeownerRes.success && homeownerRes.data) {
+        // Fetch bookings to count per homeowner
+        const bookingsRes = await getBookings();
+        const allBookings = bookingsRes.data || [];
+
+        // Enrich homeowner data with booking count
+        const enrichedHomeowners = homeownerRes.data.map((homeowner: any) => {
+          const bookingCount = allBookings.filter(
+            (booking: any) => booking.homeowner_id === homeowner.id
+          ).length;
+          return {
+            ...homeowner,
+            totalBookings: bookingCount,
+          };
+        });
+
+        setHomeowners(enrichedHomeowners);
+      } else {
+        toast.error("Failed to fetch homeowners");
+      }
+    } catch (error) {
+      toast.error("Error fetching homeowners");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
