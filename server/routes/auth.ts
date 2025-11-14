@@ -227,6 +227,7 @@ router.post("/login", async (req: Request, res: Response) => {
         user: {
           id: authData.user.id,
           email: authData.user.email,
+          role: profileData.role,
         },
         profile: profileData,
         session: authData.session,
