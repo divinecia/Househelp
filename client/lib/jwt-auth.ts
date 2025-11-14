@@ -18,6 +18,7 @@ interface AuthTokens {
 
 const TOKEN_KEY = "auth_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
+const USER_INFO_KEY = "user_info";
 const TOKEN_EXPIRY = 3600; // 1 hour in seconds
 const REFRESH_TOKEN_EXPIRY = 604800; // 7 days in seconds
 
@@ -72,14 +73,20 @@ export const isTokenExpired = (token: string): boolean => {
 };
 
 /**
- * Store tokens securely
+ * Store tokens and user info securely
  */
-export const storeTokens = (tokens: AuthTokens): void => {
+export const storeTokens = (
+  tokens: AuthTokens,
+  userInfo?: { id: string; email: string; role: "worker" | "homeowner" | "admin" }
+): void => {
   // In production, use httpOnly cookies via backend
   // For now, store in sessionStorage (more secure than localStorage for sensitive data)
   if (typeof window !== "undefined") {
     sessionStorage.setItem(TOKEN_KEY, tokens.accessToken);
     sessionStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
+    if (userInfo) {
+      sessionStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo));
+    }
   }
 };
 
@@ -106,12 +113,13 @@ export const getRefreshToken = (): string | null => {
 };
 
 /**
- * Clear all tokens
+ * Clear all tokens and user info
  */
 export const clearTokens = (): void => {
   if (typeof window !== "undefined") {
     sessionStorage.removeItem(TOKEN_KEY);
     sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+    sessionStorage.removeItem(USER_INFO_KEY);
   }
 };
 
@@ -156,7 +164,7 @@ export const refreshAccessToken = async (): Promise<string | null> => {
 };
 
 /**
- * Get current user from token
+ * Get current user from stored user info
  */
 export const getCurrentUser = (): (Omit<JWTPayload, "iat" | "exp"> & { isAuthenticated: boolean }) | null => {
   const token = getAccessToken();
@@ -164,6 +172,23 @@ export const getCurrentUser = (): (Omit<JWTPayload, "iat" | "exp"> & { isAuthent
     return null;
   }
 
+  // Try to get user info from sessionStorage first
+  if (typeof window !== "undefined") {
+    const userInfoStr = sessionStorage.getItem(USER_INFO_KEY);
+    if (userInfoStr) {
+      try {
+        const userInfo = JSON.parse(userInfoStr);
+        return {
+          ...userInfo,
+          isAuthenticated: true,
+        };
+      } catch {
+        // Fall through to JWT decode
+      }
+    }
+  }
+
+  // Fallback to JWT decode (for backwards compatibility)
   const payload = decodeJWT(token);
   if (!payload) {
     return null;
