@@ -57,39 +57,120 @@ export default function HomeownerProfile() {
   const [tempData, setTempData] = useState(profileData);
 
   useEffect(() => {
-    const loadOptions = async () => {
-      setLoadingOptions(true);
+    const loadData = async () => {
+      if (!user?.id) return;
+
+      setIsLoading(true);
       try {
-        const [residences, workerInfoOpts, genders, payments] =
+        const [residences, workerInfoOpts, genders, payments, homeownerData] =
           await Promise.all([
             getResidenceTypes(),
             getWorkerInfoOptions(),
             getGenders(),
             getPaymentMethods(),
+            apiGet(`/homeowners/${user.id}`),
           ]);
+
         if (residences.success && residences.data)
           setResidenceTypes(residences.data);
         if (workerInfoOpts.success && workerInfoOpts.data)
           setWorkerInfos(workerInfoOpts.data);
         if (genders.success && genders.data) setGendersList(genders.data);
         if (payments.success && payments.data) setPaymentModes(payments.data);
+
+        // Load homeowner profile from database
+        if (homeownerData.success && homeownerData.data) {
+          const dbData = homeownerData.data;
+          const newProfileData = {
+            age: dbData.age || "32",
+            homeAddress: dbData.home_address || "KG 123 St, Kigali",
+            typeOfResidence: dbData.type_of_residence || "apartment",
+            numberOfFamilyMembers: dbData.number_of_family_members || "4",
+            homeComposition: dbData.home_composition || "2 Adults, 2 Children",
+            workerInfo: dbData.worker_info || "Full-time",
+            specificDuties: dbData.specific_duties || "Cleaning, Cooking, Childcare",
+            workingHoursAndSchedule:
+              dbData.working_hours_and_schedule || "08:00 - 17:00, Mon-Fri",
+            numberOfWorkersNeeded: dbData.number_of_workers_needed || "2",
+            preferredGender: dbData.preferred_gender || "Female",
+            languagePreference: dbData.language_preference || "English, Kinyarwanda",
+            wagesOffered: dbData.wages_offered || "50,000 - 100,000 RWF",
+            reasonForHiring: dbData.reason_for_hiring || "Household management assistance",
+            specialRequirements: dbData.special_requirements || "Must have experience with children",
+            startDateRequired: dbData.start_date_required || "2024-02-01",
+            criminalRecord: dbData.criminal_record_required || "Yes, cleared",
+            preferredPaymentMode: dbData.payment_mode || "Bank Transfer",
+            bankDetails: dbData.bank_details || "Sample Bank, Account: ****5678",
+            religious: dbData.religious_preferences || "Christian",
+            smokingDrinkingRestrictions:
+              dbData.smoking_drinking_restrictions || "No smoking",
+            specificSkillsNeeded: dbData.specific_skills_needed || "Childcare, Cooking, Organization",
+          };
+          setProfileData(newProfileData);
+          setTempData(newProfileData);
+        }
       } catch (error) {
-        console.error("Failed to load profile options:", error);
+        console.error("Failed to load profile data:", error);
+        toast.error("Failed to load profile data");
       } finally {
+        setIsLoading(false);
         setLoadingOptions(false);
       }
     };
-    loadOptions();
-  }, []);
+    loadData();
+  }, [user?.id]);
 
   const handleEdit = () => {
     setIsEditing(true);
     setTempData(profileData);
   };
 
-  const handleSave = () => {
-    setProfileData(tempData);
-    setIsEditing(false);
+  const handleSave = async () => {
+    if (!user?.id) {
+      toast.error("User not found");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const updateData = {
+        age: tempData.age,
+        home_address: tempData.homeAddress,
+        type_of_residence: tempData.typeOfResidence,
+        number_of_family_members: tempData.numberOfFamilyMembers,
+        home_composition: tempData.homeComposition,
+        worker_info: tempData.workerInfo,
+        specific_duties: tempData.specificDuties,
+        working_hours_and_schedule: tempData.workingHoursAndSchedule,
+        number_of_workers_needed: tempData.numberOfWorkersNeeded,
+        preferred_gender: tempData.preferredGender,
+        language_preference: tempData.languagePreference,
+        wages_offered: tempData.wagesOffered,
+        reason_for_hiring: tempData.reasonForHiring,
+        special_requirements: tempData.specialRequirements,
+        start_date_required: tempData.startDateRequired,
+        criminal_record_required: tempData.criminalRecord,
+        payment_mode: tempData.preferredPaymentMode,
+        bank_details: tempData.bankDetails,
+        religious_preferences: tempData.religious,
+        smoking_drinking_restrictions: tempData.smokingDrinkingRestrictions,
+        specific_skills_needed: tempData.specificSkillsNeeded,
+      };
+
+      const response = await updateHomeowner(user.id, updateData);
+      if (response.success) {
+        setProfileData(tempData);
+        setIsEditing(false);
+        toast.success("Profile updated successfully!");
+      } else {
+        toast.error(response.error || "Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      toast.error("Error saving profile");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
