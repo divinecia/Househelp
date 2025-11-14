@@ -14,6 +14,11 @@ export interface EmailPayload {
 }
 
 export const sendEmail = async (payload: EmailPayload) => {
+  if (!SENDGRID_API_KEY) {
+    console.warn("SENDGRID_API_KEY is not configured. Email notifications are disabled.");
+    return { success: false, error: "Email service not configured" };
+  }
+
   try {
     const msg = {
       to: payload.to,
