@@ -90,6 +90,13 @@ router.post("/", validatePaymentData, async (req: Request, res: Response) => {
  */
 router.post("/verify", async (req: Request, res: Response) => {
   try {
+    if (!FLUTTERWAVE_SECRET_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: "Flutterwave configuration missing. FLUTTERWAVE_SECRET_KEY is not set.",
+      });
+    }
+
     const { transactionId } = req.body as PaymentVerificationRequest;
 
     if (!transactionId) {
