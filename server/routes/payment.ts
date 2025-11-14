@@ -2,6 +2,8 @@ import { Router, Request, Response } from "express";
 import axios from "axios";
 import { supabase } from "../lib/supabase";
 import { validatePaymentData } from "../middleware/validation";
+import { initializePayPackPayment, verifyPayPackPayment } from "../services/paypack";
+import { sendAdminReportEmail } from "../services/email";
 
 const router = Router();
 
@@ -201,6 +203,89 @@ router.post("/webhook", async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       error: error.message || "Webhook processing failed",
+    });
+  }
+});
+
+/**
+ * Initialize PayPack payment
+ */
+router.post("/paypack/initialize", async (req: Request, res: Response) => {
+  try {
+    const { amount, phone, description, reference } = req.body;
+
+    if (!amount || !phone) {
+      return res.status(400).json({
+        success: false,
+        error: "Amount and phone are required",
+      });
+    }
+
+    const paypackResponse = await initializePayPackPayment({
+      amount,
+      phone,
+      description,
+      reference,
+    });
+
+    if (paypackResponse.success) {
+      return res.json({
+        success: true,
+        data: {
+          transaction_id: paypackResponse.transaction_id,
+          payment_link: paypackResponse.payment_link,
+          reference: paypackResponse.reference,
+        },
+        message: paypackResponse.message,
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: paypackResponse.error,
+      });
+    }
+  } catch (error: any) {
+    console.error("PayPack initialization error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || "PayPack initialization failed",
+    });
+  }
+});
+
+/**
+ * Verify PayPack payment
+ */
+router.post("/paypack/verify", async (req: Request, res: Response) => {
+  try {
+    const { transactionId } = req.body;
+
+    if (!transactionId) {
+      return res.status(400).json({
+        success: false,
+        error: "Transaction ID is required",
+      });
+    }
+
+    const verifyResponse = await verifyPayPackPayment(transactionId);
+
+    if (verifyResponse.success && verifyResponse.status === "completed") {
+      return res.json({
+        success: true,
+        data: verifyResponse,
+        message: "Payment verified successfully",
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: verifyResponse.error || "Payment verification failed",
+      });
+    }
+  } catch (error: any) {
+    console.error("PayPack verification error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || "PayPack verification failed",
     });
   }
 });
