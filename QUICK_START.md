@@ -121,7 +121,7 @@ Click: **Sign In**
 
 ### While logged in as Worker:
 - Visit `/admin/dashboard` → ❌ Should redirect to `/admin/login`
-- Visit `/homeowner/dashboard` → ❌ Should redirect to `/homeowner/login`
+- Visit `/homeowner/dashboard` → �� Should redirect to `/homeowner/login`
 - Visit `/worker/dashboard` → ✅ Should stay on page
 
 ### While logged in as Homeowner:
@@ -244,11 +244,41 @@ Based on VERIFICATION_REPORT.md:
 
 ---
 
+## Test Forgot Password
+
+### Step 1: Request Password Reset
+Visit: `/admin/forgot-password` (or `/worker/forgot-password`, `/homeowner/forgot-password`)
+
+Enter:
+- **Email**: Your registered email address
+
+Click: **Send Reset Link**
+
+✅ Should see success message
+⚠️ **Note**: Email sending requires Supabase email configuration (see FORGOT_PASSWORD_STATUS.md)
+
+### Step 2: Check Email
+1. Check your email inbox (and spam folder)
+2. Look for email from Supabase
+3. Click "Reset Password" link
+
+### Step 3: Reset Password
+1. Should be redirected to reset page with token
+2. Enter new password
+3. Confirm new password
+4. Password should be updated
+5. Login with new password
+
+⚠️ **If emails aren't working**: Check Supabase Dashboard → Authentication → Email Templates to configure SMTP or use default email service.
+
+---
+
 ## Summary
 
 ✅ **Admin registration & login** - FULLY WORKING
-✅ **Worker registration & login** - FULLY WORKING  
+✅ **Worker registration & login** - FULLY WORKING
 ✅ **Homeowner registration & login** - FULLY WORKING
+✅ **Forgot password** - IMPLEMENTED (needs Supabase email config)
 ✅ **RBAC protection** - FULLY WORKING
 ✅ **Database persistence** - FULLY WORKING
 ✅ **Validation** - FULLY WORKING
