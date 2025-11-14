@@ -19,7 +19,9 @@ export default function HomeownerMore({ onLogout }: MoreMenuProps) {
     description: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [reportTypes, setReportTypes] = useState<Array<{ id: string; name: string }>>([]);
+  const [reportTypes, setReportTypes] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [isLoadingTypes, setIsLoadingTypes] = useState(false);
 
   useEffect(() => {
@@ -141,7 +143,9 @@ export default function HomeownerMore({ onLogout }: MoreMenuProps) {
       {/* Rate Worker Tab */}
       {activeTab === "rate" && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Rate a Worker</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">
+            Rate a Worker
+          </h2>
           <form onSubmit={handleSubmitRating} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
@@ -149,7 +153,9 @@ export default function HomeownerMore({ onLogout }: MoreMenuProps) {
               </label>
               <select
                 value={ratingData.worker}
-                onChange={(e) => setRatingData({ ...ratingData, worker: e.target.value })}
+                onChange={(e) =>
+                  setRatingData({ ...ratingData, worker: e.target.value })
+                }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 required
               >
@@ -169,7 +175,9 @@ export default function HomeownerMore({ onLogout }: MoreMenuProps) {
                   <button
                     key={star}
                     type="button"
-                    onClick={() => setRatingData({ ...ratingData, rating: star })}
+                    onClick={() =>
+                      setRatingData({ ...ratingData, rating: star })
+                    }
                     className={`text-3xl transition-colors ${
                       star <= ratingData.rating
                         ? "text-yellow-400"
@@ -188,7 +196,9 @@ export default function HomeownerMore({ onLogout }: MoreMenuProps) {
               </label>
               <textarea
                 value={ratingData.review}
-                onChange={(e) => setRatingData({ ...ratingData, review: e.target.value })}
+                onChange={(e) =>
+                  setRatingData({ ...ratingData, review: e.target.value })
+                }
                 placeholder="Share your experience with this worker..."
                 rows={4}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -210,7 +220,9 @@ export default function HomeownerMore({ onLogout }: MoreMenuProps) {
       {/* Report Issue Tab */}
       {activeTab === "report" && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Report an Issue</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">
+            Report an Issue
+          </h2>
           <form onSubmit={handleSubmitReport} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
@@ -218,12 +230,16 @@ export default function HomeownerMore({ onLogout }: MoreMenuProps) {
               </label>
               <select
                 value={reportData.issue}
-                onChange={(e) => setReportData({ ...reportData, issue: e.target.value })}
+                onChange={(e) =>
+                  setReportData({ ...reportData, issue: e.target.value })
+                }
                 disabled={isLoadingTypes}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                 required
               >
-                <option value="">{isLoadingTypes ? "Loading..." : "Select an issue type"}</option>
+                <option value="">
+                  {isLoadingTypes ? "Loading..." : "Select an issue type"}
+                </option>
                 {reportTypes.map((type) => (
                   <option key={type.id} value={type.name}>
                     {type.name}
@@ -238,7 +254,9 @@ export default function HomeownerMore({ onLogout }: MoreMenuProps) {
               </label>
               <textarea
                 value={reportData.description}
-                onChange={(e) => setReportData({ ...reportData, description: e.target.value })}
+                onChange={(e) =>
+                  setReportData({ ...reportData, description: e.target.value })
+                }
                 placeholder="Please describe the issue in detail..."
                 rows={5}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -272,7 +290,9 @@ export default function HomeownerMore({ onLogout }: MoreMenuProps) {
 
       {/* Help & Support */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Help & Support</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">
+          Help & Support
+        </h2>
         <div className="space-y-2">
           <button className="w-full text-left px-4 py-2 text-primary hover:bg-primary/10 rounded-lg transition-colors">
             FAQ

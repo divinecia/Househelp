@@ -5,13 +5,26 @@ import Footer from "@/components/Footer";
 import { registerUserViaAPI } from "@/lib/auth";
 import type { HomeownerData } from "@/lib/auth";
 import { validateRwandaID, parseRwandaID } from "@/lib/rwandaId";
-import { registerUser as apiRegisterHomeowner, getResidenceTypes, getWorkerInfoOptions, getGenders, getCriminalRecordOptions, getPaymentMethods, getSmokingDrinkingOptions } from "@/lib/api-client";
+import {
+  registerUser as apiRegisterHomeowner,
+  getResidenceTypes,
+  getWorkerInfoOptions,
+  getGenders,
+  getCriminalRecordOptions,
+  getPaymentMethods,
+  getSmokingDrinkingOptions,
+} from "@/lib/api-client";
 import { toast } from "sonner";
 
 export default function HomeownerRegister() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<Partial<HomeownerData>>({
-    homeComposition: { adults: false, children: false, elderly: false, pets: false },
+    homeComposition: {
+      adults: false,
+      children: false,
+      elderly: false,
+      pets: false,
+    },
     termsAccepted: false,
   });
   const [homeCompositionDetails, setHomeCompositionDetails] = useState<
@@ -19,18 +32,30 @@ export default function HomeownerRegister() {
   >([]);
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [residenceTypes, setResidenceTypes] = useState<Array<{ id: string; name: string }>>([]);
-  const [workerInfos, setWorkerInfos] = useState<Array<{ id: string; name: string }>>([]);
-  const [gendersList, setGendersList] = useState<Array<{ id: string; name: string }>>([]);
-  const [criminalRecordOptions, setCriminalRecordOptions] = useState<Array<{ id: string; name: string }>>([]);
-  const [paymentModes, setPaymentModes] = useState<Array<{ id: string; name: string }>>([]);
-  const [smokingDrinkingOptions, setSmokingDrinkingOptions] = useState<Array<{ id: string; name: string }>>([]);
+  const [residenceTypes, setResidenceTypes] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [workerInfos, setWorkerInfos] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [gendersList, setGendersList] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [criminalRecordOptions, setCriminalRecordOptions] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [paymentModes, setPaymentModes] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [smokingDrinkingOptions, setSmokingDrinkingOptions] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value, type } = e.currentTarget;
     if (type === "checkbox") {
@@ -60,7 +85,7 @@ export default function HomeownerRegister() {
 
   const handleDayToggle = (day: string) => {
     setSelectedDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
     );
   };
 
@@ -68,7 +93,14 @@ export default function HomeownerRegister() {
     const loadOptions = async () => {
       setLoadingOptions(true);
       try {
-        const [residences, workerInfoOpts, genders, criminalRecords, payments, smokingDrinking] = await Promise.all([
+        const [
+          residences,
+          workerInfoOpts,
+          genders,
+          criminalRecords,
+          payments,
+          smokingDrinking,
+        ] = await Promise.all([
           getResidenceTypes(),
           getWorkerInfoOptions(),
           getGenders(),
@@ -76,12 +108,16 @@ export default function HomeownerRegister() {
           getPaymentMethods(),
           getSmokingDrinkingOptions(),
         ]);
-        if (residences.success && residences.data) setResidenceTypes(residences.data);
-        if (workerInfoOpts.success && workerInfoOpts.data) setWorkerInfos(workerInfoOpts.data);
+        if (residences.success && residences.data)
+          setResidenceTypes(residences.data);
+        if (workerInfoOpts.success && workerInfoOpts.data)
+          setWorkerInfos(workerInfoOpts.data);
         if (genders.success && genders.data) setGendersList(genders.data);
-        if (criminalRecords.success && criminalRecords.data) setCriminalRecordOptions(criminalRecords.data);
+        if (criminalRecords.success && criminalRecords.data)
+          setCriminalRecordOptions(criminalRecords.data);
         if (payments.success && payments.data) setPaymentModes(payments.data);
-        if (smokingDrinking.success && smokingDrinking.data) setSmokingDrinkingOptions(smokingDrinking.data);
+        if (smokingDrinking.success && smokingDrinking.data)
+          setSmokingDrinkingOptions(smokingDrinking.data);
       } catch (error) {
         console.error("Failed to load options:", error);
       } finally {
@@ -94,11 +130,13 @@ export default function HomeownerRegister() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.fullName) newErrors.fullName = "Full name is required";
-    if (!formData.contactNumber) newErrors.contactNumber = "Contact number is required";
+    if (!formData.contactNumber)
+      newErrors.contactNumber = "Contact number is required";
     if (!formData.email) newErrors.email = "Email is required";
     if (!formData.password || formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
-    if (!formData.homeAddress) newErrors.homeAddress = "Home address is required";
+    if (!formData.homeAddress)
+      newErrors.homeAddress = "Home address is required";
     if (!formData.termsAccepted)
       newErrors.termsAccepted = "You must accept the terms and conditions";
     setErrors(newErrors);
@@ -127,7 +165,7 @@ export default function HomeownerRegister() {
         homeCompositionDetails: homeCompositionDetails
           .map(
             (d) =>
-              `${d.count} ${d.type}(s) - ${d.age ? d.age + " years old" : "age not specified"}`
+              `${d.count} ${d.type}(s) - ${d.age ? d.age + " years old" : "age not specified"}`,
           )
           .join(", "),
         nationalId: formData.nationalId,
@@ -175,7 +213,15 @@ export default function HomeownerRegister() {
     }
   };
 
-  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const days = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -191,7 +237,10 @@ export default function HomeownerRegister() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm"
+          >
             {/* Personal Information */}
             <fieldset className="mb-8 pb-8 border-b border-gray-200">
               <legend className="text-lg font-semibold text-foreground mb-6">
@@ -199,7 +248,10 @@ export default function HomeownerRegister() {
               </legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="fullName" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="fullName"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Full Name *
                   </label>
                   <input
@@ -211,12 +263,17 @@ export default function HomeownerRegister() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   {errors.fullName && (
-                    <p className="text-destructive text-sm mt-1">{errors.fullName}</p>
+                    <p className="text-destructive text-sm mt-1">
+                      {errors.fullName}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="age" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="age"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Age
                   </label>
                   <input
@@ -230,7 +287,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label htmlFor="homeAddress" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="homeAddress"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Home Address *
                   </label>
                   <input
@@ -242,12 +302,17 @@ export default function HomeownerRegister() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   {errors.homeAddress && (
-                    <p className="text-destructive text-sm mt-1">{errors.homeAddress}</p>
+                    <p className="text-destructive text-sm mt-1">
+                      {errors.homeAddress}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="typeOfResidence" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="typeOfResidence"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Type of Residence
                   </label>
                   <select
@@ -258,7 +323,9 @@ export default function HomeownerRegister() {
                     disabled={loadingOptions}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">{loadingOptions ? "Loading..." : "Select Type"}</option>
+                    <option value="">
+                      {loadingOptions ? "Loading..." : "Select Type"}
+                    </option>
                     {residenceTypes.map((type) => (
                       <option key={type.id} value={type.name.toLowerCase()}>
                         {type.name}
@@ -268,7 +335,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="numberOfFamilyMembers" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="numberOfFamilyMembers"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Number of Family Members
                   </label>
                   <input
@@ -290,7 +360,10 @@ export default function HomeownerRegister() {
               </legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="contactNumber" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="contactNumber"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Contact Number *
                   </label>
                   <input
@@ -302,12 +375,17 @@ export default function HomeownerRegister() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   {errors.contactNumber && (
-                    <p className="text-destructive text-sm mt-1">{errors.contactNumber}</p>
+                    <p className="text-destructive text-sm mt-1">
+                      {errors.contactNumber}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Email *
                   </label>
                   <input
@@ -319,12 +397,17 @@ export default function HomeownerRegister() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   {errors.email && (
-                    <p className="text-destructive text-sm mt-1">{errors.email}</p>
+                    <p className="text-destructive text-sm mt-1">
+                      {errors.email}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Password *
                   </label>
                   <input
@@ -336,12 +419,17 @@ export default function HomeownerRegister() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   {errors.password && (
-                    <p className="text-destructive text-sm mt-1">{errors.password}</p>
+                    <p className="text-destructive text-sm mt-1">
+                      {errors.password}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="nationalId" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="nationalId"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     National ID (16 digits, Optional)
                   </label>
                   <input
@@ -355,7 +443,8 @@ export default function HomeownerRegister() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Format: 16 digits (Status + YoB + Gender + BirthOrder + Frequency + Security)
+                    Format: 16 digits (Status + YoB + Gender + BirthOrder +
+                    Frequency + Security)
                   </p>
                 </div>
               </div>
@@ -373,7 +462,9 @@ export default function HomeownerRegister() {
                       <label className="flex items-center gap-2 cursor-pointer w-24">
                         <input
                           type="checkbox"
-                          checked={homeCompositionDetails.some((d) => d.type === type)}
+                          checked={homeCompositionDetails.some(
+                            (d) => d.type === type,
+                          )}
                           onChange={(e) => {
                             if (e.target.checked) {
                               setHomeCompositionDetails([
@@ -382,7 +473,9 @@ export default function HomeownerRegister() {
                               ]);
                             } else {
                               setHomeCompositionDetails(
-                                homeCompositionDetails.filter((d) => d.type !== type)
+                                homeCompositionDetails.filter(
+                                  (d) => d.type !== type,
+                                ),
                               );
                             }
                           }}
@@ -397,16 +490,17 @@ export default function HomeownerRegister() {
                             min="1"
                             placeholder="Count"
                             value={
-                              homeCompositionDetails.find((d) => d.type === type)
-                                ?.count || 1
+                              homeCompositionDetails.find(
+                                (d) => d.type === type,
+                              )?.count || 1
                             }
                             onChange={(e) => {
                               setHomeCompositionDetails(
                                 homeCompositionDetails.map((d) =>
                                   d.type === type
                                     ? { ...d, count: parseInt(e.target.value) }
-                                    : d
-                                )
+                                    : d,
+                                ),
                               );
                             }}
                             className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
@@ -417,16 +511,17 @@ export default function HomeownerRegister() {
                               min="0"
                               placeholder="Age"
                               value={
-                                homeCompositionDetails.find((d) => d.type === type)
-                                  ?.age || ""
+                                homeCompositionDetails.find(
+                                  (d) => d.type === type,
+                                )?.age || ""
                               }
                               onChange={(e) => {
                                 setHomeCompositionDetails(
                                   homeCompositionDetails.map((d) =>
                                     d.type === type
                                       ? { ...d, age: e.target.value }
-                                      : d
-                                  )
+                                      : d,
+                                  ),
                                 );
                               }}
                               className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
@@ -447,7 +542,10 @@ export default function HomeownerRegister() {
               </legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="workerInfo" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="workerInfo"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Worker Info (Full-time/Part-time/Live-in)
                   </label>
                   <select
@@ -458,9 +556,14 @@ export default function HomeownerRegister() {
                     disabled={loadingOptions}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">{loadingOptions ? "Loading..." : "Select Option"}</option>
+                    <option value="">
+                      {loadingOptions ? "Loading..." : "Select Option"}
+                    </option>
                     {workerInfos.map((info) => (
-                      <option key={info.id} value={info.name.toLowerCase().replace(/\s+/g, "-")}>
+                      <option
+                        key={info.id}
+                        value={info.name.toLowerCase().replace(/\s+/g, "-")}
+                      >
                         {info.name}
                       </option>
                     ))}
@@ -468,7 +571,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="numberOfWorkersNeeded" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="numberOfWorkersNeeded"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Number of Workers Needed
                   </label>
                   <input
@@ -482,7 +588,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label htmlFor="specificDuties" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="specificDuties"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Specific Duties
                   </label>
                   <textarea
@@ -505,13 +614,20 @@ export default function HomeownerRegister() {
                       <input
                         type="time"
                         placeholder="Start time"
-                        value={formData.workingHoursAndSchedule?.split("-")[0]?.trim() || ""}
+                        value={
+                          formData.workingHoursAndSchedule
+                            ?.split("-")[0]
+                            ?.trim() || ""
+                        }
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
                             workingHoursAndSchedule:
-                              e.target.value + " - " +
-                              (formData.workingHoursAndSchedule?.split("-")[1]?.trim() || ""),
+                              e.target.value +
+                              " - " +
+                              (formData.workingHoursAndSchedule
+                                ?.split("-")[1]
+                                ?.trim() || ""),
                           }))
                         }
                         className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -519,12 +635,18 @@ export default function HomeownerRegister() {
                       <input
                         type="time"
                         placeholder="End time"
-                        value={formData.workingHoursAndSchedule?.split("-")[1]?.trim() || ""}
+                        value={
+                          formData.workingHoursAndSchedule
+                            ?.split("-")[1]
+                            ?.trim() || ""
+                        }
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
                             workingHoursAndSchedule:
-                              (formData.workingHoursAndSchedule?.split("-")[0]?.trim() || "") +
+                              (formData.workingHoursAndSchedule
+                                ?.split("-")[0]
+                                ?.trim() || "") +
                               " - " +
                               e.target.value,
                           }))
@@ -534,7 +656,10 @@ export default function HomeownerRegister() {
                     </div>
                     <div className="grid grid-cols-4 gap-2">
                       {days.map((day) => (
-                        <label key={day} className="flex items-center gap-2 cursor-pointer">
+                        <label
+                          key={day}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
                           <input
                             type="checkbox"
                             checked={selectedDays.includes(day)}
@@ -549,7 +674,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="preferredGender" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="preferredGender"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Preferred Gender (if applicable)
                   </label>
                   <select
@@ -570,7 +698,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="languagePreference" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="languagePreference"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Language Preference
                   </label>
                   <input
@@ -584,7 +715,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="wagesOffered" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="wagesOffered"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Wages Offered
                   </label>
                   <input
@@ -598,7 +732,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="startDateRequired" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="startDateRequired"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Start Date Required
                   </label>
                   <input
@@ -620,7 +757,10 @@ export default function HomeownerRegister() {
               </legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="reasonForHiring" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="reasonForHiring"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Reason for Hiring
                   </label>
                   <input
@@ -634,7 +774,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="criminalRecord" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="criminalRecord"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Criminal Record Check Required
                   </label>
                   <select
@@ -645,7 +788,9 @@ export default function HomeownerRegister() {
                     disabled={loadingOptions}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">{loadingOptions ? "Loading..." : "Select"}</option>
+                    <option value="">
+                      {loadingOptions ? "Loading..." : "Select"}
+                    </option>
                     {criminalRecordOptions.map((option) => (
                       <option key={option.id} value={option.name.toLowerCase()}>
                         {option.name}
@@ -655,7 +800,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="paymentMode" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="paymentMode"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Preferred Payment Mode
                   </label>
                   <select
@@ -666,9 +814,14 @@ export default function HomeownerRegister() {
                     disabled={loadingOptions}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">{loadingOptions ? "Loading..." : "Select Mode"}</option>
+                    <option value="">
+                      {loadingOptions ? "Loading..." : "Select Mode"}
+                    </option>
                     {paymentModes.map((mode) => (
-                      <option key={mode.id} value={mode.name.toLowerCase().replace(/\s+/g, "-")}>
+                      <option
+                        key={mode.id}
+                        value={mode.name.toLowerCase().replace(/\s+/g, "-")}
+                      >
                         {mode.name}
                       </option>
                     ))}
@@ -676,7 +829,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="bankDetails" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="bankDetails"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Bank Details (if applicable)
                   </label>
                   <input
@@ -690,7 +846,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="religious" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="religious"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Religious Preferences
                   </label>
                   <input
@@ -704,7 +863,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="smokingDrinkingRestrictions" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="smokingDrinkingRestrictions"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Smoking/Drinking Restrictions
                   </label>
                   <select
@@ -715,9 +877,14 @@ export default function HomeownerRegister() {
                     disabled={loadingOptions}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">{loadingOptions ? "Loading..." : "Select Tolerance"}</option>
+                    <option value="">
+                      {loadingOptions ? "Loading..." : "Select Tolerance"}
+                    </option>
                     {smokingDrinkingOptions.map((option) => (
-                      <option key={option.id} value={option.name.toLowerCase().replace(/\s+/g, "_")}>
+                      <option
+                        key={option.id}
+                        value={option.name.toLowerCase().replace(/\s+/g, "_")}
+                      >
                         {option.name}
                       </option>
                     ))}
@@ -725,7 +892,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label htmlFor="specialRequirements" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="specialRequirements"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Special Requirements
                   </label>
                   <textarea
@@ -739,7 +909,10 @@ export default function HomeownerRegister() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label htmlFor="specificSkillsNeeded" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="specificSkillsNeeded"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Specific Skills Needed
                   </label>
                   <textarea
@@ -769,7 +942,9 @@ export default function HomeownerRegister() {
                 </span>
               </label>
               {errors.termsAccepted && (
-                <p className="text-destructive text-sm mt-2">{errors.termsAccepted}</p>
+                <p className="text-destructive text-sm mt-2">
+                  {errors.termsAccepted}
+                </p>
               )}
             </div>
 

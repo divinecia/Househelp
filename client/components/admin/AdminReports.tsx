@@ -14,7 +14,9 @@ interface Report {
 }
 
 export default function AdminReports() {
-  const [reportTypes, setReportTypes] = useState<Array<{ id: string; name: string }>>([]);
+  const [reportTypes, setReportTypes] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [isLoadingTypes, setIsLoadingTypes] = useState(false);
   const [reports, setReports] = useState<Report[]>([
     {
@@ -119,15 +121,24 @@ export default function AdminReports() {
       {/* Form */}
       {showForm && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Add New Report</h3>
-          <form onSubmit={handleAddReport} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
+            Add New Report
+          </h3>
+          <form
+            onSubmit={handleAddReport}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
             <select
               value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, type: e.target.value })
+              }
               disabled={isLoadingTypes}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
             >
-              <option value="">{isLoadingTypes ? "Loading..." : "Select Report Type"}</option>
+              <option value="">
+                {isLoadingTypes ? "Loading..." : "Select Report Type"}
+              </option>
               {reportTypes.map((type) => (
                 <option key={type.id} value={type.name}>
                   {type.name}
@@ -138,7 +149,9 @@ export default function AdminReports() {
               type="text"
               placeholder="Report Title"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             />
@@ -158,40 +171,75 @@ export default function AdminReports() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Type</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Title</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Reporter</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Target User</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Status</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Date</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Actions</th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
+                  Type
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
+                  Title
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
+                  Reporter
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
+                  Target User
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
+                  Date
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {reports.map((report) => (
-                <tr key={report.id} className="hover:bg-gray-50 transition-colors">
+                <tr
+                  key={report.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
                   <td className="px-6 py-4 text-sm">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getTypeColor(report.type)}`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getTypeColor(report.type)}`}
+                    >
                       {report.type.replace("_", " ")}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-foreground font-medium">{report.title}</td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{report.reporter}</td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{report.targetUser || "N/A"}</td>
+                  <td className="px-6 py-4 text-sm text-foreground font-medium">
+                    {report.title}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-muted-foreground">
+                    {report.reporter}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-muted-foreground">
+                    {report.targetUser || "N/A"}
+                  </td>
                   <td className="px-6 py-4 text-sm">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      report.status === "closed" ? "bg-gray-100 text-gray-700" :
-                      report.status === "resolved" ? "bg-green-100 text-green-700" :
-                      report.status === "reviewed" ? "bg-blue-100 text-blue-700" :
-                      "bg-yellow-100 text-yellow-700"
-                    }`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        report.status === "closed"
+                          ? "bg-gray-100 text-gray-700"
+                          : report.status === "resolved"
+                            ? "bg-green-100 text-green-700"
+                            : report.status === "reviewed"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
                       {report.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{report.createdDate}</td>
+                  <td className="px-6 py-4 text-sm text-muted-foreground">
+                    {report.createdDate}
+                  </td>
                   <td className="px-6 py-4 text-sm">
                     <div className="flex gap-2">
-                      <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View">
+                      <button
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="View"
+                      >
                         <Eye size={16} />
                       </button>
                       <button

@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import { Trash2, Edit2, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { apiGet, apiPost, apiDelete, getTrainingCategories } from "../../lib/api-client";
+import {
+  apiGet,
+  apiPost,
+  apiDelete,
+  getTrainingCategories,
+} from "../../lib/api-client";
 
 interface Training {
   id: string;
@@ -18,7 +23,9 @@ export default function AdminTraining() {
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
+  const [categories, setCategories] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -174,7 +181,9 @@ export default function AdminTraining() {
               disabled={isLoadingCategories}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
             >
-              <option value="">{isLoadingCategories ? "Loading..." : "Select Category"}</option>
+              <option value="">
+                {isLoadingCategories ? "Loading..." : "Select Category"}
+              </option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.name}>
                   {cat.name}

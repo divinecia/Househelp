@@ -5,7 +5,14 @@ import Footer from "@/components/Footer";
 import { registerUser } from "@/lib/auth";
 import type { WorkerData } from "@/lib/auth";
 import { validateRwandaID, parseRwandaID } from "@/lib/rwandaId";
-import { registerUser as apiRegisterWorker, getGenders, getMaritalStatuses, getWageUnits, getLanguageLevels, getInsuranceCompanies } from "@/lib/api-client";
+import {
+  registerUser as apiRegisterWorker,
+  getGenders,
+  getMaritalStatuses,
+  getWageUnits,
+  getLanguageLevels,
+  getInsuranceCompanies,
+} from "@/lib/api-client";
 import { toast } from "sonner";
 import { X } from "lucide-react";
 
@@ -14,20 +21,32 @@ export default function WorkerRegister() {
   const [formData, setFormData] = useState<Partial<WorkerData>>({
     termsAccepted: false,
   });
-  const [languages, setLanguages] = useState<Array<{ language: string; level: string }>>([]);
+  const [languages, setLanguages] = useState<
+    Array<{ language: string; level: string }>
+  >([]);
   const [newLanguage, setNewLanguage] = useState({ language: "", level: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [gendersList, setGendersList] = useState<Array<{ id: string; name: string }>>([]);
-  const [maritalStatuses, setMaritalStatuses] = useState<Array<{ id: string; name: string }>>([]);
-  const [wageUnits, setWageUnits] = useState<Array<{ id: string; name: string }>>([]);
-  const [languageLevels, setLanguageLevels] = useState<Array<{ id: string; name: string }>>([]);
-  const [insuranceCompanies, setInsuranceCompanies] = useState<Array<{ id: string; name: string }>>([]);
+  const [gendersList, setGendersList] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [maritalStatuses, setMaritalStatuses] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [wageUnits, setWageUnits] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [languageLevels, setLanguageLevels] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [insuranceCompanies, setInsuranceCompanies] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value, type } = e.currentTarget;
     if (type === "checkbox") {
@@ -43,7 +62,10 @@ export default function WorkerRegister() {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    fieldName: string,
+  ) => {
     if (e.target.files && e.target.files[0]) {
       const fileName = e.target.files[0].name;
       setFormData((prev) => ({
@@ -68,18 +90,21 @@ export default function WorkerRegister() {
     const loadOptions = async () => {
       setLoadingOptions(true);
       try {
-        const [genders, maritalStatus, wages, levels, insurance] = await Promise.all([
-          getGenders(),
-          getMaritalStatuses(),
-          getWageUnits(),
-          getLanguageLevels(),
-          getInsuranceCompanies(),
-        ]);
+        const [genders, maritalStatus, wages, levels, insurance] =
+          await Promise.all([
+            getGenders(),
+            getMaritalStatuses(),
+            getWageUnits(),
+            getLanguageLevels(),
+            getInsuranceCompanies(),
+          ]);
         if (genders.success && genders.data) setGendersList(genders.data);
-        if (maritalStatus.success && maritalStatus.data) setMaritalStatuses(maritalStatus.data);
+        if (maritalStatus.success && maritalStatus.data)
+          setMaritalStatuses(maritalStatus.data);
         if (wages.success && wages.data) setWageUnits(wages.data);
         if (levels.success && levels.data) setLanguageLevels(levels.data);
-        if (insurance.success && insurance.data) setInsuranceCompanies(insurance.data);
+        if (insurance.success && insurance.data)
+          setInsuranceCompanies(insurance.data);
       } catch (error) {
         console.error("Failed to load options:", error);
       } finally {
@@ -92,11 +117,13 @@ export default function WorkerRegister() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.fullName) newErrors.fullName = "Full name is required";
-    if (!formData.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required";
+    if (!formData.dateOfBirth)
+      newErrors.dateOfBirth = "Date of birth is required";
     if (!formData.email) newErrors.email = "Email is required";
     if (!formData.password || formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
-    if (!formData.phoneNumber) newErrors.phoneNumber = "Phone number is required";
+    if (!formData.phoneNumber)
+      newErrors.phoneNumber = "Phone number is required";
     if (!formData.nationalId) {
       newErrors.nationalId = "National ID is required";
     } else {
@@ -105,7 +132,8 @@ export default function WorkerRegister() {
         if (parsed.errors.length > 0) {
           newErrors.nationalId = parsed.errors[0];
         } else {
-          newErrors.nationalId = "National ID must be exactly 16 digits in Rwanda format";
+          newErrors.nationalId =
+            "National ID must be exactly 16 digits in Rwanda format";
         }
       }
     }
@@ -141,7 +169,9 @@ export default function WorkerRegister() {
         educationCertificate: formData.educationCertificate,
         trainingCertificate: formData.trainingCertificate,
         criminalRecord: formData.criminalRecord,
-        languageProficiency: languages.map(l => `${l.language} (${l.level})`).join(", "),
+        languageProficiency: languages
+          .map((l) => `${l.language} (${l.level})`)
+          .join(", "),
         insuranceCompany: formData.insuranceCompany,
         healthCondition: formData.healthCondition,
         emergencyName: formData.emergencyName,
@@ -168,7 +198,8 @@ export default function WorkerRegister() {
         navigate("/worker/login");
       }, 1000);
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Registration failed";
+      const errorMsg =
+        error instanceof Error ? error.message : "Registration failed";
       toast.error(errorMsg);
       console.error("Registration failed:", error);
     }
@@ -188,7 +219,10 @@ export default function WorkerRegister() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm"
+          >
             {/* Personal Information */}
             <fieldset className="mb-8 pb-8 border-b border-gray-200">
               <legend className="text-lg font-semibold text-foreground mb-6">
@@ -196,7 +230,10 @@ export default function WorkerRegister() {
               </legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="fullName" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="fullName"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Full Name *
                   </label>
                   <input
@@ -208,12 +245,17 @@ export default function WorkerRegister() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   {errors.fullName && (
-                    <p className="text-destructive text-sm mt-1">{errors.fullName}</p>
+                    <p className="text-destructive text-sm mt-1">
+                      {errors.fullName}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="dateOfBirth" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="dateOfBirth"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Date of Birth (Must be 18+) *
                   </label>
                   <input
@@ -225,12 +267,17 @@ export default function WorkerRegister() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   {errors.dateOfBirth && (
-                    <p className="text-destructive text-sm mt-1">{errors.dateOfBirth}</p>
+                    <p className="text-destructive text-sm mt-1">
+                      {errors.dateOfBirth}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="gender" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="gender"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Gender
                   </label>
                   <select
@@ -241,7 +288,9 @@ export default function WorkerRegister() {
                     disabled={loadingOptions}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">{loadingOptions ? "Loading..." : "Select Gender"}</option>
+                    <option value="">
+                      {loadingOptions ? "Loading..." : "Select Gender"}
+                    </option>
                     {gendersList.map((gender) => (
                       <option key={gender.id} value={gender.name.toLowerCase()}>
                         {gender.name}
@@ -251,7 +300,10 @@ export default function WorkerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="maritalStatus" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="maritalStatus"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Marital Status
                   </label>
                   <select
@@ -262,7 +314,9 @@ export default function WorkerRegister() {
                     disabled={loadingOptions}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">{loadingOptions ? "Loading..." : "Select Status"}</option>
+                    <option value="">
+                      {loadingOptions ? "Loading..." : "Select Status"}
+                    </option>
                     {maritalStatuses.map((status) => (
                       <option key={status.id} value={status.name.toLowerCase()}>
                         {status.name}
@@ -280,7 +334,10 @@ export default function WorkerRegister() {
               </legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Email *
                   </label>
                   <input
@@ -292,12 +349,17 @@ export default function WorkerRegister() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   {errors.email && (
-                    <p className="text-destructive text-sm mt-1">{errors.email}</p>
+                    <p className="text-destructive text-sm mt-1">
+                      {errors.email}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="phoneNumber" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="phoneNumber"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Phone Number *
                   </label>
                   <input
@@ -309,12 +371,17 @@ export default function WorkerRegister() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   {errors.phoneNumber && (
-                    <p className="text-destructive text-sm mt-1">{errors.phoneNumber}</p>
+                    <p className="text-destructive text-sm mt-1">
+                      {errors.phoneNumber}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Password *
                   </label>
                   <input
@@ -326,12 +393,17 @@ export default function WorkerRegister() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   {errors.password && (
-                    <p className="text-destructive text-sm mt-1">{errors.password}</p>
+                    <p className="text-destructive text-sm mt-1">
+                      {errors.password}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="nationalId" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="nationalId"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     National ID (16 digits) *
                   </label>
                   <input
@@ -345,10 +417,13 @@ export default function WorkerRegister() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Format: 16 digits (Status + YoB + Gender + BirthOrder + Frequency + Security)
+                    Format: 16 digits (Status + YoB + Gender + BirthOrder +
+                    Frequency + Security)
                   </p>
                   {errors.nationalId && (
-                    <p className="text-destructive text-sm mt-1">{errors.nationalId}</p>
+                    <p className="text-destructive text-sm mt-1">
+                      {errors.nationalId}
+                    </p>
                   )}
                 </div>
               </div>
@@ -361,7 +436,10 @@ export default function WorkerRegister() {
               </legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="typeOfWork" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="typeOfWork"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Type of Work
                   </label>
                   <input
@@ -376,7 +454,10 @@ export default function WorkerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="workExperience" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="workExperience"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Work Experience: {formData.workExperience || 0} years
                   </label>
                   <input
@@ -389,11 +470,16 @@ export default function WorkerRegister() {
                     onChange={handleChange}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">0 to 10+ years</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    0 to 10+ years
+                  </p>
                 </div>
 
                 <div>
-                  <label htmlFor="expectedWages" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="expectedWages"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Expected Wages
                   </label>
                   <div className="flex gap-2">
@@ -404,23 +490,34 @@ export default function WorkerRegister() {
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          expectedWages: e.target.value + " " + (formData.expectedWages?.split(" ")[1] || "per hour"),
+                          expectedWages:
+                            e.target.value +
+                            " " +
+                            (formData.expectedWages?.split(" ")[1] ||
+                              "per hour"),
                         }))
                       }
                       className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                     <select
-                      value={formData.expectedWages?.split(" ")[1] || "per hour"}
+                      value={
+                        formData.expectedWages?.split(" ")[1] || "per hour"
+                      }
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          expectedWages: (formData.expectedWages?.split(" ")[0] || "") + " " + e.target.value,
+                          expectedWages:
+                            (formData.expectedWages?.split(" ")[0] || "") +
+                            " " +
+                            e.target.value,
                         }))
                       }
                       disabled={loadingOptions}
                       className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                     >
-                      <option value="">{loadingOptions ? "Loading..." : "Select Unit"}</option>
+                      <option value="">
+                        {loadingOptions ? "Loading..." : "Select Unit"}
+                      </option>
                       {wageUnits.map((unit) => (
                         <option key={unit.id} value={unit.name.toLowerCase()}>
                           {unit.name}
@@ -431,7 +528,10 @@ export default function WorkerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="workingHoursAndDays" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="workingHoursAndDays"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Working Hours and Days
                   </label>
                   <div className="space-y-2">
@@ -439,11 +539,19 @@ export default function WorkerRegister() {
                       <input
                         type="time"
                         placeholder="Start time"
-                        value={formData.workingHoursAndDays?.split("-")[0]?.trim() || ""}
+                        value={
+                          formData.workingHoursAndDays?.split("-")[0]?.trim() ||
+                          ""
+                        }
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
-                            workingHoursAndDays: e.target.value + " - " + (formData.workingHoursAndDays?.split("-")[1]?.trim() || ""),
+                            workingHoursAndDays:
+                              e.target.value +
+                              " - " +
+                              (formData.workingHoursAndDays
+                                ?.split("-")[1]
+                                ?.trim() || ""),
                           }))
                         }
                         className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -451,29 +559,48 @@ export default function WorkerRegister() {
                       <input
                         type="time"
                         placeholder="End time"
-                        value={formData.workingHoursAndDays?.split("-")[1]?.trim() || ""}
+                        value={
+                          formData.workingHoursAndDays?.split("-")[1]?.trim() ||
+                          ""
+                        }
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
-                            workingHoursAndDays: (formData.workingHoursAndDays?.split("-")[0]?.trim() || "") + " - " + e.target.value,
+                            workingHoursAndDays:
+                              (formData.workingHoursAndDays
+                                ?.split("-")[0]
+                                ?.trim() || "") +
+                              " - " +
+                              e.target.value,
                           }))
                         }
                         className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                       />
                     </div>
                     <div className="grid grid-cols-4 gap-2">
-                      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-                        <label key={day} className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" className="w-4 h-4 rounded" />
-                          <span className="text-sm">{day}</span>
-                        </label>
-                      ))}
+                      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
+                        (day) => (
+                          <label
+                            key={day}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              className="w-4 h-4 rounded"
+                            />
+                            <span className="text-sm">{day}</span>
+                          </label>
+                        ),
+                      )}
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="educationQualification" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="educationQualification"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Education Qualification
                   </label>
                   <input
@@ -488,23 +615,33 @@ export default function WorkerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="educationDoc" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="educationDoc"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Upload Education Certificate
                   </label>
                   <input
                     type="file"
                     id="educationDoc"
-                    onChange={(e) => handleFileChange(e, "educationCertificate")}
+                    onChange={(e) =>
+                      handleFileChange(e, "educationCertificate")
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     accept=".pdf,.doc,.docx,.jpg,.png"
                   />
                   {formData.educationCertificate && (
-                    <p className="text-xs text-primary mt-1">✓ {formData.educationCertificate}</p>
+                    <p className="text-xs text-primary mt-1">
+                      ✓ {formData.educationCertificate}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="trainingDoc" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="trainingDoc"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Upload Training Certificate
                   </label>
                   <input
@@ -515,12 +652,17 @@ export default function WorkerRegister() {
                     accept=".pdf,.doc,.docx,.jpg,.png"
                   />
                   {formData.trainingCertificate && (
-                    <p className="text-xs text-primary mt-1">✓ {formData.trainingCertificate}</p>
+                    <p className="text-xs text-primary mt-1">
+                      ✓ {formData.trainingCertificate}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="criminalDoc" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="criminalDoc"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Upload Criminal Record Check
                   </label>
                   <input
@@ -531,7 +673,9 @@ export default function WorkerRegister() {
                     accept=".pdf,.doc,.docx,.jpg,.png"
                   />
                   {formData.criminalRecord && (
-                    <p className="text-xs text-primary mt-1">✓ {formData.criminalRecord}</p>
+                    <p className="text-xs text-primary mt-1">
+                      ✓ {formData.criminalRecord}
+                    </p>
                   )}
                 </div>
               </div>
@@ -548,16 +692,25 @@ export default function WorkerRegister() {
                     type="text"
                     placeholder="Language"
                     value={newLanguage.language}
-                    onChange={(e) => setNewLanguage({ ...newLanguage, language: e.target.value })}
+                    onChange={(e) =>
+                      setNewLanguage({
+                        ...newLanguage,
+                        language: e.target.value,
+                      })
+                    }
                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                   <select
                     value={newLanguage.level}
-                    onChange={(e) => setNewLanguage({ ...newLanguage, level: e.target.value })}
+                    onChange={(e) =>
+                      setNewLanguage({ ...newLanguage, level: e.target.value })
+                    }
                     disabled={loadingOptions}
                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">{loadingOptions ? "Loading..." : "Select Level"}</option>
+                    <option value="">
+                      {loadingOptions ? "Loading..." : "Select Level"}
+                    </option>
                     {languageLevels.map((level) => (
                       <option key={level.id} value={level.name}>
                         {level.name}
@@ -602,7 +755,10 @@ export default function WorkerRegister() {
               </legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="insuranceCompany" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="insuranceCompany"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Insurance Company
                   </label>
                   <select
@@ -613,7 +769,11 @@ export default function WorkerRegister() {
                     disabled={loadingOptions}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">{loadingOptions ? "Loading..." : "Select Insurance Company"}</option>
+                    <option value="">
+                      {loadingOptions
+                        ? "Loading..."
+                        : "Select Insurance Company"}
+                    </option>
                     {insuranceCompanies.map((company) => (
                       <option key={company.id} value={company.name}>
                         {company.name}
@@ -623,7 +783,10 @@ export default function WorkerRegister() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label htmlFor="healthCondition" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="healthCondition"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Health Conditions / Medical Notes
                   </label>
                   <textarea
@@ -638,7 +801,10 @@ export default function WorkerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="emergencyName" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="emergencyName"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Emergency Contact Name
                   </label>
                   <input
@@ -652,7 +818,10 @@ export default function WorkerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="emergencyContact" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="emergencyContact"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Emergency Contact Number
                   </label>
                   <input
@@ -674,7 +843,10 @@ export default function WorkerRegister() {
               </legend>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="bankAccountNumber" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="bankAccountNumber"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Bank Account Number
                   </label>
                   <input
@@ -688,7 +860,10 @@ export default function WorkerRegister() {
                 </div>
 
                 <div>
-                  <label htmlFor="accountHolder" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="accountHolder"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Account Holder Name
                   </label>
                   <input
@@ -718,7 +893,9 @@ export default function WorkerRegister() {
                 </span>
               </label>
               {errors.termsAccepted && (
-                <p className="text-destructive text-sm mt-2">{errors.termsAccepted}</p>
+                <p className="text-destructive text-sm mt-2">
+                  {errors.termsAccepted}
+                </p>
               )}
             </div>
 

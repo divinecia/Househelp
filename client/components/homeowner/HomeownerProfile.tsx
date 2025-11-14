@@ -1,13 +1,26 @@
 import { useState, useEffect } from "react";
 import { User, Save, X } from "lucide-react";
-import { getResidenceTypes, getWorkerInfoOptions, getGenders, getPaymentMethods } from "@/lib/api-client";
+import {
+  getResidenceTypes,
+  getWorkerInfoOptions,
+  getGenders,
+  getPaymentMethods,
+} from "@/lib/api-client";
 
 export default function HomeownerProfile() {
   const [isEditing, setIsEditing] = useState(false);
-  const [residenceTypes, setResidenceTypes] = useState<Array<{ id: string; name: string }>>([]);
-  const [workerInfos, setWorkerInfos] = useState<Array<{ id: string; name: string }>>([]);
-  const [gendersList, setGendersList] = useState<Array<{ id: string; name: string }>>([]);
-  const [paymentModes, setPaymentModes] = useState<Array<{ id: string; name: string }>>([]);
+  const [residenceTypes, setResidenceTypes] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [workerInfos, setWorkerInfos] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [gendersList, setGendersList] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [paymentModes, setPaymentModes] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [profileData, setProfileData] = useState({
     age: "32",
@@ -39,14 +52,17 @@ export default function HomeownerProfile() {
     const loadOptions = async () => {
       setLoadingOptions(true);
       try {
-        const [residences, workerInfoOpts, genders, payments] = await Promise.all([
-          getResidenceTypes(),
-          getWorkerInfoOptions(),
-          getGenders(),
-          getPaymentMethods(),
-        ]);
-        if (residences.success && residences.data) setResidenceTypes(residences.data);
-        if (workerInfoOpts.success && workerInfoOpts.data) setWorkerInfos(workerInfoOpts.data);
+        const [residences, workerInfoOpts, genders, payments] =
+          await Promise.all([
+            getResidenceTypes(),
+            getWorkerInfoOptions(),
+            getGenders(),
+            getPaymentMethods(),
+          ]);
+        if (residences.success && residences.data)
+          setResidenceTypes(residences.data);
+        if (workerInfoOpts.success && workerInfoOpts.data)
+          setWorkerInfos(workerInfoOpts.data);
         if (genders.success && genders.data) setGendersList(genders.data);
         if (payments.success && payments.data) setPaymentModes(payments.data);
       } catch (error) {
@@ -86,7 +102,9 @@ export default function HomeownerProfile() {
             <User size={60} className="text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-foreground">Alice Johnson</h2>
+            <h2 className="text-2xl font-bold text-foreground">
+              Alice Johnson
+            </h2>
             <p className="text-muted-foreground">Homeowner Profile</p>
             {!isEditing && (
               <button
@@ -102,13 +120,17 @@ export default function HomeownerProfile() {
 
       {/* Profile Information */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-foreground mb-6">Profile Information</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-6">
+          Profile Information
+        </h3>
 
         {isEditing ? (
           <form className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Age</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Age
+                </label>
                 <input
                   type="number"
                   value={tempData.age}
@@ -117,7 +139,9 @@ export default function HomeownerProfile() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Home Address</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Home Address
+                </label>
                 <input
                   type="text"
                   value={tempData.homeAddress}
@@ -126,14 +150,20 @@ export default function HomeownerProfile() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Type of Residence</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Type of Residence
+                </label>
                 <select
                   value={tempData.typeOfResidence}
-                  onChange={(e) => handleChange("typeOfResidence", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("typeOfResidence", e.target.value)
+                  }
                   disabled={loadingOptions}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                 >
-                  <option value="">{loadingOptions ? "Loading..." : "Select Residence Type"}</option>
+                  <option value="">
+                    {loadingOptions ? "Loading..." : "Select Residence Type"}
+                  </option>
                   {residenceTypes.map((type) => (
                     <option key={type.id} value={type.name.toLowerCase()}>
                       {type.name}
@@ -142,32 +172,44 @@ export default function HomeownerProfile() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Number of Family Members</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Number of Family Members
+                </label>
                 <input
                   type="number"
                   value={tempData.numberOfFamilyMembers}
-                  onChange={(e) => handleChange("numberOfFamilyMembers", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("numberOfFamilyMembers", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">Home Composition</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Home Composition
+                </label>
                 <input
                   type="text"
                   value={tempData.homeComposition}
-                  onChange={(e) => handleChange("homeComposition", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("homeComposition", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Worker Info</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Worker Info
+                </label>
                 <select
                   value={tempData.workerInfo}
                   onChange={(e) => handleChange("workerInfo", e.target.value)}
                   disabled={loadingOptions}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                 >
-                  <option value="">{loadingOptions ? "Loading..." : "Select Worker Info"}</option>
+                  <option value="">
+                    {loadingOptions ? "Loading..." : "Select Worker Info"}
+                  </option>
                   {workerInfos.map((info) => (
                     <option key={info.id} value={info.name}>
                       {info.name}
@@ -176,41 +218,59 @@ export default function HomeownerProfile() {
                 </select>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">Specific Duties</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Specific Duties
+                </label>
                 <textarea
                   value={tempData.specificDuties}
-                  onChange={(e) => handleChange("specificDuties", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("specificDuties", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   rows={3}
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">Working Hours and Schedule</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Working Hours and Schedule
+                </label>
                 <input
                   type="text"
                   value={tempData.workingHoursAndSchedule}
-                  onChange={(e) => handleChange("workingHoursAndSchedule", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("workingHoursAndSchedule", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Number of Workers Needed</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Number of Workers Needed
+                </label>
                 <input
                   type="number"
                   value={tempData.numberOfWorkersNeeded}
-                  onChange={(e) => handleChange("numberOfWorkersNeeded", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("numberOfWorkersNeeded", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Preferred Gender</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Preferred Gender
+                </label>
                 <select
                   value={tempData.preferredGender}
-                  onChange={(e) => handleChange("preferredGender", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("preferredGender", e.target.value)
+                  }
                   disabled={loadingOptions}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                 >
-                  <option value="">{loadingOptions ? "Loading..." : "Select Gender"}</option>
+                  <option value="">
+                    {loadingOptions ? "Loading..." : "Select Gender"}
+                  </option>
                   <option value="No preference">No preference</option>
                   {gendersList.map((gender) => (
                     <option key={gender.id} value={gender.name}>
@@ -220,16 +280,22 @@ export default function HomeownerProfile() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Language Preference</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Language Preference
+                </label>
                 <input
                   type="text"
                   value={tempData.languagePreference}
-                  onChange={(e) => handleChange("languagePreference", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("languagePreference", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Wages Offered</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Wages Offered
+                </label>
                 <input
                   type="text"
                   value={tempData.wagesOffered}
@@ -238,50 +304,72 @@ export default function HomeownerProfile() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Reason for Hiring</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Reason for Hiring
+                </label>
                 <input
                   type="text"
                   value={tempData.reasonForHiring}
-                  onChange={(e) => handleChange("reasonForHiring", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("reasonForHiring", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">Special Requirements</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Special Requirements
+                </label>
                 <textarea
                   value={tempData.specialRequirements}
-                  onChange={(e) => handleChange("specialRequirements", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("specialRequirements", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   rows={2}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Start Date Required</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Start Date Required
+                </label>
                 <input
                   type="date"
                   value={tempData.startDateRequired}
-                  onChange={(e) => handleChange("startDateRequired", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("startDateRequired", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Criminal Record</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Criminal Record
+                </label>
                 <input
                   type="text"
                   value={tempData.criminalRecord}
-                  onChange={(e) => handleChange("criminalRecord", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("criminalRecord", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Preferred Payment Mode</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Preferred Payment Mode
+                </label>
                 <select
                   value={tempData.preferredPaymentMode}
-                  onChange={(e) => handleChange("preferredPaymentMode", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("preferredPaymentMode", e.target.value)
+                  }
                   disabled={loadingOptions}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                 >
-                  <option value="">{loadingOptions ? "Loading..." : "Select Payment Mode"}</option>
+                  <option value="">
+                    {loadingOptions ? "Loading..." : "Select Payment Mode"}
+                  </option>
                   {paymentModes.map((mode) => (
                     <option key={mode.id} value={mode.name}>
                       {mode.name}
@@ -290,7 +378,9 @@ export default function HomeownerProfile() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Bank Details</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Bank Details
+                </label>
                 <input
                   type="text"
                   value={tempData.bankDetails}
@@ -299,7 +389,9 @@ export default function HomeownerProfile() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Religious Preferences</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Religious Preferences
+                </label>
                 <input
                   type="text"
                   value={tempData.religious}
@@ -308,19 +400,27 @@ export default function HomeownerProfile() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Smoking/Drinking Restrictions</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Smoking/Drinking Restrictions
+                </label>
                 <input
                   type="text"
                   value={tempData.smokingDrinkingRestrictions}
-                  onChange={(e) => handleChange("smokingDrinkingRestrictions", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("smokingDrinkingRestrictions", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">Specific Skills Needed</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Specific Skills Needed
+                </label>
                 <textarea
                   value={tempData.specificSkillsNeeded}
-                  onChange={(e) => handleChange("specificSkillsNeeded", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("specificSkillsNeeded", e.target.value)
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   rows={2}
                 />
@@ -349,7 +449,10 @@ export default function HomeownerProfile() {
         ) : (
           <div className="space-y-4">
             {Object.entries(profileData).map(([key, value]) => (
-              <div key={key} className="border-b border-gray-200 pb-4 last:border-0">
+              <div
+                key={key}
+                className="border-b border-gray-200 pb-4 last:border-0"
+              >
                 <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
                   {key
                     .replace(/([A-Z])/g, " $1")

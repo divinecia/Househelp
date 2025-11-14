@@ -2,8 +2,16 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getBookings, createPayment, verifyPayment, getPaymentMethods } from "@/lib/api-client";
-import { initializeFlutterwavePayment, verifyFlutterwavePayment } from "@/lib/flutterwave";
+import {
+  getBookings,
+  createPayment,
+  verifyPayment,
+  getPaymentMethods,
+} from "@/lib/api-client";
+import {
+  initializeFlutterwavePayment,
+  verifyFlutterwavePayment,
+} from "@/lib/flutterwave";
 import { toast } from "sonner";
 import { CreditCard, CheckCircle, AlertCircle, Loader } from "lucide-react";
 
@@ -30,7 +38,9 @@ export default function HomeownerPayment() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(false);
-  const [paymentMethods, setPaymentMethods] = useState<Array<{ id: string; name: string }>>([]);
+  const [paymentMethods, setPaymentMethods] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [isLoadingMethods, setIsLoadingMethods] = useState(false);
   const [paymentData, setPaymentData] = useState<PaymentData>({
     bookingId: "",
@@ -71,7 +81,10 @@ export default function HomeownerPayment() {
 
   const fetchBookings = async () => {
     try {
-      const response = await getBookings({ status: "completed", payment_status: "unpaid" });
+      const response = await getBookings({
+        status: "completed",
+        payment_status: "unpaid",
+      });
       if (response.success && response.data) {
         setBookings(response.data);
       }
@@ -82,17 +95,20 @@ export default function HomeownerPayment() {
 
   const verifyPaymentCallback = async (transactionId: string) => {
     try {
-      setPaymentStatus({ status: "processing", message: "Verifying payment..." });
-      
+      setPaymentStatus({
+        status: "processing",
+        message: "Verifying payment...",
+      });
+
       const response = await verifyPayment(transactionId);
-      
+
       if (response.success) {
         setPaymentStatus({
           status: "success",
           message: "Payment verified successfully!",
         });
         toast.success("Payment processed successfully!");
-        
+
         // Refresh bookings
         setTimeout(() => {
           fetchBookings();
@@ -121,7 +137,8 @@ export default function HomeownerPayment() {
     if (!paymentData.amount || paymentData.amount <= 0) {
       newErrors.amount = "Amount must be greater than 0";
     }
-    if (!paymentData.paymentMethod) newErrors.paymentMethod = "Please select payment method";
+    if (!paymentData.paymentMethod)
+      newErrors.paymentMethod = "Please select payment method";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -130,7 +147,7 @@ export default function HomeownerPayment() {
   const handlePaymentChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setPaymentData((prev) => ({
@@ -149,7 +166,10 @@ export default function HomeownerPayment() {
 
     try {
       setLoading(true);
-      setPaymentStatus({ status: "processing", message: "Initializing payment..." });
+      setPaymentStatus({
+        status: "processing",
+        message: "Initializing payment...",
+      });
 
       // Initialize Flutterwave payment
       const flutterwaveResponse = await initializeFlutterwavePayment({
@@ -165,7 +185,10 @@ export default function HomeownerPayment() {
         },
       });
 
-      if (flutterwaveResponse.status === "success" && flutterwaveResponse.data?.link) {
+      if (
+        flutterwaveResponse.status === "success" &&
+        flutterwaveResponse.data?.link
+      ) {
         // First create payment record in database
         const paymentRecord = await createPayment({
           bookingID: paymentData.bookingId,
@@ -229,7 +252,7 @@ export default function HomeownerPayment() {
           message: `${paymentData.paymentMethod === "cash" ? "Payment recorded" : "Payment initiated"} successfully!`,
         });
         toast.success("Payment processed!");
-        
+
         setTimeout(() => {
           fetchBookings();
           setSelectedBooking(null);
@@ -260,9 +283,7 @@ export default function HomeownerPayment() {
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
               Make Payment
             </h1>
-            <p className="text-muted-foreground">
-              Pay for completed services
-            </p>
+            <p className="text-muted-foreground">Pay for completed services</p>
           </div>
 
           {paymentStatus.status !== "idle" && (
@@ -271,8 +292,8 @@ export default function HomeownerPayment() {
                 paymentStatus.status === "success"
                   ? "bg-green-50 border border-green-200"
                   : paymentStatus.status === "failed"
-                  ? "bg-red-50 border border-red-200"
-                  : "bg-blue-50 border border-blue-200"
+                    ? "bg-red-50 border border-red-200"
+                    : "bg-blue-50 border border-blue-200"
               }`}
             >
               {paymentStatus.status === "processing" ? (
@@ -288,8 +309,8 @@ export default function HomeownerPayment() {
                     paymentStatus.status === "success"
                       ? "text-green-900"
                       : paymentStatus.status === "failed"
-                      ? "text-red-900"
-                      : "text-blue-900"
+                        ? "text-red-900"
+                        : "text-blue-900"
                   }`}
                 >
                   {paymentStatus.message}
@@ -358,10 +379,16 @@ export default function HomeownerPayment() {
                     </h2>
 
                     {paymentData.paymentMethod === "flutterwave" ? (
-                      <form onSubmit={handleFlutterwavePayment} className="space-y-6">
+                      <form
+                        onSubmit={handleFlutterwavePayment}
+                        className="space-y-6"
+                      >
                         {/* Amount */}
                         <div>
-                          <label htmlFor="amount" className="block text-sm font-medium text-foreground mb-2">
+                          <label
+                            htmlFor="amount"
+                            className="block text-sm font-medium text-foreground mb-2"
+                          >
                             Amount (RWF) *
                           </label>
                           <input
@@ -383,7 +410,10 @@ export default function HomeownerPayment() {
 
                         {/* Payment Method */}
                         <div>
-                          <label htmlFor="paymentMethod" className="block text-sm font-medium text-foreground mb-2">
+                          <label
+                            htmlFor="paymentMethod"
+                            className="block text-sm font-medium text-foreground mb-2"
+                          >
                             Payment Method *
                           </label>
                           <select
@@ -394,17 +424,30 @@ export default function HomeownerPayment() {
                             disabled={isLoadingMethods}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                           >
-                            <option value="">{isLoadingMethods ? "Loading..." : "Select Payment Method"}</option>
+                            <option value="">
+                              {isLoadingMethods
+                                ? "Loading..."
+                                : "Select Payment Method"}
+                            </option>
                             {paymentMethods.length > 0 ? (
                               paymentMethods.map((method) => (
-                                <option key={method.id} value={method.name.toLowerCase().replace(/\s+/g, "_")}>
+                                <option
+                                  key={method.id}
+                                  value={method.name
+                                    .toLowerCase()
+                                    .replace(/\s+/g, "_")}
+                                >
                                   {method.name}
                                 </option>
                               ))
                             ) : (
                               <>
-                                <option value="flutterwave">Flutterwave (Card/Mobile Money)</option>
-                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="flutterwave">
+                                  Flutterwave (Card/Mobile Money)
+                                </option>
+                                <option value="bank_transfer">
+                                  Bank Transfer
+                                </option>
                                 <option value="cash">Cash Payment</option>
                               </>
                             )}
@@ -413,7 +456,10 @@ export default function HomeownerPayment() {
 
                         {/* Description */}
                         <div>
-                          <label htmlFor="description" className="block text-sm font-medium text-foreground mb-2">
+                          <label
+                            htmlFor="description"
+                            className="block text-sm font-medium text-foreground mb-2"
+                          >
                             Description
                           </label>
                           <textarea
@@ -430,7 +476,8 @@ export default function HomeownerPayment() {
                         {/* Info Box */}
                         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                           <p className="text-sm text-blue-900">
-                            You will be redirected to Flutterwave to complete the payment securely.
+                            You will be redirected to Flutterwave to complete
+                            the payment securely.
                           </p>
                         </div>
 
@@ -457,7 +504,10 @@ export default function HomeownerPayment() {
                       <form onSubmit={handleOtherPayment} className="space-y-6">
                         {/* Amount */}
                         <div>
-                          <label htmlFor="amount" className="block text-sm font-medium text-foreground mb-2">
+                          <label
+                            htmlFor="amount"
+                            className="block text-sm font-medium text-foreground mb-2"
+                          >
                             Amount (RWF) *
                           </label>
                           <input
@@ -479,7 +529,10 @@ export default function HomeownerPayment() {
 
                         {/* Payment Method */}
                         <div>
-                          <label htmlFor="paymentMethod" className="block text-sm font-medium text-foreground mb-2">
+                          <label
+                            htmlFor="paymentMethod"
+                            className="block text-sm font-medium text-foreground mb-2"
+                          >
                             Payment Method *
                           </label>
                           <select
@@ -490,17 +543,30 @@ export default function HomeownerPayment() {
                             disabled={isLoadingMethods}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                           >
-                            <option value="">{isLoadingMethods ? "Loading..." : "Select Payment Method"}</option>
+                            <option value="">
+                              {isLoadingMethods
+                                ? "Loading..."
+                                : "Select Payment Method"}
+                            </option>
                             {paymentMethods.length > 0 ? (
                               paymentMethods.map((method) => (
-                                <option key={method.id} value={method.name.toLowerCase().replace(/\s+/g, "_")}>
+                                <option
+                                  key={method.id}
+                                  value={method.name
+                                    .toLowerCase()
+                                    .replace(/\s+/g, "_")}
+                                >
                                   {method.name}
                                 </option>
                               ))
                             ) : (
                               <>
-                                <option value="flutterwave">Flutterwave (Card/Mobile Money)</option>
-                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="flutterwave">
+                                  Flutterwave (Card/Mobile Money)
+                                </option>
+                                <option value="bank_transfer">
+                                  Bank Transfer
+                                </option>
                                 <option value="cash">Cash Payment</option>
                               </>
                             )}
@@ -509,7 +575,10 @@ export default function HomeownerPayment() {
 
                         {/* Description */}
                         <div>
-                          <label htmlFor="description" className="block text-sm font-medium text-foreground mb-2">
+                          <label
+                            htmlFor="description"
+                            className="block text-sm font-medium text-foreground mb-2"
+                          >
                             Description
                           </label>
                           <textarea

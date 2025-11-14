@@ -91,9 +91,12 @@ router.get("/criminal-record-options", async (_req: Request, res: Response) => {
 });
 
 // Smoking/Drinking Options
-router.get("/smoking-drinking-options", async (_req: Request, res: Response) => {
-  const result = await getOptions("smoking_drinking_restrictions");
-  return res.json(result);
-});
+router.get(
+  "/smoking-drinking-options",
+  async (_req: Request, res: Response) => {
+    const result = await getOptions("smoking_drinking_restrictions");
+    return res.json(result);
+  },
+);
 
 export default router;

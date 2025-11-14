@@ -4,7 +4,9 @@ import { getMaritalStatuses } from "@/lib/api-client";
 
 export default function WorkerProfile() {
   const [isEditing, setIsEditing] = useState(false);
-  const [maritalStatuses, setMaritalStatuses] = useState<Array<{ id: string; name: string }>>([]);
+  const [maritalStatuses, setMaritalStatuses] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [isLoadingStatuses, setIsLoadingStatuses] = useState(false);
   const [profileData, setProfileData] = useState({
     maritalStatus: "single",
@@ -85,7 +87,9 @@ export default function WorkerProfile() {
 
       {/* Profile Information */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-foreground mb-6">Professional Information</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-6">
+          Professional Information
+        </h3>
 
         <div className="space-y-6">
           {isEditing ? (
@@ -97,11 +101,15 @@ export default function WorkerProfile() {
                   </label>
                   <select
                     value={tempData.maritalStatus}
-                    onChange={(e) => handleChange("maritalStatus", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("maritalStatus", e.target.value)
+                    }
                     disabled={isLoadingStatuses}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">{isLoadingStatuses ? "Loading..." : "Select Status"}</option>
+                    <option value="">
+                      {isLoadingStatuses ? "Loading..." : "Select Status"}
+                    </option>
                     {maritalStatuses.map((status) => (
                       <option key={status.id} value={status.name.toLowerCase()}>
                         {status.name}
@@ -127,7 +135,9 @@ export default function WorkerProfile() {
                   <input
                     type="text"
                     value={tempData.workExperience}
-                    onChange={(e) => handleChange("workExperience", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("workExperience", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
@@ -138,7 +148,9 @@ export default function WorkerProfile() {
                   <input
                     type="text"
                     value={tempData.expectedWages}
-                    onChange={(e) => handleChange("expectedWages", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("expectedWages", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
@@ -149,7 +161,9 @@ export default function WorkerProfile() {
                   <input
                     type="text"
                     value={tempData.workingHoursAndDays}
-                    onChange={(e) => handleChange("workingHoursAndDays", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("workingHoursAndDays", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
@@ -160,7 +174,9 @@ export default function WorkerProfile() {
                   <input
                     type="text"
                     value={tempData.educationQualification}
-                    onChange={(e) => handleChange("educationQualification", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("educationQualification", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
@@ -171,7 +187,9 @@ export default function WorkerProfile() {
                   <input
                     type="text"
                     value={tempData.trainingCertificate}
-                    onChange={(e) => handleChange("trainingCertificate", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("trainingCertificate", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
@@ -182,7 +200,9 @@ export default function WorkerProfile() {
                   <input
                     type="text"
                     value={tempData.languageProficiency}
-                    onChange={(e) => handleChange("languageProficiency", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("languageProficiency", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
@@ -193,7 +213,9 @@ export default function WorkerProfile() {
                   <input
                     type="text"
                     value={tempData.healthCondition}
-                    onChange={(e) => handleChange("healthCondition", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("healthCondition", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
@@ -204,7 +226,9 @@ export default function WorkerProfile() {
                   <input
                     type="text"
                     value={tempData.emergencyName}
-                    onChange={(e) => handleChange("emergencyName", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("emergencyName", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
@@ -215,7 +239,9 @@ export default function WorkerProfile() {
                   <input
                     type="text"
                     value={tempData.emergencyContact}
-                    onChange={(e) => handleChange("emergencyContact", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("emergencyContact", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
@@ -226,7 +252,9 @@ export default function WorkerProfile() {
                   <input
                     type="text"
                     value={tempData.bankAccountNumber}
-                    onChange={(e) => handleChange("bankAccountNumber", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("bankAccountNumber", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
@@ -237,7 +265,9 @@ export default function WorkerProfile() {
                   <input
                     type="text"
                     value={tempData.accountHolder}
-                    onChange={(e) => handleChange("accountHolder", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("accountHolder", e.target.value)
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
@@ -263,7 +293,10 @@ export default function WorkerProfile() {
           ) : (
             <div className="space-y-4">
               {Object.entries(profileData).map(([key, value]) => (
-                <div key={key} className="border-b border-gray-200 pb-4 last:border-0">
+                <div
+                  key={key}
+                  className="border-b border-gray-200 pb-4 last:border-0"
+                >
                   <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
                     {key.replace(/([A-Z])/g, " $1").trim()}
                   </p>

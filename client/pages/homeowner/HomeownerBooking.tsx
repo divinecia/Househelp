@@ -32,7 +32,9 @@ export default function HomeownerBooking() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
   const [loading, setLoading] = useState(false);
-  const [serviceTypes, setServiceTypes] = useState<Array<{ id: string; name: string }>>([]);
+  const [serviceTypes, setServiceTypes] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [isLoadingServices, setIsLoadingServices] = useState(false);
   const [bookingData, setBookingData] = useState<BookingFormData>({
     workerId: "",
@@ -71,7 +73,7 @@ export default function HomeownerBooking() {
       const filtered = workers.filter(
         (worker) =>
           worker.fullName.toLowerCase().includes(query) ||
-          worker.typeOfWork?.toLowerCase().includes(query)
+          worker.typeOfWork?.toLowerCase().includes(query),
       );
       setFilteredWorkers(filtered);
     }
@@ -99,11 +101,14 @@ export default function HomeownerBooking() {
     const newErrors: Record<string, string> = {};
 
     if (!bookingData.workerId) newErrors.workerId = "Please select a worker";
-    if (!bookingData.bookingDate) newErrors.bookingDate = "Booking date is required";
+    if (!bookingData.bookingDate)
+      newErrors.bookingDate = "Booking date is required";
     if (!bookingData.startTime) newErrors.startTime = "Start time is required";
     if (!bookingData.endTime) newErrors.endTime = "End time is required";
-    if (!bookingData.serviceType) newErrors.serviceType = "Service type is required";
-    if (!bookingData.description) newErrors.description = "Description is required";
+    if (!bookingData.serviceType)
+      newErrors.serviceType = "Service type is required";
+    if (!bookingData.description)
+      newErrors.description = "Description is required";
 
     // Validate end time is after start time
     if (bookingData.startTime && bookingData.endTime) {
@@ -125,7 +130,9 @@ export default function HomeownerBooking() {
   };
 
   const handleBookingChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = e.target;
     setBookingData((prev) => ({
@@ -305,7 +312,10 @@ export default function HomeownerBooking() {
                       {/* Booking Details */}
                       <div className="grid md:grid-cols-2 gap-6">
                         <div>
-                          <label htmlFor="bookingDate" className="block text-sm font-medium text-foreground mb-2">
+                          <label
+                            htmlFor="bookingDate"
+                            className="block text-sm font-medium text-foreground mb-2"
+                          >
                             Booking Date *
                           </label>
                           <input
@@ -325,7 +335,10 @@ export default function HomeownerBooking() {
                         </div>
 
                         <div>
-                          <label htmlFor="serviceType" className="block text-sm font-medium text-foreground mb-2">
+                          <label
+                            htmlFor="serviceType"
+                            className="block text-sm font-medium text-foreground mb-2"
+                          >
                             Service Type *
                           </label>
                           <select
@@ -336,10 +349,17 @@ export default function HomeownerBooking() {
                             disabled={isLoadingServices}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                           >
-                            <option value="">{isLoadingServices ? "Loading..." : "Select service type"}</option>
+                            <option value="">
+                              {isLoadingServices
+                                ? "Loading..."
+                                : "Select service type"}
+                            </option>
                             {serviceTypes.length > 0 ? (
                               serviceTypes.map((service) => (
-                                <option key={service.id} value={service.name.toLowerCase()}>
+                                <option
+                                  key={service.id}
+                                  value={service.name.toLowerCase()}
+                                >
                                   {service.name}
                                 </option>
                               ))
@@ -366,7 +386,10 @@ export default function HomeownerBooking() {
                       {/* Time Selection */}
                       <div className="grid md:grid-cols-2 gap-6">
                         <div>
-                          <label htmlFor="startTime" className="block text-sm font-medium text-foreground mb-2">
+                          <label
+                            htmlFor="startTime"
+                            className="block text-sm font-medium text-foreground mb-2"
+                          >
                             Start Time *
                           </label>
                           <input
@@ -385,7 +408,10 @@ export default function HomeownerBooking() {
                         </div>
 
                         <div>
-                          <label htmlFor="endTime" className="block text-sm font-medium text-foreground mb-2">
+                          <label
+                            htmlFor="endTime"
+                            className="block text-sm font-medium text-foreground mb-2"
+                          >
                             End Time *
                           </label>
                           <input
@@ -406,7 +432,10 @@ export default function HomeownerBooking() {
 
                       {/* Description */}
                       <div>
-                        <label htmlFor="description" className="block text-sm font-medium text-foreground mb-2">
+                        <label
+                          htmlFor="description"
+                          className="block text-sm font-medium text-foreground mb-2"
+                        >
                           Description / Special Requests *
                         </label>
                         <textarea

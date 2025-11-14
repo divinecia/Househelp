@@ -11,7 +11,9 @@ export default function AdminRegister() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<Partial<AdminData>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [genders, setGenders] = useState<Array<{ id: string; name: string }>>([]);
+  const [genders, setGenders] = useState<Array<{ id: string; name: string }>>(
+    [],
+  );
   const [isLoadingGenders, setIsLoadingGenders] = useState(false);
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export default function AdminRegister() {
   }, []);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.currentTarget;
     setFormData((prev) => ({
@@ -44,7 +46,8 @@ export default function AdminRegister() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.fullName) newErrors.fullName = "Full name is required";
-    if (!formData.contactNumber) newErrors.contactNumber = "Contact number is required";
+    if (!formData.contactNumber)
+      newErrors.contactNumber = "Contact number is required";
     if (!formData.gender) newErrors.gender = "Gender is required";
     if (!formData.email) newErrors.email = "Email is required";
     if (!formData.password || formData.password.length < 6)
@@ -87,7 +90,8 @@ export default function AdminRegister() {
         navigate("/admin/login");
       }, 1000);
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Registration failed";
+      const errorMsg =
+        error instanceof Error ? error.message : "Registration failed";
       toast.error(errorMsg);
       console.error("Registration failed:", error);
     }
@@ -107,9 +111,15 @@ export default function AdminRegister() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm"
+          >
             <div className="mb-6">
-              <label htmlFor="fullName" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="fullName"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Full Name *
               </label>
               <input
@@ -121,12 +131,17 @@ export default function AdminRegister() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               {errors.fullName && (
-                <p className="text-destructive text-sm mt-1">{errors.fullName}</p>
+                <p className="text-destructive text-sm mt-1">
+                  {errors.fullName}
+                </p>
               )}
             </div>
 
             <div className="mb-6">
-              <label htmlFor="contactNumber" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="contactNumber"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Contact Number *
               </label>
               <input
@@ -138,12 +153,17 @@ export default function AdminRegister() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               {errors.contactNumber && (
-                <p className="text-destructive text-sm mt-1">{errors.contactNumber}</p>
+                <p className="text-destructive text-sm mt-1">
+                  {errors.contactNumber}
+                </p>
               )}
             </div>
 
             <div className="mb-6">
-              <label htmlFor="gender" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="gender"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Gender *
               </label>
               <select
@@ -154,7 +174,9 @@ export default function AdminRegister() {
                 disabled={isLoadingGenders}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
               >
-                <option value="">{isLoadingGenders ? "Loading..." : "Select Gender"}</option>
+                <option value="">
+                  {isLoadingGenders ? "Loading..." : "Select Gender"}
+                </option>
                 {genders.map((gender) => (
                   <option key={gender.id} value={gender.name.toLowerCase()}>
                     {gender.name}
@@ -167,7 +189,10 @@ export default function AdminRegister() {
             </div>
 
             <div className="mb-6">
-              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Email *
               </label>
               <input
@@ -184,7 +209,10 @@ export default function AdminRegister() {
             </div>
 
             <div className="mb-8">
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Password *
               </label>
               <input
@@ -196,7 +224,9 @@ export default function AdminRegister() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               />
               {errors.password && (
-                <p className="text-destructive text-sm mt-1">{errors.password}</p>
+                <p className="text-destructive text-sm mt-1">
+                  {errors.password}
+                </p>
               )}
             </div>
 
