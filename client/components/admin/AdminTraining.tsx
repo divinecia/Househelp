@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Trash2, Edit2, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { apiGet, apiPost, apiDelete } from "../../lib/api-client";
+import { apiGet, apiPost, apiDelete, getTrainingCategories } from "../../lib/api-client";
 
 interface Training {
   id: string;
@@ -18,9 +18,11 @@ export default function AdminTraining() {
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
-    category: "beginner",
+    category: "",
     instructor: "",
     startDate: "",
     description: "",
@@ -29,7 +31,25 @@ export default function AdminTraining() {
 
   useEffect(() => {
     fetchTrainings();
+    loadCategories();
   }, []);
+
+  const loadCategories = async () => {
+    setIsLoadingCategories(true);
+    try {
+      const result = await getTrainingCategories();
+      if (result.success && result.data) {
+        setCategories(result.data);
+        if (result.data.length > 0) {
+          setFormData((prev) => ({ ...prev, category: result.data[0].name }));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load training categories:", error);
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
 
   const fetchTrainings = async () => {
     setIsLoading(true);
@@ -149,13 +169,17 @@ export default function AdminTraining() {
             <select
               value={formData.category}
               onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value as any })
+                setFormData({ ...formData, category: e.target.value })
               }
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              disabled={isLoadingCategories}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
             >
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="expert">Expert</option>
+              <option value="">{isLoadingCategories ? "Loading..." : "Select Category"}</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.name}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
             <input
               type="text"
