@@ -38,30 +38,32 @@ export default function AdminOverview() {
       try {
         setLoading(true);
 
-        // Fetch workers count
-        const workersRes = await apiGet("/workers");
-        const totalWorkers = workersRes.data?.length || 0;
+        // Fetch all data in parallel instead of sequentially
+        const [workersRes, homeownersRes, bookingsRes, paymentsRes, trainingsRes] =
+          await Promise.all([
+            apiGet("/workers"),
+            apiGet("/homeowners"),
+            apiGet("/bookings"),
+            apiGet("/payments"),
+            apiGet("/trainings"),
+          ]);
 
-        // Fetch homeowners count
-        const homeownersRes = await apiGet("/homeowners");
-        const totalHomeowners = homeownersRes.data?.length || 0;
-
-        // Fetch bookings
-        const bookingsRes = await apiGet("/bookings");
+        const workers = workersRes.data || [];
+        const homeowners = homeownersRes.data || [];
         const allBookings = bookingsRes.data || [];
+        const payments = paymentsRes.data || [];
+        const trainings = trainingsRes.data || [];
+
+        const totalWorkers = workers.length;
+        const totalHomeowners = homeowners.length;
+
         const activeBookings = allBookings.filter(
           (b: any) => b.status === "in_progress" || b.status === "confirmed",
         ).length;
 
-        // Fetch payments for revenue calculation
-        const paymentsRes = await apiGet("/payments");
-        const payments = paymentsRes.data || [];
         const totalRevenue = payments
           .filter((p: any) => p.status === "success")
-          .reduce(
-            (sum: number, p: any) => sum + (parseFloat(p.amount) || 0),
-            0,
-          );
+          .reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0);
 
         // Update KPIs
         setKpis([
@@ -95,12 +97,10 @@ export default function AdminOverview() {
         const monthlyData: Record<string, ChartDataPoint> = {};
         const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
 
-        // Initialize months
         months.forEach((month) => {
           monthlyData[month] = { month, workers: 0, bookings: 0, revenue: 0 };
         });
 
-        // Aggregate bookings by month
         allBookings.forEach((booking: any) => {
           if (booking.booking_date) {
             const date = new Date(booking.booking_date);
@@ -114,8 +114,6 @@ export default function AdminOverview() {
           }
         });
 
-        // Add workers joined by month
-        const workers = workersRes.data || [];
         workers.forEach((worker: any) => {
           if (worker.created_at) {
             const date = new Date(worker.created_at);
@@ -133,20 +131,16 @@ export default function AdminOverview() {
         // Prepare recent activities
         const activities: string[] = [];
 
-        // Add recent workers
         if (workers.length > 0) {
           const latestWorker = workers[0];
           activities.push(`New worker registered: ${latestWorker.full_name}`);
         }
 
-        // Add recent homeowners
-        const homeowners = homeownersRes.data || [];
         if (homeowners.length > 0) {
           const latestHomeowner = homeowners[0];
           activities.push(`New homeowner joined: ${latestHomeowner.full_name}`);
         }
 
-        // Add recent completed bookings
         const completedBooking = allBookings.find(
           (b: any) => b.status === "completed",
         );
@@ -156,7 +150,6 @@ export default function AdminOverview() {
           );
         }
 
-        // Add recent successful payments
         const successfulPayment = payments.find(
           (p: any) => p.status === "success",
         );
@@ -166,9 +159,6 @@ export default function AdminOverview() {
           );
         }
 
-        // Add trainings
-        const trainingsRes = await apiGet("/trainings");
-        const trainings = trainingsRes.data || [];
         if (trainings.length > 0) {
           activities.push(`New training course added: ${trainings[0].title}`);
         }
@@ -186,7 +176,6 @@ export default function AdminOverview() {
         );
       } catch (error) {
         console.error("Error fetching admin overview data:", error);
-        // Fall back to default values on error
       } finally {
         setLoading(false);
       }
