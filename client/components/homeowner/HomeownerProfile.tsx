@@ -1,14 +1,22 @@
 import { useState, useEffect } from "react";
-import { User, Save, X } from "lucide-react";
+import { User, Save, X, Loader } from "lucide-react";
+import { getUser } from "@/lib/auth";
+import type { HomeownerData } from "@/lib/auth";
 import {
   getResidenceTypes,
   getWorkerInfoOptions,
   getGenders,
   getPaymentMethods,
+  updateHomeowner,
+  apiGet,
 } from "@/lib/api-client";
+import { toast } from "sonner";
 
 export default function HomeownerProfile() {
+  const user = getUser("homeowner") as HomeownerData & { id?: string };
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [residenceTypes, setResidenceTypes] = useState<
     Array<{ id: string; name: string }>
   >([]);
