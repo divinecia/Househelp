@@ -224,8 +224,9 @@ export default function AdminTraining() {
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           {isLoading ? (
-            <div className="p-6 text-center text-muted-foreground">
-              Loading trainings...
+            <div className="p-6 flex items-center justify-center gap-2 text-muted-foreground">
+              <Loader size={20} className="animate-spin" />
+              <span>Loading trainings...</span>
             </div>
           ) : trainings.length === 0 ? (
             <div className="p-6 text-center text-muted-foreground">
