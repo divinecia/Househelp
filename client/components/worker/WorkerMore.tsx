@@ -46,27 +46,18 @@ export default function WorkerMore({ onLogout }: MoreMenuProps) {
 
     setIsLoading(true);
     try {
-      const response = await fetch("/api/reports", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionStorage.getItem("auth_token") || ""}`,
-        },
-        body: JSON.stringify({
-          issueType: reportData.issue,
-          description: reportData.description,
-          reportedBy: "worker",
-        }),
+      const response = await createReport({
+        issueType: reportData.issue,
+        description: reportData.description,
+        reportedBy: "worker",
       });
 
-      const result = await response.json();
-
-      if (result.success) {
+      if (response.success) {
         toast.success("Report submitted successfully!");
         setReportData({ issue: "", description: "" });
         setShowReportForm(false);
       } else {
-        toast.error(result.error || "Failed to submit report");
+        toast.error(response.error || "Failed to submit report");
       }
     } catch (error) {
       toast.error("Error submitting report");
