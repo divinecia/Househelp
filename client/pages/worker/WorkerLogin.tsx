@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { loginUser } from "@/lib/auth";
+import { loginUser as apiLoginUser } from "@/lib/api-client";
+import { storeTokens } from "@/lib/jwt-auth";
+import { toast } from "sonner";
 
 export default function WorkerLogin() {
   const navigate = useNavigate();
@@ -17,7 +20,7 @@ export default function WorkerLogin() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -26,11 +29,35 @@ export default function WorkerLogin() {
       return;
     }
 
-    const user = loginUser("worker", formData.email, formData.password);
-    if (user) {
+    try {
+      // Try API login first
+      const response = await apiLoginUser({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (!response.success) {
+        setError(response.error || "Invalid email or password");
+        return;
+      }
+
+      // Store tokens if session exists
+      if (response.data?.session) {
+        storeTokens({
+          accessToken: response.data.session.access_token,
+          refreshToken: response.data.session.refresh_token || "",
+        });
+      }
+
+      // Also login locally as fallback
+      const user = loginUser("worker", formData.email, formData.password);
+
+      toast.success("Login successful!");
       navigate("/worker/dashboard");
-    } else {
-      setError("Invalid email or password");
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Login failed";
+      setError(errorMsg);
+      toast.error(errorMsg);
     }
   };
 
