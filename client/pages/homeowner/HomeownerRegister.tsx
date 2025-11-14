@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { registerUserViaAPI } from "@/lib/auth";
 import type { HomeownerData } from "@/lib/auth";
 import { validateRwandaID, parseRwandaID } from "@/lib/rwandaId";
+import { registerUser as apiRegisterHomeowner } from "@/lib/api-client";
 import { toast } from "sonner";
 
 export default function HomeownerRegister() {
@@ -72,30 +73,71 @@ export default function HomeownerRegister() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      try {
-        const dataToSubmit = {
-          ...formData,
-          homeCompositionDetails: homeCompositionDetails
-            .map(
-              (d) =>
-                `${d.count} ${d.type}(s) - ${d.age ? d.age + " years old" : "age not specified"}`
-            )
-            .join(", "),
-          selectedDays: selectedDays.join(", "),
-        } as HomeownerData;
+    if (!validateForm()) {
+      toast.error("Please fix the errors above");
+      return;
+    }
 
-        await registerUserViaAPI("homeowner", dataToSubmit);
-        toast.success("Registration successful! Redirecting to login...");
-        setTimeout(() => {
-          navigate("/homeowner/login");
-        }, 1000);
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Registration failed";
-        toast.error(errorMessage);
-        console.error("Registration failed:", error);
+    try {
+      const dataToSubmit = {
+        email: formData.email!,
+        password: formData.password!,
+        fullName: formData.fullName!,
+        role: "homeowner",
+        age: formData.age,
+        contactNumber: formData.contactNumber,
+        homeAddress: formData.homeAddress,
+        typeOfResidence: formData.typeOfResidence,
+        numberOfFamilyMembers: formData.numberOfFamilyMembers,
+        homeComposition: formData.homeComposition,
+        homeCompositionDetails: homeCompositionDetails
+          .map(
+            (d) =>
+              `${d.count} ${d.type}(s) - ${d.age ? d.age + " years old" : "age not specified"}`
+          )
+          .join(", "),
+        nationalId: formData.nationalId,
+        workerInfo: formData.workerInfo,
+        specificDuties: formData.specificDuties,
+        workingHoursAndSchedule: formData.workingHoursAndSchedule,
+        numberOfWorkersNeeded: formData.numberOfWorkersNeeded,
+        preferredGender: formData.preferredGender,
+        languagePreference: formData.languagePreference,
+        wagesOffered: formData.wagesOffered,
+        reasonForHiring: formData.reasonForHiring,
+        specialRequirements: formData.specialRequirements,
+        startDateRequired: formData.startDateRequired,
+        criminalRecord: formData.criminalRecord,
+        paymentMode: formData.paymentMode,
+        bankDetails: formData.bankDetails,
+        religious: formData.religious,
+        smokingDrinkingRestrictions: formData.smokingDrinkingRestrictions,
+        specificSkillsNeeded: formData.specificSkillsNeeded,
+        selectedDays: selectedDays.join(", "),
+        termsAccepted: formData.termsAccepted,
+      };
+
+      // Call API to register
+      const response = await apiRegisterHomeowner(dataToSubmit);
+
+      if (!response.success) {
+        toast.error(response.error || "Registration failed");
+        return;
       }
+
+      toast.success("Registration successful! Redirecting to login...");
+
+      // Also save to localStorage as fallback
+      await registerUserViaAPI("homeowner", formData as HomeownerData);
+
+      setTimeout(() => {
+        navigate("/homeowner/login");
+      }, 1000);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Registration failed";
+      toast.error(errorMessage);
+      console.error("Registration failed:", error);
     }
   };
 
