@@ -1,59 +1,121 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Trash2, Edit2, Plus } from "lucide-react";
+import { toast } from "sonner";
 
 interface Training {
   id: string;
   title: string;
-  category: "beginner" | "intermediate" | "expert";
+  category: string;
   instructor: string;
-  duration: number;
-  status: "active" | "archived";
+  start_date?: string;
+  end_date?: string;
+  status: "active" | "inactive" | "completed";
+  description?: string;
 }
 
 export default function AdminTraining() {
-  const [trainings, setTrainings] = useState<Training[]>([
-    {
-      id: "1",
-      title: "Basic Cleaning Techniques",
-      category: "beginner",
-      instructor: "Sarah Johnson",
-      duration: 4,
-      status: "active",
-    },
-    {
-      id: "2",
-      title: "Advanced Cooking Methods",
-      category: "intermediate",
-      instructor: "Chef Pierre",
-      duration: 8,
-      status: "active",
-    },
-  ]);
-
+  const [trainings, setTrainings] = useState<Training[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
-    category: "beginner" as const,
+    category: "beginner",
     instructor: "",
-    duration: 4,
+    startDate: "",
+    description: "",
   });
 
-  const handleAddTraining = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.title && formData.instructor) {
-      const newTraining: Training = {
-        id: Date.now().toString(),
-        ...formData,
-        status: "active",
-      };
-      setTrainings([...trainings, newTraining]);
-      setFormData({ title: "", category: "beginner", instructor: "", duration: 4 });
-      setShowForm(false);
+  useEffect(() => {
+    fetchTrainings();
+  }, []);
+
+  const fetchTrainings = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/trainings", {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem("auth_token") || ""}`,
+        },
+      });
+      const result = await response.json();
+      if (result.success && result.data) {
+        setTrainings(result.data);
+      }
+    } catch (error) {
+      toast.error("Failed to fetch trainings");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleDeleteTraining = (id: string) => {
-    setTrainings(trainings.filter((t) => t.id !== id));
+  const handleAddTraining = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.title || !formData.instructor) {
+      toast.error("Please fill in required fields");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/trainings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionStorage.getItem("auth_token") || ""}`,
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          category: formData.category,
+          instructor: formData.instructor,
+          startDate: formData.startDate,
+          description: formData.description,
+          status: "active",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success("Training added successfully!");
+        setFormData({ title: "", category: "beginner", instructor: "", startDate: "", description: "" });
+        setShowForm(false);
+        await fetchTrainings();
+      } else {
+        toast.error(result.error || "Failed to add training");
+      }
+    } catch (error) {
+      toast.error("Error adding training");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteTraining = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this training?")) return;
+
+    try {
+      const response = await fetch(`/api/trainings/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem("auth_token") || ""}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success("Training deleted successfully");
+        setTrainings(trainings.filter((t) => t.id !== id));
+      } else {
+        toast.error(result.error || "Failed to delete training");
+      }
+    } catch (error) {
+      toast.error("Error deleting training");
+      console.error(error);
+    }
   };
 
   return (
