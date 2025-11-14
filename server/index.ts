@@ -15,7 +15,16 @@ export function createServer() {
   const app = express();
 
   // Middleware
-  app.use(cors());
+  // CORS configuration - allow requests from any origin for development
+  // In production, you should restrict this to your domain
+  app.use(cors({
+    origin: process.env.NODE_ENV === "production"
+      ? process.env.ALLOWED_ORIGINS?.split(",") || true
+      : true,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
