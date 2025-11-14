@@ -521,15 +521,17 @@ export default function HomeownerProfile() {
               <button
                 type="button"
                 onClick={handleSave}
-                className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                disabled={isSaving}
+                className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
-                <Save size={18} />
-                Save Changes
+                {isSaving ? <Loader size={18} className="animate-spin" /> : <Save size={18} />}
+                {isSaving ? "Saving..." : "Save Changes"}
               </button>
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex-1 px-4 py-2 border border-gray-300 text-foreground rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                disabled={isSaving}
+                className="flex-1 px-4 py-2 border border-gray-300 text-foreground rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
                 <X size={18} />
                 Cancel
