@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ChefHat,
   Droplet,
@@ -10,61 +10,74 @@ import {
   Shirt,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiGet } from "../lib/api-client";
 
 interface Service {
   id: string;
   name: string;
   icon: React.ReactNode;
   workers: number;
+  description?: string;
 }
 
-const services: Service[] = [
+const serviceIconMap: Record<string, React.ReactNode> = {
+  cooking: <ChefHat size={32} />,
+  washing: <Droplet size={32} />,
+  cleaning: <Sparkles size={32} />,
+  gardening: <Leaf size={32} />,
+  elderly: <Users size={32} />,
+  pet: <PawPrint size={32} />,
+  child: <Baby size={32} />,
+  laundry: <Shirt size={32} />,
+};
+
+const defaultServices: Service[] = [
   {
     id: "cooking",
     name: "Cooking",
-    icon: <ChefHat size={32} />,
+    icon: serviceIconMap.cooking,
     workers: 248,
   },
   {
     id: "washing",
     name: "Washing",
-    icon: <Droplet size={32} />,
+    icon: serviceIconMap.washing,
     workers: 156,
   },
   {
     id: "cleaning",
     name: "Cleaning",
-    icon: <Sparkles size={32} />,
+    icon: serviceIconMap.cleaning,
     workers: 312,
   },
   {
     id: "gardening",
     name: "Gardening",
-    icon: <Leaf size={32} />,
+    icon: serviceIconMap.gardening,
     workers: 89,
   },
   {
     id: "elderlycare",
     name: "Elderly Care",
-    icon: <Users size={32} />,
+    icon: serviceIconMap.elderly,
     workers: 124,
   },
   {
     id: "petcare",
     name: "Pet Care",
-    icon: <PawPrint size={32} />,
+    icon: serviceIconMap.pet,
     workers: 67,
   },
   {
     id: "childcare",
     name: "Child Care",
-    icon: <Baby size={32} />,
+    icon: serviceIconMap.child,
     workers: 201,
   },
   {
     id: "laundry",
     name: "Laundry & Ironing",
-    icon: <Shirt size={32} />,
+    icon: serviceIconMap.laundry,
     workers: 178,
   },
 ];
