@@ -1,9 +1,19 @@
 import { useState, useEffect } from "react";
-import { User, Save, X } from "lucide-react";
-import { getMaritalStatuses } from "@/lib/api-client";
+import { User, Save, X, Loader } from "lucide-react";
+import { getUser } from "@/lib/auth";
+import type { WorkerData } from "@/lib/auth";
+import {
+  getMaritalStatuses,
+  updateWorker,
+  apiGet,
+} from "@/lib/api-client";
+import { toast } from "sonner";
 
 export default function WorkerProfile() {
+  const user = getUser("worker") as WorkerData & { id?: string };
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [maritalStatuses, setMaritalStatuses] = useState<
     Array<{ id: string; name: string }>
   >([]);
@@ -27,30 +37,92 @@ export default function WorkerProfile() {
   const [tempData, setTempData] = useState(profileData);
 
   useEffect(() => {
-    const loadStatuses = async () => {
-      setIsLoadingStatuses(true);
+    const loadData = async () => {
+      if (!user?.id) return;
+
+      setIsLoading(true);
       try {
-        const result = await getMaritalStatuses();
-        if (result.success && result.data) {
-          setMaritalStatuses(result.data);
+        // Load marital statuses
+        const statusesResult = await getMaritalStatuses();
+        if (statusesResult.success && statusesResult.data) {
+          setMaritalStatuses(statusesResult.data);
+        }
+
+        // Load worker profile from database
+        const workerRes = await apiGet(`/workers/${user.id}`);
+        if (workerRes.success && workerRes.data) {
+          const dbData = workerRes.data;
+          setProfileData({
+            maritalStatus: dbData.marital_status || "single",
+            typeOfWork: dbData.type_of_work || "Cleaning",
+            workExperience: dbData.work_experience || "5",
+            expectedWages: dbData.expected_wages || "50000 per hour",
+            workingHoursAndDays: dbData.working_hours_and_days || "08:00 - 17:00, Mon-Fri",
+            educationQualification: dbData.education_qualification || "High School",
+            trainingCertificate: dbData.training_certificate_url || "Advanced Cleaning",
+            languageProficiency: dbData.language_proficiency || "English (Fluent), Kinyarwanda (Native)",
+            healthCondition: dbData.health_condition || "No allergies",
+            emergencyName: dbData.emergency_contact_name || "John Doe",
+            emergencyContact: dbData.emergency_contact_phone || "+250 123 456 789",
+            bankAccountNumber: dbData.bank_account_number || "****5678",
+            accountHolder: dbData.account_holder_name || "Jane Smith",
+          });
+          setTempData(profileData);
         }
       } catch (error) {
-        console.error("Failed to load marital statuses:", error);
+        console.error("Failed to load worker profile:", error);
+        toast.error("Failed to load profile data");
       } finally {
-        setIsLoadingStatuses(false);
+        setIsLoading(false);
       }
     };
-    loadStatuses();
-  }, []);
+
+    loadData();
+  }, [user?.id]);
 
   const handleEdit = () => {
     setIsEditing(true);
     setTempData(profileData);
   };
 
-  const handleSave = () => {
-    setProfileData(tempData);
-    setIsEditing(false);
+  const handleSave = async () => {
+    if (!user?.id) {
+      toast.error("User not found");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const updateData = {
+        marital_status: tempData.maritalStatus,
+        type_of_work: tempData.typeOfWork,
+        work_experience: tempData.workExperience,
+        expected_wages: tempData.expectedWages,
+        working_hours_and_days: tempData.workingHoursAndDays,
+        education_qualification: tempData.educationQualification,
+        training_certificate_url: tempData.trainingCertificate,
+        language_proficiency: tempData.languageProficiency,
+        health_condition: tempData.healthCondition,
+        emergency_contact_name: tempData.emergencyName,
+        emergency_contact_phone: tempData.emergencyContact,
+        bank_account_number: tempData.bankAccountNumber,
+        account_holder_name: tempData.accountHolder,
+      };
+
+      const response = await updateWorker(user.id, updateData);
+      if (response.success) {
+        setProfileData(tempData);
+        setIsEditing(false);
+        toast.success("Profile updated successfully!");
+      } else {
+        toast.error(response.error || "Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      toast.error("Error saving profile");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
