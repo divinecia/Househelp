@@ -50,7 +50,14 @@ const AppContent = () => (
             path="/worker/forgot-password"
             element={<WorkerForgotPassword />}
           />
-          <Route path="/worker/dashboard" element={<WorkerDashboard />} />
+          <Route
+            path="/worker/dashboard"
+            element={
+              <ProtectedRoute requiredRole="worker" fallbackPath="/worker/login">
+                <WorkerDashboard />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Homeowner Routes */}
           <Route path="/homeowner/register" element={<HomeownerRegister />} />
@@ -59,11 +66,46 @@ const AppContent = () => (
             path="/homeowner/forgot-password"
             element={<HomeownerForgotPassword />}
           />
-          <Route path="/homeowner/dashboard" element={<HomeownerDashboard />} />
-          <Route path="/homeowner/booking" element={<HomeownerBooking />} />
-          <Route path="/homeowner/bookings" element={<HomeownerBookings />} />
-          <Route path="/homeowner/payment" element={<HomeownerPayment />} />
-          <Route path="/homeowner/payments" element={<HomeownerPayments />} />
+          <Route
+            path="/homeowner/dashboard"
+            element={
+              <ProtectedRoute requiredRole="homeowner" fallbackPath="/homeowner/login">
+                <HomeownerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/homeowner/booking"
+            element={
+              <ProtectedRoute requiredRole="homeowner" fallbackPath="/homeowner/login">
+                <HomeownerBooking />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/homeowner/bookings"
+            element={
+              <ProtectedRoute requiredRole="homeowner" fallbackPath="/homeowner/login">
+                <HomeownerBookings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/homeowner/payment"
+            element={
+              <ProtectedRoute requiredRole="homeowner" fallbackPath="/homeowner/login">
+                <HomeownerPayment />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/homeowner/payments"
+            element={
+              <ProtectedRoute requiredRole="homeowner" fallbackPath="/homeowner/login">
+                <HomeownerPayments />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Admin Routes */}
           <Route path="/admin/register" element={<AdminRegister />} />
