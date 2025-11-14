@@ -208,6 +208,48 @@ router.get("/me", async (req: Request, res: Response) => {
 });
 
 /**
+ * Refresh access token
+ */
+router.post("/refresh", async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({
+        success: false,
+        error: "Refresh token is required",
+      });
+    }
+
+    // Use Supabase to refresh the session
+    const { data, error } = await supabase.auth.refreshSession({
+      refresh_token: refreshToken,
+    });
+
+    if (error || !data.session) {
+      return res.status(401).json({
+        success: false,
+        error: "Failed to refresh token",
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        accessToken: data.session.access_token,
+        refreshToken: data.session.refresh_token,
+        expiresIn: data.session.expires_in,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Token refresh failed",
+    });
+  }
+});
+
+/**
  * Logout user (client-side only, but included for completeness)
  */
 router.post("/logout", async (req: Request, res: Response) => {
