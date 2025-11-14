@@ -178,10 +178,11 @@ export default function HomeownerMore({ onLogout }: MoreMenuProps) {
 
             <button
               type="submit"
-              className="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium flex items-center justify-center gap-2"
+              disabled={isLoading}
+              className="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center gap-2"
             >
               <Send size={18} />
-              Submit Rating
+              {isLoading ? "Submitting..." : "Submit Rating"}
             </button>
           </form>
         </div>
