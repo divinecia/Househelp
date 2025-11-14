@@ -4,6 +4,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { registerUser } from "@/lib/auth";
 import type { AdminData } from "@/lib/auth";
+import { registerUser as apiRegisterAdmin } from "@/lib/api-client";
+import { toast } from "sonner";
 
 export default function AdminRegister() {
   const navigate = useNavigate();
@@ -32,15 +34,43 @@ export default function AdminRegister() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      try {
-        registerUser("admin", formData as AdminData);
-        navigate("/admin/login");
-      } catch (error) {
-        console.error("Registration failed:", error);
+    if (!validateForm()) {
+      toast.error("Please fix the errors above");
+      return;
+    }
+
+    try {
+      const dataToSubmit = {
+        email: formData.email!,
+        password: formData.password!,
+        fullName: formData.fullName!,
+        role: "admin",
+        contactNumber: formData.contactNumber,
+        gender: formData.gender,
+      };
+
+      // Call API to register
+      const response = await apiRegisterAdmin(dataToSubmit);
+
+      if (!response.success) {
+        toast.error(response.error || "Registration failed");
+        return;
       }
+
+      toast.success("Registration successful! Redirecting to login...");
+
+      // Also save to localStorage as fallback
+      registerUser("admin", formData as AdminData);
+
+      setTimeout(() => {
+        navigate("/admin/login");
+      }, 1000);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Registration failed";
+      toast.error(errorMsg);
+      console.error("Registration failed:", error);
     }
   };
 
