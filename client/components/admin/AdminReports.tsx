@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Trash2, Eye } from "lucide-react";
+import { getReportTypes } from "@/lib/api-client";
 
 interface Report {
   id: string;
@@ -13,6 +14,8 @@ interface Report {
 }
 
 export default function AdminReports() {
+  const [reportTypes, setReportTypes] = useState<Array<{ id: string; name: string }>>([]);
+  const [isLoadingTypes, setIsLoadingTypes] = useState(false);
   const [reports, setReports] = useState<Report[]>([
     {
       id: "1",
@@ -45,9 +48,29 @@ export default function AdminReports() {
 
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    type: "system_issue" as const,
+    type: "",
     title: "",
   });
+
+  useEffect(() => {
+    const loadReportTypes = async () => {
+      setIsLoadingTypes(true);
+      try {
+        const result = await getReportTypes();
+        if (result.success && result.data) {
+          setReportTypes(result.data);
+          if (result.data.length > 0) {
+            setFormData((prev) => ({ ...prev, type: result.data[0].name }));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load report types:", error);
+      } finally {
+        setIsLoadingTypes(false);
+      }
+    };
+    loadReportTypes();
+  }, []);
 
   const handleAddReport = (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,13 +123,16 @@ export default function AdminReports() {
           <form onSubmit={handleAddReport} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <select
               value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              disabled={isLoadingTypes}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
             >
-              <option value="system_issue">System Issue</option>
-              <option value="worker_behavior">Worker Behavior</option>
-              <option value="review">Review</option>
-              <option value="rating">Rating</option>
+              <option value="">{isLoadingTypes ? "Loading..." : "Select Report Type"}</option>
+              {reportTypes.map((type) => (
+                <option key={type.id} value={type.name}>
+                  {type.name}
+                </option>
+              ))}
             </select>
             <input
               type="text"
