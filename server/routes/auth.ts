@@ -13,7 +13,21 @@ const router = Router();
  */
 router.post("/register", async (req: Request, res: Response) => {
   try {
-    const { email, password, fullName, role, ...profileData } = req.body;
+    // Accept both camelCase (before middleware) and snake_case (after middleware)
+    const email = req.body.email;
+    const password = req.body.password;
+    const fullName = req.body.full_name || req.body.fullName;
+    const role = req.body.role;
+    const profileData = {
+      contact_number: req.body.contact_number || req.body.contactNumber,
+      gender: req.body.gender,
+      ...Object.keys(req.body).reduce((acc: any, key: string) => {
+        if (!["email", "password", "full_name", "fullName", "role", "contact_number", "contactNumber", "gender"].includes(key)) {
+          acc[key] = req.body[key];
+        }
+        return acc;
+      }, {}),
+    };
 
     if (!email || !password || !fullName || !role) {
       return res.status(400).json({
