@@ -38,25 +38,100 @@ export default function HomeownerBooking() {
     budget: "",
   });
 
-  const handleAddBooking = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.jobTitle && formData.scheduledDate) {
-      const newBooking: Booking = {
-        id: Date.now().toString(),
-        jobTitle: formData.jobTitle,
-        scheduledDate: formData.scheduledDate,
-        scheduledTime: formData.scheduledTime,
-        status: "pending",
-        budget: parseInt(formData.budget) || 0,
-      };
-      setBookings([...bookings, newBooking]);
-      setFormData({ jobTitle: "", scheduledDate: "", scheduledTime: "", budget: "" });
-      setShowForm(false);
+  useEffect(() => {
+    fetchBookings();
+  }, [user?.id]);
+
+  const fetchBookings = async () => {
+    if (!user?.id) return;
+
+    setIsLoading(true);
+    try {
+      const response = await getBookings({ homeowner_id: user.id });
+      if (response.success && response.data) {
+        const formattedBookings = response.data.map((booking: any) => ({
+          id: booking.id,
+          service_type: booking.service_type || "Service",
+          jobTitle: booking.service_type || "Service",
+          booking_date: booking.booking_date,
+          scheduledDate: booking.booking_date,
+          scheduled_time: booking.scheduled_time,
+          scheduledTime: booking.scheduled_time,
+          status: booking.status || "pending",
+          amount: booking.amount,
+          budget: booking.amount ? parseFloat(booking.amount) : 0,
+          worker_name: booking.worker_id || "Pending Assignment",
+        }));
+        setBookings(formattedBookings);
+      }
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+      toast.error("Failed to load bookings");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleDeleteBooking = (id: string) => {
-    setBookings(bookings.filter((b) => b.id !== id));
+  const handleAddBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.jobTitle || !formData.scheduledDate) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (!user?.id) {
+      toast.error("User not found");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await createBooking({
+        homeowner_id: user.id,
+        service_type: formData.jobTitle,
+        booking_date: formData.scheduledDate,
+        scheduled_time: formData.scheduledTime || null,
+        amount: parseInt(formData.budget) || 0,
+        status: "pending",
+      });
+
+      if (response.success) {
+        toast.success("Booking created successfully!");
+        setFormData({
+          jobTitle: "",
+          scheduledDate: "",
+          scheduledTime: "",
+          budget: "",
+        });
+        setShowForm(false);
+        await fetchBookings();
+      } else {
+        toast.error(response.error || "Failed to create booking");
+      }
+    } catch (error) {
+      console.error("Error creating booking:", error);
+      toast.error("Error creating booking");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteBooking = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this booking?")) return;
+
+    try {
+      const response = await deleteBooking(id);
+      if (response.success) {
+        toast.success("Booking deleted successfully");
+        setBookings(bookings.filter((b) => b.id !== id));
+      } else {
+        toast.error(response.error || "Failed to delete booking");
+      }
+    } catch (error) {
+      console.error("Error deleting booking:", error);
+      toast.error("Error deleting booking");
+    }
   };
 
   return (
