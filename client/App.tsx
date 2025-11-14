@@ -73,27 +73,7 @@ const AppContent = () => (
 );
 
 const App = () => {
-  const [showSplash, setShowSplash] = useState(true);
-
-  useEffect(() => {
-    // Check if user has seen splash screen before
-    const splashShown = sessionStorage.getItem("splash_shown");
-    if (splashShown) {
-      setShowSplash(false);
-    }
-  }, []);
-
-  const handleSplashComplete = () => {
-    setShowSplash(false);
-    sessionStorage.setItem("splash_shown", "true");
-  };
-
-  return (
-    <>
-      {showSplash && <SplashScreen onComplete={handleSplashComplete} duration={3000} />}
-      <AppContent />
-    </>
-  );
+  return <AppContent />;
 };
 
 export default App;
