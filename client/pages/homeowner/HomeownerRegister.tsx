@@ -108,18 +108,33 @@ export default function HomeownerRegister() {
           getPaymentMethods(),
           getSmokingDrinkingOptions(),
         ]);
-        if (residences.success && residences.data)
+        if (residences.success && residences.data && residences.data.length > 0)
           setResidenceTypes(residences.data);
-        if (workerInfoOpts.success && workerInfoOpts.data)
+        if (workerInfoOpts.success && workerInfoOpts.data && workerInfoOpts.data.length > 0)
           setWorkerInfos(workerInfoOpts.data);
-        if (genders.success && genders.data) setGendersList(genders.data);
-        if (criminalRecords.success && criminalRecords.data)
+        if (genders.success && genders.data && genders.data.length > 0) {
+          setGendersList(genders.data);
+        } else {
+          // Fallback gender options
+          setGendersList([
+            { id: "1", name: "Male" },
+            { id: "2", name: "Female" },
+            { id: "3", name: "Other" },
+          ]);
+        }
+        if (criminalRecords.success && criminalRecords.data && criminalRecords.data.length > 0)
           setCriminalRecordOptions(criminalRecords.data);
-        if (payments.success && payments.data) setPaymentModes(payments.data);
-        if (smokingDrinking.success && smokingDrinking.data)
+        if (payments.success && payments.data && payments.data.length > 0) setPaymentModes(payments.data);
+        if (smokingDrinking.success && smokingDrinking.data && smokingDrinking.data.length > 0)
           setSmokingDrinkingOptions(smokingDrinking.data);
       } catch (error) {
         console.error("Failed to load options:", error);
+        // Fallback gender options if API fails
+        setGendersList([
+          { id: "1", name: "Male" },
+          { id: "2", name: "Female" },
+          { id: "3", name: "Other" },
+        ]);
       } finally {
         setLoadingOptions(false);
       }
