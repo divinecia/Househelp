@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Trash2, Edit2, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { apiGet, apiPost, apiDelete } from "../../lib/api-client";
 
 interface Training {
   id: string;
