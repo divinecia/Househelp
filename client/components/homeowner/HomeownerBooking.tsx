@@ -1,34 +1,34 @@
-import { useState } from "react";
-import { Plus, Trash2, Edit2, Eye } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Trash2, Edit2, Eye, Loader } from "lucide-react";
+import { getUser } from "@/lib/auth";
+import type { HomeownerData } from "@/lib/auth";
+import {
+  getBookings,
+  createBooking,
+  deleteBooking,
+  apiGet,
+} from "@/lib/api-client";
+import { toast } from "sonner";
 
 interface Booking {
   id: string;
-  jobTitle: string;
-  scheduledDate: string;
-  scheduledTime: string;
-  status: "pending" | "accepted" | "completed";
-  budget: number;
+  service_type?: string;
+  jobTitle?: string;
+  booking_date?: string;
+  scheduledDate?: string;
+  scheduled_time?: string;
+  scheduledTime?: string;
+  status: "pending" | "accepted" | "in_progress" | "completed" | "cancelled";
+  amount?: number;
+  budget?: number;
+  worker_name?: string;
 }
 
 export default function HomeownerBooking() {
-  const [bookings, setBookings] = useState<Booking[]>([
-    {
-      id: "1",
-      jobTitle: "House Cleaning",
-      scheduledDate: "2024-01-28",
-      scheduledTime: "10:00",
-      status: "pending",
-      budget: 50000,
-    },
-    {
-      id: "2",
-      jobTitle: "Cooking Services",
-      scheduledDate: "2024-01-29",
-      scheduledTime: "14:00",
-      status: "accepted",
-      budget: 75000,
-    },
-  ]);
+  const user = getUser("homeowner") as HomeownerData & { id?: string };
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
