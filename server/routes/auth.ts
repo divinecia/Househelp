@@ -1,0 +1,238 @@
+import { Router, Request, Response } from "express";
+import { supabase } from "../lib/supabase";
+
+const router = Router();
+
+/**
+ * Register user (Worker, Homeowner, or Admin)
+ */
+router.post("/register", async (req: Request, res: Response) => {
+  try {
+    const { email, password, fullName, role, ...profileData } = req.body;
+
+    if (!email || !password || !fullName || !role) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required fields: email, password, fullName, role",
+      });
+    }
+
+    // Sign up user in Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (authError) {
+      return res.status(400).json({
+        success: false,
+        error: authError.message,
+      });
+    }
+
+    if (!authData.user) {
+      return res.status(400).json({
+        success: false,
+        error: "User creation failed",
+      });
+    }
+
+    // Create user profile based on role
+    let profileTable = "user_profiles";
+    if (role === "worker") {
+      profileTable = "workers";
+    } else if (role === "homeowner") {
+      profileTable = "homeowners";
+    } else if (role === "admin") {
+      profileTable = "admins";
+    }
+
+    const { data: profileDataResult, error: profileError } = await supabase
+      .from(profileTable)
+      .insert([
+        {
+          id: authData.user.id,
+          email,
+          fullName,
+          role,
+          ...profileData,
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single();
+
+    if (profileError) {
+      // Clean up auth user if profile creation fails
+      await supabase.auth.admin.deleteUser(authData.user.id);
+      return res.status(400).json({
+        success: false,
+        error: "Failed to create user profile: " + profileError.message,
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      data: {
+        user: {
+          id: authData.user.id,
+          email: authData.user.email,
+          role,
+        },
+        profile: profileDataResult,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Registration failed",
+    });
+  }
+});
+
+/**
+ * Login user
+ */
+router.post("/login", async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required fields: email, password",
+      });
+    }
+
+    // Sign in user
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError) {
+      return res.status(401).json({
+        success: false,
+        error: authError.message,
+      });
+    }
+
+    if (!authData.user) {
+      return res.status(401).json({
+        success: false,
+        error: "Login failed",
+      });
+    }
+
+    // Get user profile
+    const { data: profileData, error: profileError } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("id", authData.user.id)
+      .single();
+
+    if (profileError) {
+      return res.status(400).json({
+        success: false,
+        error: "Failed to fetch user profile",
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        user: {
+          id: authData.user.id,
+          email: authData.user.email,
+        },
+        profile: profileData,
+        session: authData.session,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Login failed",
+    });
+  }
+});
+
+/**
+ * Get current user
+ */
+router.get("/me", async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+        error: "Missing authorization header",
+      });
+    }
+
+    const token = authHeader.substring(7);
+
+    // Verify token with Supabase
+    const { data, error } = await supabase.auth.getUser(token);
+
+    if (error || !data.user) {
+      return res.status(401).json({
+        success: false,
+        error: "Invalid token",
+      });
+    }
+
+    // Get user profile
+    const { data: profileData } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("id", data.user.id)
+      .single();
+
+    return res.json({
+      success: true,
+      data: {
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+        },
+        profile: profileData,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Failed to get user",
+    });
+  }
+});
+
+/**
+ * Logout user (client-side only, but included for completeness)
+ */
+router.post("/logout", async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.json({
+        success: true,
+        message: "Logged out",
+      });
+    }
+
+    const token = authHeader.substring(7);
+    await supabase.auth.signOut();
+
+    return res.json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Logout failed",
+    });
+  }
+});
+
+export default router;
