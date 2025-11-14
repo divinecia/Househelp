@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Trash2, Eye } from "lucide-react";
+import { Trash2, Eye, Loader } from "lucide-react";
 import { getReportTypes } from "@/lib/api-client";
 
 interface Report {
