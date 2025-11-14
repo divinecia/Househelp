@@ -7,6 +7,7 @@ import {
   createPayment,
   verifyPayment,
   getPaymentMethods,
+  getCurrentUser,
 } from "@/lib/api-client";
 import {
   initializeFlutterwavePayment,
