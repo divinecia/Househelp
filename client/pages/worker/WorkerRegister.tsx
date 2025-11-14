@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { registerUser } from "@/lib/auth";
 import type { WorkerData } from "@/lib/auth";
 import { validateRwandaID, parseRwandaID } from "@/lib/rwandaId";
-import { registerUser as apiRegisterWorker } from "@/lib/api-client";
+import { registerUser as apiRegisterWorker, getGenders, getMaritalStatuses, getWageUnits, getLanguageLevels, getInsuranceCompanies } from "@/lib/api-client";
 import { toast } from "sonner";
 import { X } from "lucide-react";
 
@@ -17,6 +17,12 @@ export default function WorkerRegister() {
   const [languages, setLanguages] = useState<Array<{ language: string; level: string }>>([]);
   const [newLanguage, setNewLanguage] = useState({ language: "", level: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [gendersList, setGendersList] = useState<Array<{ id: string; name: string }>>([]);
+  const [maritalStatuses, setMaritalStatuses] = useState<Array<{ id: string; name: string }>>([]);
+  const [wageUnits, setWageUnits] = useState<Array<{ id: string; name: string }>>([]);
+  const [languageLevels, setLanguageLevels] = useState<Array<{ id: string; name: string }>>([]);
+  const [insuranceCompanies, setInsuranceCompanies] = useState<Array<{ id: string; name: string }>>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -57,6 +63,31 @@ export default function WorkerRegister() {
   const removeLanguage = (index: number) => {
     setLanguages(languages.filter((_, i) => i !== index));
   };
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      setLoadingOptions(true);
+      try {
+        const [genders, maritalStatus, wages, levels, insurance] = await Promise.all([
+          getGenders(),
+          getMaritalStatuses(),
+          getWageUnits(),
+          getLanguageLevels(),
+          getInsuranceCompanies(),
+        ]);
+        if (genders.success && genders.data) setGendersList(genders.data);
+        if (maritalStatus.success && maritalStatus.data) setMaritalStatuses(maritalStatus.data);
+        if (wages.success && wages.data) setWageUnits(wages.data);
+        if (levels.success && levels.data) setLanguageLevels(levels.data);
+        if (insurance.success && insurance.data) setInsuranceCompanies(insurance.data);
+      } catch (error) {
+        console.error("Failed to load options:", error);
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+    loadOptions();
+  }, []);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -207,12 +238,15 @@ export default function WorkerRegister() {
                     name="gender"
                     value={formData.gender || ""}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    disabled={loadingOptions}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">Select Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
+                    <option value="">{loadingOptions ? "Loading..." : "Select Gender"}</option>
+                    {gendersList.map((gender) => (
+                      <option key={gender.id} value={gender.name.toLowerCase()}>
+                        {gender.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -225,13 +259,15 @@ export default function WorkerRegister() {
                     name="maritalStatus"
                     value={formData.maritalStatus || ""}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    disabled={loadingOptions}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">Select Status</option>
-                    <option value="single">Single</option>
-                    <option value="married">Married</option>
-                    <option value="divorced">Divorced</option>
-                    <option value="widowed">Widowed</option>
+                    <option value="">{loadingOptions ? "Loading..." : "Select Status"}</option>
+                    {maritalStatuses.map((status) => (
+                      <option key={status.id} value={status.name.toLowerCase()}>
+                        {status.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -381,11 +417,15 @@ export default function WorkerRegister() {
                           expectedWages: (formData.expectedWages?.split(" ")[0] || "") + " " + e.target.value,
                         }))
                       }
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      disabled={loadingOptions}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                     >
-                      <option value="per hour">Per Hour</option>
-                      <option value="per day">Per Day</option>
-                      <option value="per month">Per Month</option>
+                      <option value="">{loadingOptions ? "Loading..." : "Select Unit"}</option>
+                      {wageUnits.map((unit) => (
+                        <option key={unit.id} value={unit.name.toLowerCase()}>
+                          {unit.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -514,13 +554,15 @@ export default function WorkerRegister() {
                   <select
                     value={newLanguage.level}
                     onChange={(e) => setNewLanguage({ ...newLanguage, level: e.target.value })}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    disabled={loadingOptions}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">Select Level</option>
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Fluent">Fluent</option>
-                    <option value="Native">Native</option>
+                    <option value="">{loadingOptions ? "Loading..." : "Select Level"}</option>
+                    {languageLevels.map((level) => (
+                      <option key={level.id} value={level.name}>
+                        {level.name}
+                      </option>
+                    ))}
                   </select>
                   <button
                     type="button"
@@ -568,14 +610,15 @@ export default function WorkerRegister() {
                     name="insuranceCompany"
                     value={formData.insuranceCompany || ""}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    disabled={loadingOptions}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
-                    <option value="">Select Insurance Company</option>
-                    <option value="RSSB">RSSB</option>
-                    <option value="SORAS">SORAS</option>
-                    <option value="RAMA">RAMA</option>
-                    <option value="None">None</option>
-                    <option value="Other">Other</option>
+                    <option value="">{loadingOptions ? "Loading..." : "Select Insurance Company"}</option>
+                    {insuranceCompanies.map((company) => (
+                      <option key={company.id} value={company.name}>
+                        {company.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
