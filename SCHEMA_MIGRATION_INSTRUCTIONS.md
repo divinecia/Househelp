@@ -34,6 +34,7 @@ You need to have Supabase environment variables set up. If not, [Connect to Supa
 Once connected, you have two options:
 
 **A. Via Supabase Dashboard (Easiest):**
+
 1. Go to your Supabase project dashboard
 2. Navigate to **SQL Editor** in the sidebar
 3. Copy the entire contents of `server/migrations/002_schema_normalization.sql`
@@ -42,6 +43,7 @@ Once connected, you have two options:
 6. Check the output for any errors or warnings
 
 **B. Via Supabase CLI:**
+
 ```bash
 # If you have supabase CLI installed
 supabase db reset --db-url "your-supabase-connection-string"
@@ -64,6 +66,7 @@ If you haven't deployed the database yet or want to start fresh:
 ### PART 1 & 2: Lookup Tables
 
 Creates and populates these tables:
+
 - `genders` (Male, Female, Other)
 - `marital_statuses` (Single, Married, Divorced, Widowed)
 - `service_types` (8 service types)
@@ -81,6 +84,7 @@ Creates and populates these tables:
 ### PART 3 & 4: Workers Table Migration
 
 **Renames columns:**
+
 - `dateOfBirth` → `date_of_birth`
 - `maritalStatus` → `marital_status`
 - `phoneNumber` → `phone_number`
@@ -101,6 +105,7 @@ Creates and populates these tables:
 - `profileComplete` → `terms_accepted`
 
 **Adds columns:**
+
 - `education_certificate_url`
 - `criminal_record_url`
 - `status` (with CHECK constraint)
@@ -108,12 +113,14 @@ Creates and populates these tables:
 - `total_bookings`
 
 **Adds constraints:**
+
 - `gender` CHECK (male, female, other)
 - `status` CHECK (active, inactive, suspended)
 
 ### PART 5: Homeowners Table Migration
 
 **Renames columns:**
+
 - `homeAddress` → `home_address`
 - `typeOfResidence` → `type_of_residence`
 - `numberOfFamilyMembers` → `number_of_family_members`
@@ -138,16 +145,19 @@ Creates and populates these tables:
 - `profileComplete` → `terms_accepted`
 
 **Adds columns:**
+
 - `contact_number`
 - `home_composition_details`
 - `selected_days`
 - `status` (with CHECK constraint)
 
 **Updates data types:**
+
 - `criminal_record_required`: TEXT → BOOLEAN
 - `start_date_required`: TEXT → DATE
 
 **Adds constraints:**
+
 - `type_of_residence` CHECK (studio, apartment, villa, mansion)
 - `worker_info` CHECK (full-time, part-time, live-in)
 - `preferred_gender` CHECK (male, female, any)
@@ -161,6 +171,7 @@ Creates the `admins` table if it doesn't exist with all proper fields and constr
 ### PART 7 & 8: Table Structure Updates
 
 Ensures both `workers` and `homeowners` tables:
+
 - Have `email` and `full_name` columns
 - Use `id` as primary key (foreign key to `auth.users(id)`)
 - Have proper foreign key constraints
@@ -170,6 +181,7 @@ Ensures both `workers` and `homeowners` tables:
 After running the migration, verify:
 
 1. **Check Lookup Tables:**
+
 ```sql
 SELECT * FROM genders;
 SELECT * FROM marital_statuses;
@@ -178,29 +190,32 @@ SELECT * FROM service_types;
 ```
 
 2. **Check Workers Table Structure:**
+
 ```sql
-SELECT column_name, data_type 
-FROM information_schema.columns 
-WHERE table_name = 'workers' 
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'workers'
 ORDER BY ordinal_position;
 ```
 
 3. **Check Homeowners Table Structure:**
+
 ```sql
-SELECT column_name, data_type 
-FROM information_schema.columns 
-WHERE table_name = 'homeowners' 
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'homeowners'
 ORDER BY ordinal_position;
 ```
 
 4. **Check Constraints:**
+
 ```sql
-SELECT conname, contype, pg_get_constraintdef(oid) 
-FROM pg_constraint 
+SELECT conname, contype, pg_get_constraintdef(oid)
+FROM pg_constraint
 WHERE conrelid = 'public.workers'::regclass;
 
-SELECT conname, contype, pg_get_constraintdef(oid) 
-FROM pg_constraint 
+SELECT conname, contype, pg_get_constraintdef(oid)
+FROM pg_constraint
 WHERE conrelid = 'public.homeowners'::regclass;
 ```
 
@@ -209,18 +224,21 @@ WHERE conrelid = 'public.homeowners'::regclass;
 After migration, test all three registration flows:
 
 ### 1. Worker Registration
+
 - Visit `/worker/register`
 - Fill out all fields
 - Submit form
 - Check database: `SELECT * FROM workers ORDER BY created_at DESC LIMIT 1;`
 
 ### 2. Homeowner Registration
+
 - Visit `/homeowner/register`
 - Fill out all fields
 - Submit form
 - Check database: `SELECT * FROM homeowners ORDER BY created_at DESC LIMIT 1;`
 
 ### 3. Admin Registration
+
 - Visit `/admin/register`
 - Fill out all fields
 - Submit form
@@ -236,6 +254,7 @@ If something goes wrong, you can rollback by:
    - Select "Rollback"
 
 2. **Via SQL:**
+
 ```sql
 -- Rename columns back to camelCase (if needed)
 ALTER TABLE workers RENAME COLUMN date_of_birth TO "dateOfBirth";
@@ -245,24 +264,30 @@ ALTER TABLE workers RENAME COLUMN date_of_birth TO "dateOfBirth";
 ## Common Issues
 
 ### Issue: "column already exists"
+
 **Solution:** The column was already renamed. This is safe to ignore.
 
 ### Issue: "constraint already exists"
+
 **Solution:** The constraint was already added. This is safe to ignore.
 
 ### Issue: "cannot change data type"
+
 **Solution:** There's existing data that can't be converted. You may need to:
+
 1. Backup the data
 2. Drop the column
 3. Recreate with correct type
 4. Restore the data (with conversion)
 
 ### Issue: "foreign key constraint fails"
+
 **Solution:** The table structure differs from expected. Manual migration may be required.
 
 ## Support
 
 If you encounter errors during migration:
+
 1. Copy the full error message
 2. Check which PART of the migration failed
 3. Run that specific part manually with modifications
@@ -271,6 +296,7 @@ If you encounter errors during migration:
 ## Summary
 
 Once this migration is applied:
+
 - ✅ All lookup tables will be created and populated
 - ✅ All columns will use snake_case naming
 - ✅ All CHECK constraints will be in place

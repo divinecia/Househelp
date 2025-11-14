@@ -22,10 +22,25 @@ router.post("/register", async (req: Request, res: Response) => {
     const gender = req.body.gender;
 
     // Extract remaining profile data
-    const { email: _e, password: _p, full_name: _fn, fullName: _fN, role: _r, contact_number: _cn, contactNumber: _cN, gender: _g, ...profileData } = req.body;
+    const {
+      email: _e,
+      password: _p,
+      full_name: _fn,
+      fullName: _fN,
+      role: _r,
+      contact_number: _cn,
+      contactNumber: _cN,
+      gender: _g,
+      ...profileData
+    } = req.body;
 
     if (!email || !password || !fullName || !role) {
-      console.error("Registration validation failed:", { email: !!email, password: !!password, fullName: !!fullName, role: !!role });
+      console.error("Registration validation failed:", {
+        email: !!email,
+        password: !!password,
+        fullName: !!fullName,
+        role: !!role,
+      });
       console.error("Request body:", JSON.stringify(req.body, null, 2));
       return res.status(400).json({
         success: false,
@@ -137,7 +152,7 @@ router.post("/register", async (req: Request, res: Response) => {
     };
 
     // Only include 'role' field for admins table (workers/homeowners don't have it)
-    if (role === 'admin') {
+    if (role === "admin") {
       insertData.role = role;
     }
 
@@ -392,7 +407,7 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
     // Send password reset email via Supabase
     // Note: Supabase will only send if email exists, but we always return success for security
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${req.headers.origin || 'http://localhost:5173'}/reset-password`,
+      redirectTo: `${req.headers.origin || "http://localhost:5173"}/reset-password`,
     });
 
     if (error) {
@@ -402,7 +417,8 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      message: "If an account exists with this email, you will receive a password reset link.",
+      message:
+        "If an account exists with this email, you will receive a password reset link.",
     });
   } catch (error: any) {
     console.error("Forgot password error:", error);

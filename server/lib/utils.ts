@@ -140,11 +140,11 @@ export const mapHomeownerFields = (
       // Map common variations
       const paymentMap: Record<string, string> = {
         "bank-transfer": "bank",
-        "bank_transfer": "bank",
+        bank_transfer: "bank",
         "mobile-money": "mobile",
-        "mobile_money": "mobile",
-        "paypack": "mobile",
-        "stripe": "bank",
+        mobile_money: "mobile",
+        paypack: "mobile",
+        stripe: "bank",
       };
       transformedValue = paymentMap[value.toLowerCase()] || value.toLowerCase();
     }
@@ -158,7 +158,10 @@ export const mapHomeownerFields = (
         transformedValue = false;
       }
     }
-    if (dbKey === "smoking_drinking_restrictions" && typeof value === "string") {
+    if (
+      dbKey === "smoking_drinking_restrictions" &&
+      typeof value === "string"
+    ) {
       // Keep as-is, just ensure it's a string
       transformedValue = value;
     }

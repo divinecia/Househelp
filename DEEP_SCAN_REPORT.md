@@ -1,6 +1,7 @@
 # Deep Scan Report - Data Insertions & Dropdowns
 
 ## Date: November 14, 2024
+
 ## Status: 🟡 PARTIALLY CONNECTED - Database exists but lookup tables are empty
 
 ---
@@ -8,6 +9,7 @@
 ## Executive Summary
 
 Supabase is now connected to the application:
+
 - ✅ Backend can reach Supabase
 - ✅ Frontend environment variables set
 - ❌ **Lookup tables don't exist yet**
@@ -20,32 +22,33 @@ All registration forms are scanning for data but finding nothing in the database
 ## Connection Status
 
 ### Supabase Configuration
-| Item | Status | Details |
-|------|--------|---------|
-| URL | ✅ Connected | https://xucshfhaxdobksylsbay.supabase.co |
-| Backend Credentials | ✅ Set | SUPABASE_URL and SUPABASE_ANON_KEY |
-| Frontend Credentials | ✅ Set | NEXT_PUBLIC_SUPABASE_URL/ANON_KEY |
-| Server Status | ✅ Running | No error warnings in logs |
+
+| Item                 | Status       | Details                                  |
+| -------------------- | ------------ | ---------------------------------------- |
+| URL                  | ✅ Connected | https://xucshfhaxdobksylsbay.supabase.co |
+| Backend Credentials  | ✅ Set       | SUPABASE_URL and SUPABASE_ANON_KEY       |
+| Frontend Credentials | ✅ Set       | NEXT_PUBLIC_SUPABASE_URL/ANON_KEY        |
+| Server Status        | ✅ Running   | No error warnings in logs                |
 
 ### Database Tables Status
 
-| Table | Purpose | Records | Status |
-|-------|---------|---------|--------|
-| user_profiles | All users | 0 | ✅ Empty (ready) |
-| workers | Worker profiles | 0 | ✅ Empty (ready) |
-| homeowners | Homeowner profiles | 0 | ✅ Empty (ready) |
-| admins | Admin profiles | 0 | ✅ Empty (ready) |
-| **genders** | Dropdown options | ❌ 0 | ❌ MISSING |
-| **marital_statuses** | Dropdown options | ❌ 0 | ❌ MISSING |
-| **service_types** | Dropdown options | ❌ 0 | ❌ MISSING |
-| **insurance_companies** | Dropdown options | ❌ 0 | ❌ MISSING |
-| **payment_methods** | Dropdown options | ❌ 0 | ❌ MISSING |
-| **wage_units** | Dropdown options | ❌ 0 | ❌ MISSING |
-| **language_levels** | Dropdown options | ❌ 0 | ❌ MISSING |
-| **residence_types** | Dropdown options | ❌ 0 | ❌ MISSING |
-| **worker_info_options** | Dropdown options | ❌ 0 | ❌ MISSING |
-| **criminal_record_options** | Dropdown options | ❌ 0 | ❌ MISSING |
-| **smoking_drinking_restrictions** | Dropdown options | ❌ 0 | ❌ MISSING |
+| Table                             | Purpose            | Records | Status           |
+| --------------------------------- | ------------------ | ------- | ---------------- |
+| user_profiles                     | All users          | 0       | ✅ Empty (ready) |
+| workers                           | Worker profiles    | 0       | ✅ Empty (ready) |
+| homeowners                        | Homeowner profiles | 0       | ✅ Empty (ready) |
+| admins                            | Admin profiles     | 0       | ✅ Empty (ready) |
+| **genders**                       | Dropdown options   | ❌ 0    | ❌ MISSING       |
+| **marital_statuses**              | Dropdown options   | ❌ 0    | ❌ MISSING       |
+| **service_types**                 | Dropdown options   | ❌ 0    | ❌ MISSING       |
+| **insurance_companies**           | Dropdown options   | ❌ 0    | ❌ MISSING       |
+| **payment_methods**               | Dropdown options   | ❌ 0    | ❌ MISSING       |
+| **wage_units**                    | Dropdown options   | ❌ 0    | ❌ MISSING       |
+| **language_levels**               | Dropdown options   | ❌ 0    | ❌ MISSING       |
+| **residence_types**               | Dropdown options   | ❌ 0    | ❌ MISSING       |
+| **worker_info_options**           | Dropdown options   | ❌ 0    | ❌ MISSING       |
+| **criminal_record_options**       | Dropdown options   | ❌ 0    | ❌ MISSING       |
+| **smoking_drinking_restrictions** | Dropdown options   | ❌ 0    | ❌ MISSING       |
 
 ---
 
@@ -56,6 +59,7 @@ All registration forms are scanning for data but finding nothing in the database
 #### Worker Registration (`/worker/register`)
 
 **Form Fields Scanned:**
+
 ```
 ✅ Full Name (text) → Database field: full_name
 ✅ Date of Birth (date) → Database field: date_of_birth
@@ -83,6 +87,7 @@ All registration forms are scanning for data but finding nothing in the database
 ```
 
 **Data Insertion Code:**
+
 ```typescript
 // File: server/routes/auth.ts
 POST /auth/register
@@ -94,6 +99,7 @@ POST /auth/register
 ```
 
 **Issues Found:**
+
 - ❌ Gender dropdown API `/api/options/genders` has no data
 - ❌ Marital Status dropdown API `/api/options/marital-statuses` has no data
 - ❌ Insurance Companies dropdown API `/api/options/insurance-companies` has no data
@@ -105,6 +111,7 @@ POST /auth/register
 #### Homeowner Registration (`/homeowner/register`)
 
 **Form Fields Scanned:**
+
 ```
 ✅ Full Name (text) → full_name
 ✅ Age (number) → age
@@ -135,6 +142,7 @@ POST /auth/register
 ```
 
 **Issues Found:**
+
 - ❌ All 6 dropdown menus have no data
 
 ---
@@ -142,6 +150,7 @@ POST /auth/register
 #### Admin Registration (`/admin/register`)
 
 **Form Fields Scanned:**
+
 ```
 ✅ Full Name (text) → full_name
 ✅ Contact Number (text) → contact_number
@@ -152,6 +161,7 @@ POST /auth/register
 ```
 
 **Issues Found:**
+
 - ❌ Gender dropdown has no data
 
 ---
@@ -160,22 +170,23 @@ POST /auth/register
 
 #### API Endpoints
 
-| Endpoint | Lookup Table | Status | Data |
-|----------|--------------|--------|------|
-| `/api/options/genders` | genders | ❌ Error | No records |
-| `/api/options/marital-statuses` | marital_statuses | ❌ Error | No records |
-| `/api/options/service-types` | service_types | ❌ Error | No records |
-| `/api/options/insurance-companies` | insurance_companies | ❌ Error | No records |
-| `/api/options/payment-methods` | payment_methods | ❌ Error | No records |
-| `/api/options/wage-units` | wage_units | ❌ Error | No records |
-| `/api/options/language-levels` | language_levels | ❌ Error | No records |
-| `/api/options/residence-types` | residence_types | ❌ Error | No records |
-| `/api/options/worker-info-options` | worker_info_options | ❌ Error | No records |
-| `/api/options/criminal-record-options` | criminal_record_options | ❌ Error | No records |
+| Endpoint                                | Lookup Table                  | Status   | Data       |
+| --------------------------------------- | ----------------------------- | -------- | ---------- |
+| `/api/options/genders`                  | genders                       | ❌ Error | No records |
+| `/api/options/marital-statuses`         | marital_statuses              | ❌ Error | No records |
+| `/api/options/service-types`            | service_types                 | ❌ Error | No records |
+| `/api/options/insurance-companies`      | insurance_companies           | ❌ Error | No records |
+| `/api/options/payment-methods`          | payment_methods               | ❌ Error | No records |
+| `/api/options/wage-units`               | wage_units                    | ❌ Error | No records |
+| `/api/options/language-levels`          | language_levels               | ❌ Error | No records |
+| `/api/options/residence-types`          | residence_types               | ❌ Error | No records |
+| `/api/options/worker-info-options`      | worker_info_options           | ❌ Error | No records |
+| `/api/options/criminal-record-options`  | criminal_record_options       | ❌ Error | No records |
 | `/api/options/smoking-drinking-options` | smoking_drinking_restrictions | ❌ Error | No records |
 
 **Code Review:**
 File: `server/routes/options.ts`
+
 ```typescript
 // ✅ Code is correct
 router.get("/genders", async (_req: Request, res: Response) => {
@@ -190,7 +201,7 @@ async function getOptions(tableName: string) {
       .from(tableName)
       .select("id, name")
       .order("name", { ascending: true });
-    
+
     if (error) throw new Error(error.message);
     return { success: true, data };
   } catch (error: any) {
@@ -206,6 +217,7 @@ async function getOptions(tableName: string) {
 #### Frontend Data Loading
 
 File: `client/pages/worker/WorkerRegister.tsx`
+
 ```typescript
 ✅ useEffect loads options on mount
 ✅ Calls Promise.all with all 5 API calls
@@ -259,23 +271,23 @@ if (success) {
 
 **Workers Table:**
 
-| Frontend | Value | Transform | Database |
-|----------|-------|-----------|----------|
-| gender | "Male" | lowercase | "male" ✅ |
-| maritalStatus | "Single" | lowercase | "single" ✅ |
-| expectedWages | "1000 RWF" | as-is | "1000 RWF" ✅ |
-| workingHoursAndDays | "9-5, Mon-Fri" | JSON stringify | JSON ✅ |
+| Frontend            | Value          | Transform      | Database      |
+| ------------------- | -------------- | -------------- | ------------- |
+| gender              | "Male"         | lowercase      | "male" ✅     |
+| maritalStatus       | "Single"       | lowercase      | "single" ✅   |
+| expectedWages       | "1000 RWF"     | as-is          | "1000 RWF" ✅ |
+| workingHoursAndDays | "9-5, Mon-Fri" | JSON stringify | JSON ✅       |
 
 **Homeowners Table:**
 
-| Frontend | Value | Transform | Database |
-|----------|-------|-----------|----------|
-| typeOfResidence | "Apartment" | lowercase | "apartment" ✅ |
-| workerInfo | "Full-time" | lowercase | "full-time" ✅ |
-| preferredGender | "Female" or "" | lowercase/"any" | "female"/"any" ✅ |
-| criminalRecord | "Yes" | string→boolean | true ✅ |
-| paymentMode | "PayPack" | mapped | "mobile" ✅ |
-| smokingDrinkingRestrictions | "No smoking" | as-is | "No smoking" ✅ |
+| Frontend                    | Value          | Transform       | Database          |
+| --------------------------- | -------------- | --------------- | ----------------- |
+| typeOfResidence             | "Apartment"    | lowercase       | "apartment" ✅    |
+| workerInfo                  | "Full-time"    | lowercase       | "full-time" ✅    |
+| preferredGender             | "Female" or "" | lowercase/"any" | "female"/"any" ✅ |
+| criminalRecord              | "Yes"          | string→boolean  | true ✅           |
+| paymentMode                 | "PayPack"      | mapped          | "mobile" ✅       |
+| smokingDrinkingRestrictions | "No smoking"   | as-is           | "No smoking" ✅   |
 
 **Status:** ✅ All transformations configured correctly
 
@@ -284,6 +296,7 @@ if (success) {
 ## Frontend Components Scan
 
 ### WorkerRegister.tsx
+
 ```
 ✅ Lines 1-30: Imports and state setup
 ✅ Lines 46-63: handleChange for input/select/checkbox
@@ -299,6 +312,7 @@ if (success) {
 **Status:** ✅ Component code is correct, just missing data
 
 ### HomeownerRegister.tsx
+
 ```
 ✅ State setup for all dropdowns
 ✅ useEffect loads 6 option APIs in parallel
@@ -309,6 +323,7 @@ if (success) {
 **Status:** ✅ Component code is correct, just missing data
 
 ### AdminRegister.tsx
+
 ```
 ✅ State setup for gender dropdown
 ✅ useEffect loads gender options
@@ -327,6 +342,7 @@ if (success) {
 All fields map correctly from frontend → backend → database:
 
 **Workers (25 fields):**
+
 - ✅ fullName → full_name
 - ✅ dateOfBirth → date_of_birth
 - ✅ gender → gender
@@ -351,9 +367,11 @@ All fields map correctly from frontend → backend → database:
 - ✅ termsAccepted → terms_accepted
 
 **Homeowners (30 fields):**
+
 - ✅ All 30 fields correctly mapped (see COMPLETE_DATABASE_FIX_SUMMARY.md)
 
 **Admins (6 fields):**
+
 - ✅ fullName → full_name
 - ✅ contactNumber → contact_number
 - ✅ gender → gender
@@ -374,19 +392,19 @@ The migration file `server/migrations/002_schema_normalization.sql` needs to be 
 
 ### Lookup Tables Required
 
-| Table | Records Needed |
-|-------|-----------------|
-| genders | 3: Male, Female, Other |
-| marital_statuses | 4: Single, Married, Divorced, Widowed |
-| service_types | 8: House Cleaning, Cooking, Laundry, etc. |
-| insurance_companies | 5: RSSB, MMI, SANLAM, MITUELLE, Other |
-| payment_methods | 2: PayPack, Stripe |
-| wage_units | 3: Per Hour, Per Day, Per Month |
-| language_levels | 4: Beginner, Intermediate, Fluent, Native |
-| residence_types | 4: Studio, Apartment, Villa, Mansion |
-| worker_info_options | 3: Full-time, Part-time, Live-in |
-| criminal_record_options | 2: Yes, No |
-| smoking_drinking_restrictions | 4: Various options |
+| Table                         | Records Needed                            |
+| ----------------------------- | ----------------------------------------- |
+| genders                       | 3: Male, Female, Other                    |
+| marital_statuses              | 4: Single, Married, Divorced, Widowed     |
+| service_types                 | 8: House Cleaning, Cooking, Laundry, etc. |
+| insurance_companies           | 5: RSSB, MMI, SANLAM, MITUELLE, Other     |
+| payment_methods               | 2: PayPack, Stripe                        |
+| wage_units                    | 3: Per Hour, Per Day, Per Month           |
+| language_levels               | 4: Beginner, Intermediate, Fluent, Native |
+| residence_types               | 4: Studio, Apartment, Villa, Mansion      |
+| worker_info_options           | 3: Full-time, Part-time, Live-in          |
+| criminal_record_options       | 2: Yes, No                                |
+| smoking_drinking_restrictions | 4: Various options                        |
 
 ---
 
@@ -469,6 +487,7 @@ curl http://localhost/api/options/marital-statuses
 ## Testing Checklist
 
 ### ✅ Pre-Migration
+
 - [x] Supabase connected
 - [x] API endpoints accessible
 - [x] Frontend code reviewed
@@ -507,18 +526,21 @@ curl http://localhost/api/options/marital-statuses
 ## Files Involved
 
 ### Backend
+
 - `server/routes/auth.ts` - Registration logic ✅
 - `server/routes/options.ts` - Dropdown APIs ✅
 - `server/lib/utils.ts` - Field mapping ✅
 - `server/lib/supabase.ts` - Database connection ✅
 
 ### Frontend
+
 - `client/pages/worker/WorkerRegister.tsx` - Worker form ✅
 - `client/pages/homeowner/HomeownerRegister.tsx` - Homeowner form ✅
 - `client/pages/admin/AdminRegister.tsx` - Admin form ✅
 - `client/lib/api-client.ts` - API functions ✅
 
 ### Database
+
 - `server/migrations/001_init_schema.sql` - Initial schema ✅
 - `server/migrations/002_schema_normalization.sql` - Lookup tables ⏳ NEEDS EXECUTION
 
@@ -526,16 +548,16 @@ curl http://localhost/api/options/marital-statuses
 
 ## Summary
 
-| Category | Status | Details |
-|----------|--------|---------|
-| Supabase Connection | ✅ Working | Environment variables set |
-| API Endpoints | ✅ Implemented | All routes exist |
-| Frontend Code | ✅ Correct | All forms ready |
-| Field Mapping | ✅ Complete | All 61 fields mapped |
-| Value Transformations | ✅ Implemented | camelCase, enums, booleans |
-| Lookup Tables | ❌ Missing | Need migration execution |
-| Data Insertion | ✅ Ready | Will work once tables exist |
-| Error Handling | ✅ Implemented | Proper messages shown |
+| Category              | Status         | Details                     |
+| --------------------- | -------------- | --------------------------- |
+| Supabase Connection   | ✅ Working     | Environment variables set   |
+| API Endpoints         | ✅ Implemented | All routes exist            |
+| Frontend Code         | ✅ Correct     | All forms ready             |
+| Field Mapping         | ✅ Complete    | All 61 fields mapped        |
+| Value Transformations | ✅ Implemented | camelCase, enums, booleans  |
+| Lookup Tables         | ❌ Missing     | Need migration execution    |
+| Data Insertion        | ✅ Ready       | Will work once tables exist |
+| Error Handling        | ✅ Implemented | Proper messages shown       |
 
 ---
 
@@ -554,6 +576,7 @@ See: `SCHEMA_MIGRATION_INSTRUCTIONS.md` for step-by-step instructions
 ## Conclusion
 
 The entire system is correctly implemented and connected:
+
 - ✅ Backend is properly configured
 - ✅ Frontend is properly configured
 - ✅ Field mappings are correct
