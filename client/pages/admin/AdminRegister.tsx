@@ -1,16 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { registerUser } from "@/lib/auth";
 import type { AdminData } from "@/lib/auth";
-import { registerUser as apiRegisterAdmin } from "@/lib/api-client";
+import { registerUser as apiRegisterAdmin, getGenders } from "@/lib/api-client";
 import { toast } from "sonner";
 
 export default function AdminRegister() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<Partial<AdminData>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [genders, setGenders] = useState<Array<{ id: string; name: string }>>([]);
+  const [isLoadingGenders, setIsLoadingGenders] = useState(false);
+
+  useEffect(() => {
+    const loadGenders = async () => {
+      setIsLoadingGenders(true);
+      try {
+        const result = await getGenders();
+        if (result.success && result.data) {
+          setGenders(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to load genders:", error);
+      } finally {
+        setIsLoadingGenders(false);
+      }
+    };
+    loadGenders();
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -132,12 +151,15 @@ export default function AdminRegister() {
                 name="gender"
                 value={formData.gender || ""}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                disabled={isLoadingGenders}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
               >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
+                <option value="">{isLoadingGenders ? "Loading..." : "Select Gender"}</option>
+                {genders.map((gender) => (
+                  <option key={gender.id} value={gender.name.toLowerCase()}>
+                    {gender.name}
+                  </option>
+                ))}
               </select>
               {errors.gender && (
                 <p className="text-destructive text-sm mt-1">{errors.gender}</p>
