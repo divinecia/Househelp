@@ -32,9 +32,12 @@ async function apiRequest<T>(
   const { skipAuth = false, _hasRetried = false, ...fetchOptions } = options;
 
   // Normalize headers to ensure they're always a plain object
-  const extraHeaders = fetchOptions.headers instanceof Headers
-    ? Object.fromEntries(fetchOptions.headers.entries())
-    : (typeof fetchOptions.headers === 'object' ? fetchOptions.headers : {}) as Record<string, string>;
+  const extraHeaders =
+    fetchOptions.headers instanceof Headers
+      ? Object.fromEntries(fetchOptions.headers.entries())
+      : ((typeof fetchOptions.headers === "object"
+          ? fetchOptions.headers
+          : {}) as Record<string, string>);
 
   let headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -80,7 +83,11 @@ async function apiRequest<T>(
         const newToken = await refreshAccessToken();
         if (newToken) {
           // Retry request with new token, marking that we've already retried
-          return apiRequest<T>(endpoint, { ...options, skipAuth: false, _hasRetried: true });
+          return apiRequest<T>(endpoint, {
+            ...options,
+            skipAuth: false,
+            _hasRetried: true,
+          });
         }
       }
 
@@ -214,7 +221,9 @@ export async function deleteWorker(id: string) {
 }
 
 export async function searchWorkers(filters: Record<string, any>) {
-  return apiGet(`/workers/search/advanced?${new URLSearchParams(filters).toString()}`);
+  return apiGet(
+    `/workers/search/advanced?${new URLSearchParams(filters).toString()}`,
+  );
 }
 
 // ============================================================

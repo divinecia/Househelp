@@ -37,7 +37,14 @@ interface FlutterwaveVerificationResponse {
  */
 router.post("/", validatePaymentData, async (req: Request, res: Response) => {
   try {
-    const { bookingId, amount, paymentMethod, transactionRef, description, status } = req.body;
+    const {
+      bookingId,
+      amount,
+      paymentMethod,
+      transactionRef,
+      description,
+      status,
+    } = req.body;
 
     // Insert payment record
     const { data: paymentData, error: paymentError } = await supabase
@@ -93,7 +100,8 @@ router.post("/verify", async (req: Request, res: Response) => {
     if (!FLUTTERWAVE_SECRET_KEY) {
       return res.status(500).json({
         success: false,
-        error: "Flutterwave configuration missing. FLUTTERWAVE_SECRET_KEY is not set.",
+        error:
+          "Flutterwave configuration missing. FLUTTERWAVE_SECRET_KEY is not set.",
       });
     }
 
@@ -112,7 +120,7 @@ router.post("/verify", async (req: Request, res: Response) => {
         headers: {
           Authorization: `Bearer ${FLUTTERWAVE_SECRET_KEY}`,
         },
-      }
+      },
     );
 
     if (response.data.status === "success") {
@@ -139,7 +147,9 @@ router.post("/verify", async (req: Request, res: Response) => {
 router.post("/webhook", async (req: Request, res: Response) => {
   try {
     if (!FLUTTERWAVE_SECRET_KEY) {
-      console.warn("Flutterwave webhook received but FLUTTERWAVE_SECRET_KEY is not configured");
+      console.warn(
+        "Flutterwave webhook received but FLUTTERWAVE_SECRET_KEY is not configured",
+      );
       return res.status(500).json({
         success: false,
         error: "Flutterwave configuration missing",
@@ -200,7 +210,8 @@ router.get("/status/:transactionId", async (req: Request, res: Response) => {
     if (!FLUTTERWAVE_SECRET_KEY) {
       return res.status(500).json({
         success: false,
-        error: "Flutterwave configuration missing. FLUTTERWAVE_SECRET_KEY is not set.",
+        error:
+          "Flutterwave configuration missing. FLUTTERWAVE_SECRET_KEY is not set.",
       });
     }
 
@@ -212,7 +223,7 @@ router.get("/status/:transactionId", async (req: Request, res: Response) => {
         headers: {
           Authorization: `Bearer ${FLUTTERWAVE_SECRET_KEY}`,
         },
-      }
+      },
     );
 
     return res.json({

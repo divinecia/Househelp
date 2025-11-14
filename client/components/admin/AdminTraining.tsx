@@ -69,7 +69,14 @@ export default function AdminTraining() {
 
       if (result.success) {
         toast.success("Training added successfully!");
-        setFormData({ title: "", category: "beginner", instructor: "", startDate: "", description: "", duration: 1 });
+        setFormData({
+          title: "",
+          category: "beginner",
+          instructor: "",
+          startDate: "",
+          description: "",
+          duration: 1,
+        });
         setShowForm(false);
         await fetchTrainings();
       } else {
@@ -122,19 +129,28 @@ export default function AdminTraining() {
       {/* Form */}
       {showForm && (
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Add New Training</h3>
-          <form onSubmit={handleAddTraining} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
+            Add New Training
+          </h3>
+          <form
+            onSubmit={handleAddTraining}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
             <input
               type="text"
               placeholder="Training Title"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             />
             <select
               value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
+              onChange={(e) =>
+                setFormData({ ...formData, category: e.target.value as any })
+              }
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="beginner">Beginner</option>
@@ -145,7 +161,9 @@ export default function AdminTraining() {
               type="text"
               placeholder="Instructor Name"
               value={formData.instructor}
-              onChange={(e) => setFormData({ ...formData, instructor: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, instructor: e.target.value })
+              }
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             />
@@ -153,7 +171,9 @@ export default function AdminTraining() {
               type="number"
               placeholder="Duration (hours)"
               value={formData.duration}
-              onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
+              onChange={(e) =>
+                setFormData({ ...formData, duration: parseInt(e.target.value) })
+              }
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               min="1"
             />
@@ -171,46 +191,78 @@ export default function AdminTraining() {
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           {isLoading ? (
-            <div className="p-6 text-center text-muted-foreground">Loading trainings...</div>
+            <div className="p-6 text-center text-muted-foreground">
+              Loading trainings...
+            </div>
           ) : trainings.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground">No trainings found</div>
+            <div className="p-6 text-center text-muted-foreground">
+              No trainings found
+            </div>
           ) : (
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Title</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Category</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Instructor</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Start Date</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Status</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Actions</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
+                    Title
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
+                    Category
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
+                    Instructor
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
+                    Start Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {trainings.map((training) => (
-                  <tr key={training.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-foreground font-medium">{training.title}</td>
+                  <tr
+                    key={training.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-6 py-4 text-sm text-foreground font-medium">
+                      {training.title}
+                    </td>
                     <td className="px-6 py-4 text-sm">
                       <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium capitalize">
                         {training.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">{training.instructor}</td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {training.start_date ? new Date(training.start_date).toLocaleDateString() : "-"}
+                      {training.instructor}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">
+                      {training.start_date
+                        ? new Date(training.start_date).toLocaleDateString()
+                        : "-"}
                     </td>
                     <td className="px-6 py-4 text-sm">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        training.status === 'active' ? 'bg-green-100 text-green-700' :
-                        training.status === 'inactive' ? 'bg-gray-100 text-gray-700' :
-                        'bg-yellow-100 text-yellow-700'
-                      }`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          training.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : training.status === "inactive"
+                              ? "bg-gray-100 text-gray-700"
+                              : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
                         {training.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <div className="flex gap-2">
-                        <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
+                        <button
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit"
+                        >
                           <Edit2 size={16} />
                         </button>
                         <button

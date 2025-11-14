@@ -15,7 +15,9 @@ export interface EmailPayload {
 
 export const sendEmail = async (payload: EmailPayload) => {
   if (!SENDGRID_API_KEY) {
-    console.warn("SENDGRID_API_KEY is not configured. Email notifications are disabled.");
+    console.warn(
+      "SENDGRID_API_KEY is not configured. Email notifications are disabled.",
+    );
     return { success: false, error: "Email service not configured" };
   }
 
@@ -36,7 +38,11 @@ export const sendEmail = async (payload: EmailPayload) => {
   }
 };
 
-export const sendWelcomeEmail = async (name: string, email: string, role: string) => {
+export const sendWelcomeEmail = async (
+  name: string,
+  email: string,
+  role: string,
+) => {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h2>Welcome to HouseHelp, ${name}!</h2>
@@ -58,11 +64,12 @@ export const sendPaymentNotification = async (
   amount: number,
   currency: string,
   status: "success" | "failed" | "pending",
-  transactionRef: string
+  transactionRef: string,
 ) => {
   const statusMessage = {
     success: "Your payment has been completed successfully.",
-    failed: "Unfortunately, your payment could not be processed. Please try again.",
+    failed:
+      "Unfortunately, your payment could not be processed. Please try again.",
     pending: "Your payment is pending verification.",
   };
 
@@ -90,7 +97,7 @@ export const sendBookingConfirmation = async (
   email: string,
   jobTitle: string,
   scheduledDate: string,
-  bookingRef: string
+  bookingRef: string,
 ) => {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -117,7 +124,7 @@ export const sendWorkerAssignmentEmail = async (
   email: string,
   jobTitle: string,
   workerName: string,
-  scheduledDate: string
+  scheduledDate: string,
 ) => {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -140,7 +147,10 @@ export const sendWorkerAssignmentEmail = async (
   });
 };
 
-export const sendPasswordResetEmail = async (email: string, resetLink: string) => {
+export const sendPasswordResetEmail = async (
+  email: string,
+  resetLink: string,
+) => {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h2>Password Reset Request</h2>
@@ -162,7 +172,7 @@ export const sendJobCompletionEmail = async (
   email: string,
   jobTitle: string,
   workerName: string,
-  rating?: number
+  rating?: number,
 ) => {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
