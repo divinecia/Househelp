@@ -208,7 +208,7 @@ export async function deleteWorker(id: string) {
 }
 
 export async function searchWorkers(filters: Record<string, any>) {
-  return apiGet(`/workers/search?${new URLSearchParams(filters).toString()}`);
+  return apiGet(`/workers/search/advanced?${new URLSearchParams(filters).toString()}`);
 }
 
 // ============================================================
