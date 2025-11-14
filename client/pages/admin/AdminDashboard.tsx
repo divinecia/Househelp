@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getUser, logoutUser } from "@/lib/auth";
+import { getUserRole } from "@/lib/jwt-auth";
 import type { AdminData } from "@/lib/auth";
 import {
   BarChart3,
