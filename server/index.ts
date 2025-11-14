@@ -10,6 +10,7 @@ import paymentRoutes from "./routes/payment";
 import trainingRoutes from "./routes/trainings";
 import reportRoutes from "./routes/reports";
 import serviceRoutes from "./routes/services";
+import optionsRoutes from "./routes/options";
 
 export function createServer() {
   const app = express();
@@ -50,6 +51,7 @@ export function createServer() {
   app.use("/api/trainings", trainingRoutes);
   app.use("/api/reports", reportRoutes);
   app.use("/api/services", serviceRoutes);
+  app.use("/api/options", optionsRoutes);
 
   return app;
 }
