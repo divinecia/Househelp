@@ -138,6 +138,14 @@ router.post("/verify", async (req: Request, res: Response) => {
 
 router.post("/webhook", async (req: Request, res: Response) => {
   try {
+    if (!FLUTTERWAVE_SECRET_KEY) {
+      console.warn("Flutterwave webhook received but FLUTTERWAVE_SECRET_KEY is not configured");
+      return res.status(500).json({
+        success: false,
+        error: "Flutterwave configuration missing",
+      });
+    }
+
     const payload = req.body;
 
     const hash = req.headers["verificationhash"] as string;
