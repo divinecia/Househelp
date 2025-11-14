@@ -180,51 +180,63 @@ export default function AdminTraining() {
       {/* Training Table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Title</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Category</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Instructor</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Duration</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Status</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {trainings.map((training) => (
-                <tr key={training.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-foreground font-medium">{training.title}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium capitalize">
-                      {training.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{training.instructor}</td>
-                  <td className="px-6 py-4 text-sm text-foreground">{training.duration} hours</td>
-                  <td className="px-6 py-4 text-sm">
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                      {training.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <div className="flex gap-2">
-                      <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
-                        <Edit2 size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTraining(training.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
+          {isLoading ? (
+            <div className="p-6 text-center text-muted-foreground">Loading trainings...</div>
+          ) : trainings.length === 0 ? (
+            <div className="p-6 text-center text-muted-foreground">No trainings found</div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Title</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Category</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Instructor</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Start Date</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Status</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {trainings.map((training) => (
+                  <tr key={training.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 text-sm text-foreground font-medium">{training.title}</td>
+                    <td className="px-6 py-4 text-sm">
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium capitalize">
+                        {training.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">{training.instructor}</td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">
+                      {training.start_date ? new Date(training.start_date).toLocaleDateString() : "-"}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        training.status === 'active' ? 'bg-green-100 text-green-700' :
+                        training.status === 'inactive' ? 'bg-gray-100 text-gray-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {training.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      <div className="flex gap-2">
+                        <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTraining(training.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
