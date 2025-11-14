@@ -101,7 +101,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
     if (userProfileError) {
       console.error(`User profile creation error:`, userProfileError);
-      await supabase.auth.admin.deleteUser(authData.user.id);
+      // Note: Can't delete auth user with anon key, would need service role key
       return res.status(400).json({
         success: false,
         error: "Failed to create user profile: " + userProfileError.message,
@@ -143,10 +143,10 @@ router.post("/register", async (req: Request, res: Response) => {
       .single();
 
     if (profileError) {
-      // Clean up auth user and user profile if role-specific profile creation fails
+      // Clean up user profile if role-specific profile creation fails
       console.error(`Profile creation error for ${role}:`, profileError);
       await supabase.from("user_profiles").delete().eq("id", authData.user.id);
-      await supabase.auth.admin.deleteUser(authData.user.id);
+      // Note: Can't delete auth user with anon key, would need service role key
       return res.status(400).json({
         success: false,
         error: "Failed to create user profile: " + profileError.message,
