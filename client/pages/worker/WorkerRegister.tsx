@@ -72,7 +72,7 @@ export default function WorkerRegister() {
         if (parsed.errors.length > 0) {
           newErrors.nationalId = parsed.errors[0];
         } else {
-          newErrors.nationalId = "National ID format is invalid. Use format: 1 followed by 9 digits or 16 digits (Rwanda National ID)";
+          newErrors.nationalId = "National ID must be exactly 16 digits in Rwanda format";
         }
       }
     }
@@ -251,7 +251,7 @@ export default function WorkerRegister() {
 
                 <div>
                   <label htmlFor="nationalId" className="block text-sm font-medium text-foreground mb-2">
-                    National ID *
+                    National ID (16 digits) *
                   </label>
                   <input
                     type="text"
@@ -259,11 +259,12 @@ export default function WorkerRegister() {
                     name="nationalId"
                     value={formData.nationalId || ""}
                     onChange={handleChange}
-                    placeholder="1 123456789 or 1123456789012345"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="1234567890123456"
+                    maxLength={16}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Short format: 1 followed by 9 digits | Full Rwanda format: 16 digits (Status + YoB + Gender + BirthOrder + Frequency + Security)
+                    Format: 16 digits (Status + YoB + Gender + BirthOrder + Frequency + Security)
                   </p>
                   {errors.nationalId && (
                     <p className="text-destructive text-sm mt-1">{errors.nationalId}</p>

@@ -36,21 +36,16 @@ export interface ParsedRwandanID {
 
 /**
  * Validate a Rwanda National ID format
- * Accepts both 10-digit (1 XXXXXXXXX) and 16-digit formats
+ * Only accepts 16-digit format (full Rwanda National ID)
  */
 export const validateRwandaID = (id: string): boolean => {
   const cleanId = id.replace(/\s/g, "");
-  
-  // Accept 10-digit format (1 + 9 digits)
-  if (/^1\d{9}$/.test(cleanId)) {
-    return true;
-  }
-  
-  // Accept 16-digit format (full Rwanda ID)
+
+  // Only accept 16-digit format (full Rwanda ID)
   if (/^\d{16}$/.test(cleanId)) {
     return validateFullRwandaID(cleanId);
   }
-  
+
   return false;
 };
 
