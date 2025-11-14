@@ -1,38 +1,158 @@
-import { useState } from "react";
-import { Eye } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Eye, Plus } from "lucide-react";
+import { getBookings, getWorkers, getHomeowners, apiPost } from "@/lib/api-client";
+import { toast } from "sonner";
 
 interface Booking {
   id: string;
-  jobTitle: string;
-  homeowner: string;
-  worker: string;
+  service_type: string;
+  homeowner_id: string;
+  worker_id: string;
   status: "pending" | "accepted" | "in_progress" | "completed" | "cancelled";
-  budget: number;
-  scheduledDate: string;
+  amount: number;
+  booking_date: string;
+  homeowner_name?: string;
+  worker_name?: string;
+}
+
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  status: "active" | "inactive";
 }
 
 export default function AdminBooking() {
   const [activeTab, setActiveTab] = useState<"all" | "payment" | "jobs" | "services">("all");
-  const [bookings] = useState<Booking[]>([
-    {
-      id: "1",
-      jobTitle: "House Cleaning",
-      homeowner: "Alice Johnson",
-      worker: "John Doe",
-      status: "in_progress",
-      budget: 50000,
-      scheduledDate: "2024-01-28",
-    },
-    {
-      id: "2",
-      jobTitle: "Cooking Services",
-      homeowner: "Bob Wilson",
-      worker: "Jane Smith",
-      status: "completed",
-      budget: 75000,
-      scheduledDate: "2024-01-25",
-    },
-  ]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [workers, setWorkers] = useState<any[]>([]);
+  const [homeowners, setHomeowners] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showJobForm, setShowJobForm] = useState(false);
+  const [showServiceForm, setShowServiceForm] = useState(false);
+  const [jobFormData, setJobFormData] = useState({
+    workerName: "",
+    homeownerName: "",
+    serviceType: "",
+    amount: "",
+    date: "",
+  });
+  const [serviceFormData, setServiceFormData] = useState({
+    name: "",
+    description: "",
+    category: "",
+  });
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const [bookingsRes, workersRes, homeownersRes] = await Promise.all([
+        getBookings(),
+        getWorkers(),
+        getHomeowners(),
+      ]);
+
+      if (bookingsRes.success && bookingsRes.data) {
+        const enrichedBookings = bookingsRes.data.map((booking: any) => {
+          const worker = workersRes.data?.find((w: any) => w.id === booking.worker_id);
+          const homeowner = homeownersRes.data?.find(
+            (h: any) => h.id === booking.homeowner_id
+          );
+          return {
+            ...booking,
+            worker_name: worker?.full_name || "Unknown",
+            homeowner_name: homeowner?.full_name || "Unknown",
+          };
+        });
+        setBookings(enrichedBookings);
+      }
+
+      if (workersRes.success && workersRes.data) {
+        setWorkers(workersRes.data);
+      }
+
+      if (homeownersRes.success && homeownersRes.data) {
+        setHomeowners(homeownersRes.data);
+      }
+    } catch (error) {
+      toast.error("Error fetching data");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddJob = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!jobFormData.workerName || !jobFormData.homeownerName || !jobFormData.serviceType) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    try {
+      const result = await apiPost("/bookings", {
+        worker_id: jobFormData.workerName,
+        homeowner_id: jobFormData.homeownerName,
+        service_type: jobFormData.serviceType,
+        amount: parseFloat(jobFormData.amount),
+        booking_date: jobFormData.date,
+        status: "pending",
+      });
+
+      if (result.success) {
+        toast.success("Job assigned successfully");
+        setJobFormData({
+          workerName: "",
+          homeownerName: "",
+          serviceType: "",
+          amount: "",
+          date: "",
+        });
+        setShowJobForm(false);
+        await fetchData();
+      } else {
+        toast.error(result.error || "Failed to add job");
+      }
+    } catch (error) {
+      toast.error("Error adding job");
+      console.error(error);
+    }
+  };
+
+  const handleAddService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!serviceFormData.name || !serviceFormData.category) {
+      toast.error("Please fill in required fields");
+      return;
+    }
+
+    try {
+      const result = await apiPost("/services", {
+        name: serviceFormData.name,
+        description: serviceFormData.description,
+        category: serviceFormData.category,
+        status: "active",
+      });
+
+      if (result.success) {
+        toast.success("Service added successfully");
+        setServiceFormData({ name: "", description: "", category: "" });
+        setShowServiceForm(false);
+        await fetchData();
+      } else {
+        toast.error(result.error || "Failed to add service");
+      }
+    } catch (error) {
+      toast.error("Error adding service");
+      console.error(error);
+    }
+  }
 
   const tabs = ["all", "payment", "jobs", "services"] as const;
 
