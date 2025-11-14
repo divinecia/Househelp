@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { registerUser } from "@/lib/auth";
 import type { WorkerData } from "@/lib/auth";
+import { validateRwandaID, parseRwandaID } from "@/lib/rwandaId";
 import { X } from "lucide-react";
 
 export default function WorkerRegister() {
@@ -66,11 +67,13 @@ export default function WorkerRegister() {
     if (!formData.nationalId) {
       newErrors.nationalId = "National ID is required";
     } else {
-      const id = formData.nationalId.replace(/\s/g, "");
-      const isValid10Digit = /^1\d{9}$/.test(id);
-      const isValid16Digit = /^\d{16}$/.test(id);
-      if (!isValid10Digit && !isValid16Digit) {
-        newErrors.nationalId = "National ID must be in format: 1 followed by 9 digits or 16 digits";
+      if (!validateRwandaID(formData.nationalId)) {
+        const parsed = parseRwandaID(formData.nationalId);
+        if (parsed.errors.length > 0) {
+          newErrors.nationalId = parsed.errors[0];
+        } else {
+          newErrors.nationalId = "National ID format is invalid. Use format: 1 followed by 9 digits or 16 digits (Rwanda National ID)";
+        }
       }
     }
     if (!formData.termsAccepted)
@@ -248,7 +251,7 @@ export default function WorkerRegister() {
 
                 <div>
                   <label htmlFor="nationalId" className="block text-sm font-medium text-foreground mb-2">
-                    National ID (1 XXXXXXXXX or 16 digits) *
+                    National ID *
                   </label>
                   <input
                     type="text"
@@ -256,10 +259,12 @@ export default function WorkerRegister() {
                     name="nationalId"
                     value={formData.nationalId || ""}
                     onChange={handleChange}
-                    placeholder="1 123456789 or 1234567890123456"
+                    placeholder="1 123456789 or 1123456789012345"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Format: 1 followed by 9 digits or 16 digits</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Short format: 1 followed by 9 digits | Full Rwanda format: 16 digits (Status + YoB + Gender + BirthOrder + Frequency + Security)
+                  </p>
                   {errors.nationalId && (
                     <p className="text-destructive text-sm mt-1">{errors.nationalId}</p>
                   )}
@@ -312,7 +317,7 @@ export default function WorkerRegister() {
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      placeholder="1/2"
+                      placeholder="50000"
                       value={formData.expectedWages?.split(" ")[0] || ""}
                       onChange={(e) =>
                         setFormData((prev) => ({

@@ -19,13 +19,13 @@ export default function HomeownerMore({ onLogout }: MoreMenuProps) {
 
   const handleSubmitRating = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Rating submitted:", ratingData);
+    // TODO: Send rating data to API
     setRatingData({ worker: "", rating: 5, review: "" });
   };
 
   const handleSubmitReport = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Report submitted:", reportData);
+    // TODO: Send report data to API
     setReportData({ issue: "", description: "" });
   };
 

@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { registerUserViaAPI } from "@/lib/auth";
 import type { HomeownerData } from "@/lib/auth";
+import { validateRwandaID, parseRwandaID } from "@/lib/rwandaId";
 import { toast } from "sonner";
 
 export default function HomeownerRegister() {
@@ -263,7 +264,7 @@ export default function HomeownerRegister() {
 
                 <div>
                   <label htmlFor="nationalId" className="block text-sm font-medium text-foreground mb-2">
-                    National ID (1 XXXXXXXXX or 16 digits)
+                    National ID (Optional)
                   </label>
                   <input
                     type="text"
@@ -271,10 +272,12 @@ export default function HomeownerRegister() {
                     name="nationalId"
                     value={formData.nationalId || ""}
                     onChange={handleChange}
-                    placeholder="1 123456789 or 1234567890123456"
+                    placeholder="1 123456789 or 1123456789012345"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Format: 1 followed by 9 digits or 16 digits</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Short format: 1 followed by 9 digits | Full Rwanda format: 16 digits (Status + YoB + Gender + BirthOrder + Frequency + Security)
+                  </p>
                 </div>
               </div>
             </fieldset>

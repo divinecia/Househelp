@@ -14,7 +14,7 @@ export default function WorkerMore({ onLogout }: MoreMenuProps) {
 
   const handleSubmitReport = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Report submitted:", reportData);
+    // TODO: Send report data to API
     setReportData({ issue: "", description: "" });
     setShowReportForm(false);
   };
