@@ -19,6 +19,7 @@ interface ApiResponse<T> {
 
 interface RequestOptions extends RequestInit {
   skipAuth?: boolean;
+  _hasRetried?: boolean;
 }
 
 /**
