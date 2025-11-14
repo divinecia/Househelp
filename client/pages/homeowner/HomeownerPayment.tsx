@@ -191,7 +191,7 @@ export default function HomeownerPayment() {
       ) {
         // First create payment record in database
         const paymentRecord = await createPayment({
-          bookingID: paymentData.bookingId,
+          bookingId: paymentData.bookingId,
           amount: paymentData.amount,
           paymentMethod: "flutterwave",
           transactionRef: flutterwaveResponse.data.tx_ref,
