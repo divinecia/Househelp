@@ -72,7 +72,14 @@ const AppContent = () => (
             path="/admin/forgot-password"
             element={<AdminForgotPassword />}
           />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute requiredRole="admin" fallbackPath="/admin/login">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
