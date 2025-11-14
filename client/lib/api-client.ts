@@ -5,7 +5,10 @@
 
 import { getAccessToken, refreshAccessToken } from "./jwt-auth";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5173/api";
+// Use relative path for API calls (works in both dev and production)
+// In dev: /api → http://localhost:5173/api
+// In prod: /api → https://your-domain/api
+const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 interface ApiResponse<T> {
   success: boolean;
