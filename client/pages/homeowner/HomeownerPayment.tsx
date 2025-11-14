@@ -391,11 +391,23 @@ export default function HomeownerPayment() {
                             name="paymentMethod"
                             value={paymentData.paymentMethod}
                             onChange={handlePaymentChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            disabled={isLoadingMethods}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                           >
-                            <option value="flutterwave">Flutterwave (Card/Mobile Money)</option>
-                            <option value="bank_transfer">Bank Transfer</option>
-                            <option value="cash">Cash Payment</option>
+                            <option value="">{isLoadingMethods ? "Loading..." : "Select Payment Method"}</option>
+                            {paymentMethods.length > 0 ? (
+                              paymentMethods.map((method) => (
+                                <option key={method.id} value={method.name.toLowerCase().replace(/\s+/g, "_")}>
+                                  {method.name}
+                                </option>
+                              ))
+                            ) : (
+                              <>
+                                <option value="flutterwave">Flutterwave (Card/Mobile Money)</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="cash">Cash Payment</option>
+                              </>
+                            )}
                           </select>
                         </div>
 
