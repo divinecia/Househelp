@@ -30,9 +30,14 @@ async function apiRequest<T>(
 ): Promise<ApiResponse<T>> {
   const { skipAuth = false, ...fetchOptions } = options;
 
+  // Normalize headers to ensure they're always a plain object
+  const extraHeaders = fetchOptions.headers instanceof Headers
+    ? Object.fromEntries(fetchOptions.headers.entries())
+    : (typeof fetchOptions.headers === 'object' ? fetchOptions.headers : {}) as Record<string, string>;
+
   let headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...fetchOptions.headers,
+    ...extraHeaders,
   };
 
   // Add authorization token if available and not skipped
