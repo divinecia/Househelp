@@ -12,6 +12,7 @@ import reportRoutes from "./routes/reports";
 import serviceRoutes from "./routes/services";
 import optionsRoutes from "./routes/options";
 import normalizeRequestBody from "./middleware/normalize-request";
+import { verifyToken, adminOnly } from "./middleware/auth";
 
 export function createServer() {
   const app = express();
