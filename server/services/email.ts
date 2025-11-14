@@ -194,3 +194,40 @@ export const sendJobCompletionEmail = async (
     html,
   });
 };
+
+export const sendAdminReportEmail = async (
+  reportType: string,
+  userEmail: string,
+  userName: string,
+  description: string,
+  details?: Record<string, any>,
+) => {
+  const adminEmail = process.env.ADMIN_REPORT_EMAIL || "admin@househelp.rw";
+
+  const detailsHtml = details
+    ? Object.entries(details)
+        .map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`)
+        .join("")
+    : "";
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2>New Report: ${reportType}</h2>
+      <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <p><strong>Report Type:</strong> ${reportType}</p>
+        <p><strong>From:</strong> ${userName} (${userEmail})</p>
+        <p><strong>Description:</strong> ${description}</p>
+        ${detailsHtml}
+        <p><strong>Reported At:</strong> ${new Date().toISOString()}</p>
+      </div>
+      <p>Please review this report and take appropriate action.</p>
+      <p>Best regards,<br>The HouseHelp System</p>
+    </div>
+  `;
+
+  return sendEmail({
+    to: adminEmail,
+    subject: `[ADMIN REPORT] ${reportType}`,
+    html,
+  });
+};
