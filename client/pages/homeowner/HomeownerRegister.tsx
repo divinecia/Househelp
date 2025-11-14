@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { registerUserViaAPI } from "@/lib/auth";
 import type { HomeownerData } from "@/lib/auth";
 import { validateRwandaID, parseRwandaID } from "@/lib/rwandaId";
-import { registerUser as apiRegisterHomeowner } from "@/lib/api-client";
+import { registerUser as apiRegisterHomeowner, getResidenceTypes, getWorkerInfoOptions, getGenders, getCriminalRecordOptions, getPaymentMethods, getSmokingDrinkingOptions } from "@/lib/api-client";
 import { toast } from "sonner";
 
 export default function HomeownerRegister() {
@@ -19,6 +19,13 @@ export default function HomeownerRegister() {
   >([]);
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [residenceTypes, setResidenceTypes] = useState<Array<{ id: string; name: string }>>([]);
+  const [workerInfos, setWorkerInfos] = useState<Array<{ id: string; name: string }>>([]);
+  const [gendersList, setGendersList] = useState<Array<{ id: string; name: string }>>([]);
+  const [criminalRecordOptions, setCriminalRecordOptions] = useState<Array<{ id: string; name: string }>>([]);
+  const [paymentModes, setPaymentModes] = useState<Array<{ id: string; name: string }>>([]);
+  const [smokingDrinkingOptions, setSmokingDrinkingOptions] = useState<Array<{ id: string; name: string }>>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -56,6 +63,33 @@ export default function HomeownerRegister() {
       prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
     );
   };
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      setLoadingOptions(true);
+      try {
+        const [residences, workerInfoOpts, genders, criminalRecords, payments, smokingDrinking] = await Promise.all([
+          getResidenceTypes(),
+          getWorkerInfoOptions(),
+          getGenders(),
+          getCriminalRecordOptions(),
+          getPaymentMethods(),
+          getSmokingDrinkingOptions(),
+        ]);
+        if (residences.success && residences.data) setResidenceTypes(residences.data);
+        if (workerInfoOpts.success && workerInfoOpts.data) setWorkerInfos(workerInfoOpts.data);
+        if (genders.success && genders.data) setGendersList(genders.data);
+        if (criminalRecords.success && criminalRecords.data) setCriminalRecordOptions(criminalRecords.data);
+        if (payments.success && payments.data) setPaymentModes(payments.data);
+        if (smokingDrinking.success && smokingDrinking.data) setSmokingDrinkingOptions(smokingDrinking.data);
+      } catch (error) {
+        console.error("Failed to load options:", error);
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+    loadOptions();
+  }, []);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
