@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getWorkers, createBooking } from "@/lib/api-client";
+import { getWorkers, createBooking, getServiceTypes } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Search, MapPin, Star, Calendar, Clock } from "lucide-react";
 
@@ -32,6 +32,8 @@ export default function HomeownerBooking() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
   const [loading, setLoading] = useState(false);
+  const [serviceTypes, setServiceTypes] = useState<Array<{ id: string; name: string }>>([]);
+  const [isLoadingServices, setIsLoadingServices] = useState(false);
   const [bookingData, setBookingData] = useState<BookingFormData>({
     workerId: "",
     bookingDate: "",
@@ -44,7 +46,22 @@ export default function HomeownerBooking() {
 
   useEffect(() => {
     fetchWorkers();
+    loadServiceTypes();
   }, []);
+
+  const loadServiceTypes = async () => {
+    setIsLoadingServices(true);
+    try {
+      const result = await getServiceTypes();
+      if (result.success && result.data) {
+        setServiceTypes(result.data);
+      }
+    } catch (error) {
+      console.error("Failed to load service types:", error);
+    } finally {
+      setIsLoadingServices(false);
+    }
+  };
 
   useEffect(() => {
     if (searchQuery.trim() === "") {
@@ -316,16 +333,27 @@ export default function HomeownerBooking() {
                             name="serviceType"
                             value={bookingData.serviceType}
                             onChange={handleBookingChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            disabled={isLoadingServices}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                           >
-                            <option value="">Select service type</option>
-                            <option value="cleaning">Cleaning</option>
-                            <option value="cooking">Cooking</option>
-                            <option value="laundry">Laundry</option>
-                            <option value="gardening">Gardening</option>
-                            <option value="childcare">Childcare</option>
-                            <option value="eldercare">Elder Care</option>
-                            <option value="other">Other</option>
+                            <option value="">{isLoadingServices ? "Loading..." : "Select service type"}</option>
+                            {serviceTypes.length > 0 ? (
+                              serviceTypes.map((service) => (
+                                <option key={service.id} value={service.name.toLowerCase()}>
+                                  {service.name}
+                                </option>
+                              ))
+                            ) : (
+                              <>
+                                <option value="cleaning">Cleaning</option>
+                                <option value="cooking">Cooking</option>
+                                <option value="laundry">Laundry</option>
+                                <option value="gardening">Gardening</option>
+                                <option value="childcare">Childcare</option>
+                                <option value="eldercare">Elder Care</option>
+                                <option value="other">Other</option>
+                              </>
+                            )}
                           </select>
                           {errors.serviceType && (
                             <p className="text-destructive text-sm mt-1">
