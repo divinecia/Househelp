@@ -1,8 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Save, X } from "lucide-react";
+import { getResidenceTypes, getWorkerInfoOptions, getGenders, getPaymentMethods } from "@/lib/api-client";
 
 export default function HomeownerProfile() {
   const [isEditing, setIsEditing] = useState(false);
+  const [residenceTypes, setResidenceTypes] = useState<Array<{ id: string; name: string }>>([]);
+  const [workerInfos, setWorkerInfos] = useState<Array<{ id: string; name: string }>>([]);
+  const [gendersList, setGendersList] = useState<Array<{ id: string; name: string }>>([]);
+  const [paymentModes, setPaymentModes] = useState<Array<{ id: string; name: string }>>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
   const [profileData, setProfileData] = useState({
     age: "32",
     homeAddress: "KG 123 St, Kigali",
@@ -28,6 +34,29 @@ export default function HomeownerProfile() {
   });
 
   const [tempData, setTempData] = useState(profileData);
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      setLoadingOptions(true);
+      try {
+        const [residences, workerInfoOpts, genders, payments] = await Promise.all([
+          getResidenceTypes(),
+          getWorkerInfoOptions(),
+          getGenders(),
+          getPaymentMethods(),
+        ]);
+        if (residences.success && residences.data) setResidenceTypes(residences.data);
+        if (workerInfoOpts.success && workerInfoOpts.data) setWorkerInfos(workerInfoOpts.data);
+        if (genders.success && genders.data) setGendersList(genders.data);
+        if (payments.success && payments.data) setPaymentModes(payments.data);
+      } catch (error) {
+        console.error("Failed to load profile options:", error);
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+    loadOptions();
+  }, []);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -101,12 +130,15 @@ export default function HomeownerProfile() {
                 <select
                   value={tempData.typeOfResidence}
                   onChange={(e) => handleChange("typeOfResidence", e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  disabled={loadingOptions}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                 >
-                  <option value="studio">Studio</option>
-                  <option value="apartment">Apartment</option>
-                  <option value="villa">Villa</option>
-                  <option value="mansion">Mansion</option>
+                  <option value="">{loadingOptions ? "Loading..." : "Select Residence Type"}</option>
+                  {residenceTypes.map((type) => (
+                    <option key={type.id} value={type.name.toLowerCase()}>
+                      {type.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -132,11 +164,15 @@ export default function HomeownerProfile() {
                 <select
                   value={tempData.workerInfo}
                   onChange={(e) => handleChange("workerInfo", e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  disabled={loadingOptions}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                 >
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Live-in">Live-in</option>
+                  <option value="">{loadingOptions ? "Loading..." : "Select Worker Info"}</option>
+                  {workerInfos.map((info) => (
+                    <option key={info.id} value={info.name}>
+                      {info.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="md:col-span-2">
