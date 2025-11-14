@@ -38,13 +38,7 @@ export const workerRegistrationSchema = z.object({
   nationalId: z
     .string()
     .min(1, "National ID is required")
-    .refine(
-      (id) => {
-        const clean = id.replace(/\s/g, "");
-        return /^1\d{9}$/.test(clean) || /^\d{16}$/.test(clean);
-      },
-      "Invalid National ID format"
-    ),
+    .regex(/^\d{16}$/, "National ID must be exactly 16 digits in Rwanda format"),
   typeOfWork: z.string().optional(),
   workExperience: z.string().optional(),
   expectedWages: z.string().optional(),
