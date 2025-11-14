@@ -180,9 +180,11 @@ export default function HomeownerBooking() {
             />
             <button
               type="submit"
-              className="md:col-span-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+              disabled={isSubmitting}
+              className="md:col-span-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
-              Create Booking
+              {isSubmitting && <Loader size={18} className="animate-spin" />}
+              {isSubmitting ? "Creating..." : "Create Booking"}
             </button>
           </form>
         </div>
