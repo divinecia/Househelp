@@ -75,12 +75,12 @@ async function apiRequest<T>(
 
     if (!response.ok) {
       // Handle 401 - token expired or invalid
-      if (response.status === 401 && !skipAuth) {
-        // Try to refresh token once
+      if (response.status === 401 && !skipAuth && !_hasRetried) {
+        // Try to refresh token once (prevent infinite recursion)
         const newToken = await refreshAccessToken();
         if (newToken) {
-          // Retry request with new token
-          return apiRequest<T>(endpoint, { ...options, skipAuth: false });
+          // Retry request with new token, marking that we've already retried
+          return apiRequest<T>(endpoint, { ...options, skipAuth: false, _hasRetried: true });
         }
       }
 
