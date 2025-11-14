@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AlertCircle, LogOut, Send, X } from "lucide-react";
+import { toast } from "sonner";
 
 interface MoreMenuProps {
   onLogout: () => void;
@@ -11,12 +12,46 @@ export default function WorkerMore({ onLogout }: MoreMenuProps) {
     issue: "",
     description: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmitReport = (e: React.FormEvent) => {
+  const handleSubmitReport = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Send report data to API
-    setReportData({ issue: "", description: "" });
-    setShowReportForm(false);
+
+    if (!reportData.issue || !reportData.description) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/reports", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionStorage.getItem("auth_token") || ""}`,
+        },
+        body: JSON.stringify({
+          issueType: reportData.issue,
+          description: reportData.description,
+          reportedBy: "worker",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success("Report submitted successfully!");
+        setReportData({ issue: "", description: "" });
+        setShowReportForm(false);
+      } else {
+        toast.error(result.error || "Failed to submit report");
+      }
+    } catch (error) {
+      toast.error("Error submitting report");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
