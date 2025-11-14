@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { supabase } from "../lib/supabase";
+import { sendAdminReportEmail } from "../services/email";
 
 const router = Router();
 
@@ -49,6 +50,23 @@ router.post("/", async (req: Request, res: Response) => {
     const { data, error } = await supabase.from("reports").insert([req.body]).select().single();
 
     if (error) throw new Error(error.message);
+
+    // Send admin notification email
+    try {
+      await sendAdminReportEmail(
+        req.body.issue_type || req.body.type || "General Issue",
+        req.body.reporter_email || "unknown@email.com",
+        req.body.reporter_name || "Unknown User",
+        req.body.description || req.body.title || "No description provided",
+        {
+          "Report ID": data.id,
+          "Created At": data.created_at,
+          "Status": data.status || "pending",
+        },
+      );
+    } catch (emailError) {
+      console.error("Failed to send admin notification email:", emailError);
+    }
 
     return res.status(201).json({ success: true, data });
   } catch (error: any) {
