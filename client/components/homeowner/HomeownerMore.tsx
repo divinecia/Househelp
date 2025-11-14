@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Star, AlertCircle, LogOut, Send, X } from "lucide-react";
-import { updateBooking, getReportTypes } from "@/lib/api-client";
+import { updateBooking, getReportTypes, createReport } from "@/lib/api-client";
 import { toast } from "sonner";
 
 interface MoreMenuProps {
