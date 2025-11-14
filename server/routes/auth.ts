@@ -127,18 +127,23 @@ router.post("/register", async (req: Request, res: Response) => {
       };
     }
 
+    // Build insertion data based on role (only admins have 'role' column)
+    const insertData: any = {
+      id: authData.user.id,
+      email,
+      full_name: fullName,
+      ...mappedProfileData,
+      created_at: new Date().toISOString(),
+    };
+
+    // Only include 'role' field for admins table (workers/homeowners don't have it)
+    if (role === 'admin') {
+      insertData.role = role;
+    }
+
     const { data: profileDataResult, error: profileError } = await supabase
       .from(profileTable)
-      .insert([
-        {
-          id: authData.user.id,
-          email,
-          full_name: fullName,
-          role,
-          ...mappedProfileData,
-          created_at: new Date().toISOString(),
-        },
-      ])
+      .insert([insertData])
       .select()
       .single();
 

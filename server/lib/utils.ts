@@ -54,7 +54,19 @@ export const mapWorkerFields = (
     }
 
     const dbKey = fieldMap[key] || key;
-    mappedData[dbKey] = value;
+    let transformedValue = value;
+
+    // Transform values to match database CHECK constraints
+    if (dbKey === "gender" && typeof value === "string") {
+      // Database expects: 'male', 'female', 'other'
+      transformedValue = value.toLowerCase();
+    }
+    if (dbKey === "marital_status" && typeof value === "string") {
+      // Database expects lowercase values
+      transformedValue = value.toLowerCase();
+    }
+
+    mappedData[dbKey] = transformedValue;
   }
 
   return mappedData;
@@ -107,7 +119,51 @@ export const mapHomeownerFields = (
     }
 
     const dbKey = fieldMap[key] || key;
-    mappedData[dbKey] = value;
+    let transformedValue = value;
+
+    // Transform values to match database CHECK constraints
+    if (dbKey === "type_of_residence" && typeof value === "string") {
+      // Database expects: 'studio', 'apartment', 'villa', 'mansion'
+      transformedValue = value.toLowerCase();
+    }
+    if (dbKey === "worker_info" && typeof value === "string") {
+      // Database expects: 'full-time', 'part-time', 'live-in'
+      transformedValue = value.toLowerCase();
+    }
+    if (dbKey === "preferred_gender" && typeof value === "string") {
+      // Database expects: 'male', 'female', 'any'
+      // Frontend sends 'male', 'female', or empty (which should be 'any')
+      transformedValue = value.toLowerCase() || "any";
+    }
+    if (dbKey === "payment_mode" && typeof value === "string") {
+      // Database expects: 'bank', 'cash', 'mobile'
+      // Map common variations
+      const paymentMap: Record<string, string> = {
+        "bank-transfer": "bank",
+        "bank_transfer": "bank",
+        "mobile-money": "mobile",
+        "mobile_money": "mobile",
+        "paypack": "mobile",
+        "stripe": "bank",
+      };
+      transformedValue = paymentMap[value.toLowerCase()] || value.toLowerCase();
+    }
+    if (dbKey === "criminal_record_required") {
+      // Convert to boolean
+      if (typeof value === "string") {
+        transformedValue = value.toLowerCase() === "yes" || value === "true";
+      } else if (typeof value === "boolean") {
+        transformedValue = value;
+      } else {
+        transformedValue = false;
+      }
+    }
+    if (dbKey === "smoking_drinking_restrictions" && typeof value === "string") {
+      // Keep as-is, just ensure it's a string
+      transformedValue = value;
+    }
+
+    mappedData[dbKey] = transformedValue;
   }
 
   return mappedData;
