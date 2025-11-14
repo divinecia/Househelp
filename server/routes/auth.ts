@@ -84,7 +84,31 @@ router.post("/register", async (req: Request, res: Response) => {
       });
     }
 
-    // Create user profile based on role
+    // First, create user profile in user_profiles table
+    const { data: userProfileData, error: userProfileError } = await supabase
+      .from("user_profiles")
+      .insert([
+        {
+          id: authData.user.id,
+          email,
+          full_name: fullName,
+          role,
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single();
+
+    if (userProfileError) {
+      console.error(`User profile creation error:`, userProfileError);
+      await supabase.auth.admin.deleteUser(authData.user.id);
+      return res.status(400).json({
+        success: false,
+        error: "Failed to create user profile: " + userProfileError.message,
+      });
+    }
+
+    // Then, create role-specific profile
     let profileTable = "user_profiles";
     let mappedProfileData: any = {};
 
@@ -119,8 +143,9 @@ router.post("/register", async (req: Request, res: Response) => {
       .single();
 
     if (profileError) {
-      // Clean up auth user if profile creation fails
+      // Clean up auth user and user profile if role-specific profile creation fails
       console.error(`Profile creation error for ${role}:`, profileError);
+      await supabase.from("user_profiles").delete().eq("id", authData.user.id);
       await supabase.auth.admin.deleteUser(authData.user.id);
       return res.status(400).json({
         success: false,
