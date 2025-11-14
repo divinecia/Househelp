@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getBookings, createPayment, verifyPayment } from "@/lib/api-client";
+import { getBookings, createPayment, verifyPayment, getPaymentMethods } from "@/lib/api-client";
 import { initializeFlutterwavePayment, verifyFlutterwavePayment } from "@/lib/flutterwave";
 import { toast } from "sonner";
 import { CreditCard, CheckCircle, AlertCircle, Loader } from "lucide-react";
@@ -30,6 +30,8 @@ export default function HomeownerPayment() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState<Array<{ id: string; name: string }>>([]);
+  const [isLoadingMethods, setIsLoadingMethods] = useState(false);
   const [paymentData, setPaymentData] = useState<PaymentData>({
     bookingId: "",
     amount: 0,
@@ -44,13 +46,28 @@ export default function HomeownerPayment() {
 
   useEffect(() => {
     fetchBookings();
-    
+    loadPaymentMethods();
+
     // Check for payment callback
     const transactionId = searchParams.get("transaction_id");
     if (transactionId) {
       verifyPaymentCallback(transactionId);
     }
   }, [searchParams]);
+
+  const loadPaymentMethods = async () => {
+    setIsLoadingMethods(true);
+    try {
+      const result = await getPaymentMethods();
+      if (result.success && result.data) {
+        setPaymentMethods(result.data);
+      }
+    } catch (error) {
+      console.error("Failed to load payment methods:", error);
+    } finally {
+      setIsLoadingMethods(false);
+    }
+  };
 
   const fetchBookings = async () => {
     try {
@@ -458,11 +475,23 @@ export default function HomeownerPayment() {
                             name="paymentMethod"
                             value={paymentData.paymentMethod}
                             onChange={handlePaymentChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            disabled={isLoadingMethods}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                           >
-                            <option value="flutterwave">Flutterwave (Card/Mobile Money)</option>
-                            <option value="bank_transfer">Bank Transfer</option>
-                            <option value="cash">Cash Payment</option>
+                            <option value="">{isLoadingMethods ? "Loading..." : "Select Payment Method"}</option>
+                            {paymentMethods.length > 0 ? (
+                              paymentMethods.map((method) => (
+                                <option key={method.id} value={method.name.toLowerCase().replace(/\s+/g, "_")}>
+                                  {method.name}
+                                </option>
+                              ))
+                            ) : (
+                              <>
+                                <option value="flutterwave">Flutterwave (Card/Mobile Money)</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="cash">Cash Payment</option>
+                              </>
+                            )}
                           </select>
                         </div>
 
