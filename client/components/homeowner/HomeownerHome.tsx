@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { apiGet } from "../../lib/api-client";
+import { toast } from "sonner";
 
 interface Service {
   id: string;
@@ -90,37 +91,7 @@ export default function HomeownerHome() {
         setChartData(satisfactionData);
       } catch (error) {
         console.error("Error fetching homeowner home data:", error);
-        // Set defaults on error
-        setServices([
-          { id: "1", name: "Cooking", workers: 48 },
-          { id: "2", name: "Washing", workers: 36 },
-          { id: "3", name: "Cleaning", workers: 62 },
-          { id: "4", name: "Gardening", workers: 22 },
-          { id: "5", name: "Elderly Care", workers: 31 },
-          { id: "6", name: "Pet Care", workers: 17 },
-          { id: "7", name: "Child Care", workers: 51 },
-          { id: "8", name: "Laundry & Ironing", workers: 44 },
-        ]);
-        setCourses([
-          {
-            id: "1",
-            title: "How to Manage Household Staff",
-            name: "How to Manage Household Staff",
-            duration: "3 weeks",
-          },
-          {
-            id: "2",
-            title: "Safety & Hygiene Best Practices",
-            name: "Safety & Hygiene Best Practices",
-            duration: "2 weeks",
-          },
-          {
-            id: "3",
-            title: "Effective Communication Skills",
-            name: "Effective Communication Skills",
-            duration: "4 weeks",
-          },
-        ]);
+        toast.error("Failed to load services and courses from database. Please refresh the page.");
       } finally {
         setLoading(false);
       }

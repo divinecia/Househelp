@@ -370,28 +370,18 @@ export default function HomeownerBooking() {
                             <option value="">
                               {isLoadingServices
                                 ? "Loading..."
-                                : "Select service type"}
+                                : serviceTypes.length === 0
+                                  ? "No services available - please refresh"
+                                  : "Select service type"}
                             </option>
-                            {serviceTypes.length > 0 ? (
-                              serviceTypes.map((service) => (
-                                <option
-                                  key={service.id}
-                                  value={service.name.toLowerCase()}
-                                >
-                                  {service.name}
-                                </option>
-                              ))
-                            ) : (
-                              <>
-                                <option value="cleaning">Cleaning</option>
-                                <option value="cooking">Cooking</option>
-                                <option value="laundry">Laundry</option>
-                                <option value="gardening">Gardening</option>
-                                <option value="childcare">Childcare</option>
-                                <option value="eldercare">Elder Care</option>
-                                <option value="other">Other</option>
-                              </>
-                            )}
+                            {serviceTypes.map((service) => (
+                              <option
+                                key={service.id}
+                                value={service.name.toLowerCase()}
+                              >
+                                {service.name}
+                              </option>
+                            ))}
                           </select>
                           {errors.serviceType && (
                             <p className="text-destructive text-sm mt-1">
