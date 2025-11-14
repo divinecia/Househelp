@@ -23,6 +23,14 @@ export default function HomeownerDashboard() {
   useEffect(() => {
     if (!user) {
       navigate("/homeowner/login");
+      return;
+    }
+
+    // Verify user role is homeowner
+    const userRole = getUserRole();
+    if (userRole !== "homeowner") {
+      logoutUser("homeowner");
+      navigate("/homeowner/login");
     }
   }, [user, navigate]);
 
