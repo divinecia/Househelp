@@ -108,9 +108,10 @@ async function apiRequest<T>(
 /**
  * GET request
  */
-export async function apiGet<T>(endpoint: string): Promise<ApiResponse<T>> {
+export async function apiGet<T>(endpoint: string, skipAuth = false): Promise<ApiResponse<T>> {
   return apiRequest<T>(endpoint, {
     method: "GET",
+    skipAuth,
   });
 }
 
@@ -398,53 +399,53 @@ export async function deleteReport(id: string) {
 // ============================================================
 
 export async function getGenders() {
-  return apiGet("/options/genders");
+  return apiGet("/options/genders", true);
 }
 
 export async function getMaritalStatuses() {
-  return apiGet("/options/marital-statuses");
+  return apiGet("/options/marital-statuses", true);
 }
 
 export async function getServiceTypes() {
-  return apiGet("/options/service-types");
+  return apiGet("/options/service-types", true);
 }
 
 export async function getInsuranceCompanies() {
-  return apiGet("/options/insurance-companies");
+  return apiGet("/options/insurance-companies", true);
 }
 
 export async function getPaymentMethods() {
-  return apiGet("/options/payment-methods");
+  return apiGet("/options/payment-methods", true);
 }
 
 export async function getReportTypes() {
-  return apiGet("/options/report-types");
+  return apiGet("/options/report-types", true);
 }
 
 export async function getTrainingCategories() {
-  return apiGet("/options/training-categories");
+  return apiGet("/options/training-categories", true);
 }
 
 export async function getWageUnits() {
-  return apiGet("/options/wage-units");
+  return apiGet("/options/wage-units", true);
 }
 
 export async function getLanguageLevels() {
-  return apiGet("/options/language-levels");
+  return apiGet("/options/language-levels", true);
 }
 
 export async function getResidenceTypes() {
-  return apiGet("/options/residence-types");
+  return apiGet("/options/residence-types", true);
 }
 
 export async function getWorkerInfoOptions() {
-  return apiGet("/options/worker-info-options");
+  return apiGet("/options/worker-info-options", true);
 }
 
 export async function getCriminalRecordOptions() {
-  return apiGet("/options/criminal-record-options");
+  return apiGet("/options/criminal-record-options", true);
 }
 
 export async function getSmokingDrinkingOptions() {
-  return apiGet("/options/smoking-drinking-options");
+  return apiGet("/options/smoking-drinking-options", true);
 }
