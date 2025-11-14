@@ -35,24 +35,9 @@ interface FlutterwaveVerificationResponse {
 /**
  * Create a payment record
  */
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", validatePaymentData, async (req: Request, res: Response) => {
   try {
     const { bookingId, amount, paymentMethod, transactionRef, description, status } = req.body;
-
-    // Validation
-    if (!bookingId || !amount || !paymentMethod) {
-      return res.status(400).json({
-        success: false,
-        error: "Missing required fields: bookingId, amount, paymentMethod",
-      });
-    }
-
-    if (!["flutterwave", "bank_transfer", "cash"].includes(paymentMethod)) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid payment method",
-      });
-    }
 
     // Insert payment record
     const { data: paymentData, error: paymentError } = await supabase
