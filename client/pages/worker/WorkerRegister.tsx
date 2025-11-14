@@ -5,6 +5,8 @@ import Footer from "@/components/Footer";
 import { registerUser } from "@/lib/auth";
 import type { WorkerData } from "@/lib/auth";
 import { validateRwandaID, parseRwandaID } from "@/lib/rwandaId";
+import { registerUser as apiRegisterWorker } from "@/lib/api-client";
+import { toast } from "sonner";
 import { X } from "lucide-react";
 
 export default function WorkerRegister() {
@@ -82,19 +84,62 @@ export default function WorkerRegister() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      try {
-        const dataToSubmit = {
-          ...formData,
-          languageProficiency: languages.map(l => `${l.language} (${l.level})`).join(", "),
-        } as WorkerData;
-        registerUser("worker", dataToSubmit);
-        navigate("/worker/login");
-      } catch (error) {
-        console.error("Registration failed:", error);
+    if (!validateForm()) {
+      toast.error("Please fix the errors above");
+      return;
+    }
+
+    try {
+      const dataToSubmit = {
+        email: formData.email!,
+        password: formData.password!,
+        fullName: formData.fullName!,
+        role: "worker",
+        dateOfBirth: formData.dateOfBirth,
+        gender: formData.gender,
+        maritalStatus: formData.maritalStatus,
+        phoneNumber: formData.phoneNumber,
+        nationalId: formData.nationalId,
+        typeOfWork: formData.typeOfWork,
+        workExperience: formData.workExperience,
+        expectedWages: formData.expectedWages,
+        workingHoursAndDays: formData.workingHoursAndDays,
+        educationQualification: formData.educationQualification,
+        educationCertificate: formData.educationCertificate,
+        trainingCertificate: formData.trainingCertificate,
+        criminalRecord: formData.criminalRecord,
+        languageProficiency: languages.map(l => `${l.language} (${l.level})`).join(", "),
+        insuranceCompany: formData.insuranceCompany,
+        healthCondition: formData.healthCondition,
+        emergencyName: formData.emergencyName,
+        emergencyContact: formData.emergencyContact,
+        bankAccountNumber: formData.bankAccountNumber,
+        accountHolder: formData.accountHolder,
+        termsAccepted: formData.termsAccepted,
+      };
+
+      // Call API to register
+      const response = await apiRegisterWorker(dataToSubmit);
+
+      if (!response.success) {
+        toast.error(response.error || "Registration failed");
+        return;
       }
+
+      toast.success("Registration successful! Redirecting to login...");
+
+      // Also save to localStorage as fallback
+      registerUser("worker", formData as WorkerData);
+
+      setTimeout(() => {
+        navigate("/worker/login");
+      }, 1000);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Registration failed";
+      toast.error(errorMsg);
+      console.error("Registration failed:", error);
     }
   };
 
