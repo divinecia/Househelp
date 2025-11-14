@@ -1,39 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Trash2, Edit2, Plus } from "lucide-react";
+import { getWorkers, deleteWorker } from "@/lib/api-client";
+import { toast } from "sonner";
 
 interface Worker {
   id: string;
-  fullName: string;
+  full_name: string;
   email: string;
-  phoneNumber: string;
-  typeOfWork: string;
-  status: "active" | "inactive";
-  joinsDate: string;
+  phone_number: string;
+  type_of_work: string;
+  status: "active" | "inactive" | "suspended";
+  created_at: string;
 }
 
 export default function AdminWorkers() {
-  const [workers, setWorkers] = useState<Worker[]>([
-    {
-      id: "1",
-      fullName: "John Doe",
-      email: "john@example.com",
-      phoneNumber: "+250 123 456 789",
-      typeOfWork: "Cleaning",
-      status: "active",
-      joinsDate: "2024-01-15",
-    },
-    {
-      id: "2",
-      fullName: "Jane Smith",
-      email: "jane@example.com",
-      phoneNumber: "+250 987 654 321",
-      typeOfWork: "Cooking",
-      status: "active",
-      joinsDate: "2024-01-20",
-    },
-  ]);
-
+  const [workers, setWorkers] = useState<Worker[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -41,23 +24,47 @@ export default function AdminWorkers() {
     typeOfWork: "",
   });
 
-  const handleAddWorker = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.fullName && formData.email) {
-      const newWorker: Worker = {
-        id: Date.now().toString(),
-        ...formData,
-        status: "active",
-        joinsDate: new Date().toISOString().split("T")[0],
-      };
-      setWorkers([...workers, newWorker]);
-      setFormData({ fullName: "", email: "", phoneNumber: "", typeOfWork: "" });
-      setShowForm(false);
+  useEffect(() => {
+    fetchWorkers();
+  }, []);
+
+  const fetchWorkers = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getWorkers();
+      if (response.success && response.data) {
+        setWorkers(response.data);
+      }
+    } catch (error) {
+      toast.error("Failed to fetch workers");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleDeleteWorker = (id: string) => {
-    setWorkers(workers.filter((w) => w.id !== id));
+  const handleAddWorker = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.info("Worker registration is handled through /worker/register page");
+    setShowForm(false);
+    setFormData({ fullName: "", email: "", phoneNumber: "", typeOfWork: "" });
+  };
+
+  const handleDeleteWorker = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this worker?")) return;
+
+    try {
+      const response = await deleteWorker(id);
+      if (response.success) {
+        toast.success("Worker deleted successfully");
+        setWorkers(workers.filter((w) => w.id !== id));
+      } else {
+        toast.error(response.error || "Failed to delete worker");
+      }
+    } catch (error) {
+      toast.error("Error deleting worker");
+      console.error(error);
+    }
   };
 
   return (
