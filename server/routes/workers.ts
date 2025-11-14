@@ -98,7 +98,7 @@ router.get("/search/advanced", async (req: Request, res: Response) => {
     let query = supabase.from("workers").select("*");
 
     if (skill) {
-      query = query.or(`typeOfWork.ilike.%${skill}%,languageProficiency.ilike.%${skill}%`);
+      query = query.or(`type_of_work.ilike.%${skill}%,language_proficiency.ilike.%${skill}%`);
     }
 
     const { data, error } = await query.limit(20);
