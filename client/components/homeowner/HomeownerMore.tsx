@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Star, AlertCircle, LogOut, Send, X } from "lucide-react";
+import { updateBooking } from "@/lib/api-client";
+import { toast } from "sonner";
 
 interface MoreMenuProps {
   onLogout: () => void;
@@ -16,17 +18,77 @@ export default function HomeownerMore({ onLogout }: MoreMenuProps) {
     issue: "",
     description: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmitRating = (e: React.FormEvent) => {
+  const handleSubmitRating = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Send rating data to API
-    setRatingData({ worker: "", rating: 5, review: "" });
+
+    if (!ratingData.worker) {
+      toast.error("Please select a worker");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Submit rating by updating the booking with rating and review
+      const response = await updateBooking(ratingData.worker, {
+        rating: ratingData.rating,
+        review: ratingData.review,
+        status: "completed",
+      });
+
+      if (response.success) {
+        toast.success("Rating submitted successfully!");
+        setRatingData({ worker: "", rating: 5, review: "" });
+      } else {
+        toast.error(response.error || "Failed to submit rating");
+      }
+    } catch (error) {
+      toast.error("Error submitting rating");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSubmitReport = (e: React.FormEvent) => {
+  const handleSubmitReport = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Send report data to API
-    setReportData({ issue: "", description: "" });
+
+    if (!reportData.issue || !reportData.description) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Submit report via API
+      const response = await fetch("/api/reports", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionStorage.getItem("auth_token") || ""}`,
+        },
+        body: JSON.stringify({
+          issueType: reportData.issue,
+          description: reportData.description,
+          reportedBy: "homeowner",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success("Report submitted successfully!");
+        setReportData({ issue: "", description: "" });
+      } else {
+        toast.error(result.error || "Failed to submit report");
+      }
+    } catch (error) {
+      toast.error("Error submitting report");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
