@@ -2,6 +2,7 @@ import axios from "axios";
 
 const FLUTTERWAVE_API_BASE = "https://api.flutterwave.com/v3";
 const PUBLIC_KEY = import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY;
+// Note: Server-side Flutterwave secret is accessed server-only, not through client env vars
 const SECRET_KEY = import.meta.env.VITE_FLUTTERWAVE_SECRET_KEY;
 
 export interface PaymentPayload {
