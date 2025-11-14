@@ -34,14 +34,11 @@ export default function AdminTraining() {
   const fetchTrainings = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/trainings", {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("auth_token") || ""}`,
-        },
-      });
-      const result = await response.json();
+      const result = await apiGet("/trainings");
       if (result.success && result.data) {
         setTrainings(result.data);
+      } else {
+        toast.error(result.error || "Failed to fetch trainings");
       }
     } catch (error) {
       toast.error("Failed to fetch trainings");
