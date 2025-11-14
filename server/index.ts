@@ -33,6 +33,9 @@ export function createServer() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
+  // Normalize request body from camelCase to snake_case
+  app.use(normalizeRequestBody);
+
   // Health check routes
   app.get("/api/ping", (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
