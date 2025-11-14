@@ -72,7 +72,7 @@ export default function WorkerRegister() {
         if (parsed.errors.length > 0) {
           newErrors.nationalId = parsed.errors[0];
         } else {
-          newErrors.nationalId = "National ID format is invalid";
+          newErrors.nationalId = "National ID format is invalid. Use format: 1 followed by 9 digits or 16 digits (Rwanda National ID)";
         }
       }
     }
@@ -317,7 +317,7 @@ export default function WorkerRegister() {
                   <div className="flex gap-2">
                     <input
                       type="number"
-                      placeholder="2000"
+                      placeholder="25000"
                       value={formData.expectedWages?.split(" ")[0] || ""}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -325,7 +325,7 @@ export default function WorkerRegister() {
                           expectedWages: e.target.value + " " + (formData.expectedWages?.split(" ")[1] || "per hour"),
                         }))
                       }
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                     <select
                       value={formData.expectedWages?.split(" ")[1] || "per hour"}
