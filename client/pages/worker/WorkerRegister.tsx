@@ -98,15 +98,30 @@ export default function WorkerRegister() {
             getLanguageLevels(),
             getInsuranceCompanies(),
           ]);
-        if (genders.success && genders.data) setGendersList(genders.data);
-        if (maritalStatus.success && maritalStatus.data)
+        if (genders.success && genders.data && genders.data.length > 0) {
+          setGendersList(genders.data);
+        } else {
+          // Fallback gender options
+          setGendersList([
+            { id: "1", name: "Male" },
+            { id: "2", name: "Female" },
+            { id: "3", name: "Other" },
+          ]);
+        }
+        if (maritalStatus.success && maritalStatus.data && maritalStatus.data.length > 0)
           setMaritalStatuses(maritalStatus.data);
-        if (wages.success && wages.data) setWageUnits(wages.data);
-        if (levels.success && levels.data) setLanguageLevels(levels.data);
-        if (insurance.success && insurance.data)
+        if (wages.success && wages.data && wages.data.length > 0) setWageUnits(wages.data);
+        if (levels.success && levels.data && levels.data.length > 0) setLanguageLevels(levels.data);
+        if (insurance.success && insurance.data && insurance.data.length > 0)
           setInsuranceCompanies(insurance.data);
       } catch (error) {
         console.error("Failed to load options:", error);
+        // Fallback gender options if API fails
+        setGendersList([
+          { id: "1", name: "Male" },
+          { id: "2", name: "Female" },
+          { id: "3", name: "Other" },
+        ]);
       } finally {
         setLoadingOptions(false);
       }
