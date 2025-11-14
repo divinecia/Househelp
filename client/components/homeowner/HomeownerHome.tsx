@@ -139,31 +139,47 @@ export default function HomeownerHome() {
       {/* Our Services */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-foreground mb-4">Our Services</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {services.map((service) => (
-            <div
-              key={service.name}
-              className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg border border-primary/20 hover:shadow-md transition-shadow cursor-pointer"
-            >
-              <p className="font-medium text-foreground">{service.name}</p>
-              <p className="text-sm text-muted-foreground">{service.workers} workers</p>
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="p-4 bg-gray-100 rounded-lg animate-pulse h-20" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {services.map((service) => (
+              <div
+                key={service.id}
+                className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg border border-primary/20 hover:shadow-md transition-shadow cursor-pointer"
+              >
+                <p className="font-medium text-foreground">{service.name}</p>
+                <p className="text-sm text-muted-foreground">{service.workers} workers</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Training Courses */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-foreground mb-4">Training Courses for Homeowners</h2>
-        <div className="space-y-3">
-          {courses.map((course, index) => (
-            <div key={index} className="p-4 border border-gray-200 rounded-lg hover:border-primary transition-colors">
-              <p className="font-medium text-foreground">{course.name}</p>
-              <p className="text-sm text-muted-foreground">Duration: {course.duration}</p>
-              <button className="mt-2 text-sm text-primary hover:underline">Enroll Now</button>
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="p-4 bg-gray-100 rounded-lg animate-pulse h-20" />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {courses.map((course) => (
+              <div key={course.id} className="p-4 border border-gray-200 rounded-lg hover:border-primary transition-colors">
+                <p className="font-medium text-foreground">{course.name || course.title}</p>
+                <p className="text-sm text-muted-foreground">Duration: {course.duration}</p>
+                <button className="mt-2 text-sm text-primary hover:underline">Enroll Now</button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Why Choose Us */}
