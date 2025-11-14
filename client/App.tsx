@@ -1,11 +1,13 @@
 import "./global.css";
 
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import SplashScreen from "@/components/SplashScreen";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -29,7 +31,7 @@ import AdminForgotPassword from "./pages/admin/AdminForgotPassword";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const AppContent = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -63,5 +65,29 @@ const App = () => (
     </TooltipProvider>
   </QueryClientProvider>
 );
+
+const App = () => {
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    // Check if user has seen splash screen before
+    const splashShown = sessionStorage.getItem("splash_shown");
+    if (splashShown) {
+      setShowSplash(false);
+    }
+  }, []);
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    sessionStorage.setItem("splash_shown", "true");
+  };
+
+  return (
+    <>
+      {showSplash && <SplashScreen onComplete={handleSplashComplete} duration={3000} />}
+      <AppContent />
+    </>
+  );
+};
 
 export default App;
