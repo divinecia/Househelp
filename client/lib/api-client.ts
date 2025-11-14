@@ -29,7 +29,7 @@ async function apiRequest<T>(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<ApiResponse<T>> {
-  const { skipAuth = false, ...fetchOptions } = options;
+  const { skipAuth = false, _hasRetried = false, ...fetchOptions } = options;
 
   // Normalize headers to ensure they're always a plain object
   const extraHeaders = fetchOptions.headers instanceof Headers
