@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
       protocol: "wss",
     },
     fs: {
-      allow: ["./client", "./shared"],
+      allow: [".", "./client", "./shared"],
       deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "server/**"],
     },
   },
