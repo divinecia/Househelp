@@ -3,7 +3,7 @@ import { createServer } from "./index";
 import * as express from "express";
 
 const app = createServer();
-const port = process.env.PORT || 5000;
+const port = Number(process.env.PORT) || 5000;
 const host = process.env.HOST || "0.0.0.0";
 
 // In production, serve the built SPA files
