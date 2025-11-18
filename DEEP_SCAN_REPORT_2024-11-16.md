@@ -17,13 +17,19 @@ A comprehensive deep scan of the HouseHelp project revealed **critical schema mi
 ## Critical Issues (Must Fix Immediately)
 
 ### 1. user_profiles Table Schema Mismatch ⚠️ CRITICAL
-**File**: `server/migrations/001_init_schema.sql` (line 6)  
+**File**: `server/migrations/001_init_schema.sql` (lines 6-7)  
 **Impact**: **ALL user registrations fail**
 
 **Problem**:
-- Database schema defines: `fullName TEXT` (camelCase)
-- Backend expects: `full_name` (snake_case)
+- Database schema defines: `fullName TEXT` and `profileData JSONB` (camelCase)
+- Backend expects: `full_name` and `profile_data` (snake_case)
 - Auth route tries to insert: `full_name` → **ERROR: column "full_name" does not exist**
+
+**Mismatched Columns**:
+| Database (camelCase) | Backend Expects (snake_case) |
+|---------------------|------------------------------|
+| fullName | full_name |
+| profileData | profile_data |
 
 **Evidence**:
 ```sql
@@ -32,6 +38,7 @@ CREATE TABLE public.user_profiles (
   id UUID PRIMARY KEY,
   email TEXT NOT NULL,
   fullName TEXT NOT NULL,  ← CAMELCASE
+  profileData JSONB DEFAULT '{}',  ← CAMELCASE
   ...
 );
 ```
@@ -46,7 +53,7 @@ CREATE TABLE public.user_profiles (
 }])
 ```
 
-**Solution**: Migration 004 renames `fullName` → `full_name`
+**Solution**: Migration 004 renames `fullName` → `full_name` and `profileData` → `profile_data`
 
 **Test to Verify**:
 ```bash
@@ -359,6 +366,7 @@ const port = Number(process.env.PORT) || 5000; // number
 
 1. **004_complete_schema_fixes.sql** (NEW)
    - Renames user_profiles.fullName → full_name
+   - Renames user_profiles.profileData → profile_data
    - Adds payments.booking_id column
    - Renames services.baseRate → base_rate
    - Adds missing columns to workers/homeowners
