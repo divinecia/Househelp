@@ -62,7 +62,7 @@ With fix: `SUCCESS: { "id": "...", "email": "...", "full_name": "Test" }`
 **File**: `server/migrations/001_init_schema.sql` (lines 41-65)  
 **Impact**: **ALL worker registrations and updates fail**
 
-**Problem**: 17 columns in camelCase but backend expects snake_case
+**Problem**: 18 columns in camelCase but backend expects snake_case
 
 **Mismatched Columns**:
 | Database (camelCase) | Backend Expects (snake_case) |
@@ -84,6 +84,7 @@ With fix: `SUCCESS: { "id": "...", "email": "...", "full_name": "Test" }`
 | bankAccountNumber | bank_account_number |
 | accountHolder | account_holder_name |
 | insuranceCompany | insurance_company |
+| profileComplete | terms_accepted |
 
 **Solution**: Migration 002 + 004 rename all columns to snake_case
 
@@ -93,15 +94,33 @@ With fix: `SUCCESS: { "id": "...", "email": "...", "full_name": "Test" }`
 **File**: `server/migrations/001_init_schema.sql` (lines 67-96)  
 **Impact**: **ALL homeowner registrations and updates fail**
 
-**Problem**: 21 columns in camelCase but backend expects snake_case
+**Problem**: 22 columns in camelCase but backend expects snake_case
 
-**Mismatched Columns** (partial list):
-- homeAddress → home_address
-- typeOfResidence → type_of_residence
-- numberOfFamilyMembers → number_of_family_members
-- homeComposition → home_composition
-- workerInfo → worker_info
-- (and 16 more...)
+**Mismatched Columns**:
+| Database (camelCase) | Backend Expects (snake_case) |
+|---------------------|------------------------------|
+| homeAddress | home_address |
+| typeOfResidence | type_of_residence |
+| numberOfFamilyMembers | number_of_family_members |
+| homeComposition | home_composition |
+| nationalId | national_id |
+| workerInfo | worker_info |
+| specificDuties | specific_duties |
+| workingHoursAndSchedule | working_hours_and_schedule |
+| numberOfWorkersNeeded | number_of_workers_needed |
+| preferredGender | preferred_gender |
+| languagePreference | language_preference |
+| wagesOffered | wages_offered |
+| reasonForHiring | reason_for_hiring |
+| specialRequirements | special_requirements |
+| startDateRequired | start_date_required |
+| criminalRecord | criminal_record_required |
+| paymentMode | payment_mode |
+| bankDetails | bank_details |
+| religious | religious_preferences |
+| smokingDrinkingRestrictions | smoking_drinking_restrictions |
+| specificSkillsNeeded | specific_skills_needed |
+| profileComplete | terms_accepted |
 
 **Solution**: Migration 002 + 004 rename all columns to snake_case
 
