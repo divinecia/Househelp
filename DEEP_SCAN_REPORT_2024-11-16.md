@@ -101,10 +101,10 @@ With fix: `SUCCESS: { "id": "...", "email": "...", "full_name": "Test" }`
 **File**: `server/migrations/001_init_schema.sql` (lines 67-96)  
 **Impact**: **ALL homeowner registrations and updates fail**
 
-**Problem**: 22 columns in camelCase but backend expects snake_case
+**Problem**: 22 columns need to be renamed from camelCase/inconsistent naming to snake_case
 
 **Mismatched Columns**:
-| Database (camelCase) | Backend Expects (snake_case) |
+| Database (Original) | Backend Expects (snake_case) |
 |---------------------|------------------------------|
 | homeAddress | home_address |
 | typeOfResidence | type_of_residence |
