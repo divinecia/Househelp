@@ -62,9 +62,36 @@ router.post("/", async (req: Request, res: Response) => {
 router.put("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    
+    // Define allowed fields for update (prevent updating system fields)
+    const allowedFields = [
+      'date_of_birth', 'gender', 'marital_status', 'phone_number',
+      'national_id', 'type_of_work', 'work_experience', 'expected_wages',
+      'working_hours_and_days', 'education_qualification', 'training_certificate_url',
+      'language_proficiency', 'health_condition', 'emergency_contact_name',
+      'emergency_contact_phone', 'bank_account_number', 'account_holder_name',
+      'insurance_company', 'terms_accepted'
+    ];
+    
+    // Filter request body to only include allowed fields
+    const updateData: any = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    }
+    
+    // Check if there's anything to update
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "No valid fields provided for update" 
+      });
+    }
+    
     const { data, error } = await supabase
       .from("workers")
-      .update(req.body)
+      .update(updateData)
       .eq("id", id)
       .select()
       .single();

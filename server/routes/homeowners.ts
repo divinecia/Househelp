@@ -52,9 +52,37 @@ router.post("/", async (req: Request, res: Response) => {
 router.put("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    
+    // Define allowed fields for update (prevent updating system fields)
+    const allowedFields = [
+      'age', 'home_address', 'type_of_residence', 'number_of_family_members',
+      'home_composition', 'national_id', 'worker_info', 'specific_duties',
+      'working_hours_and_schedule', 'number_of_workers_needed', 'preferred_gender',
+      'language_preference', 'wages_offered', 'reason_for_hiring',
+      'special_requirements', 'start_date_required', 'criminal_record_required',
+      'payment_mode', 'bank_details', 'religious_preferences',
+      'smoking_drinking_restrictions', 'specific_skills_needed', 'terms_accepted'
+    ];
+    
+    // Filter request body to only include allowed fields
+    const updateData: any = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    }
+    
+    // Check if there's anything to update
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "No valid fields provided for update" 
+      });
+    }
+    
     const { data, error } = await supabase
       .from("homeowners")
-      .update(req.body)
+      .update(updateData)
       .eq("id", id)
       .select()
       .single();
