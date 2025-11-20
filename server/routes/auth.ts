@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabase";
 import {
   mapWorkerFields,
   mapHomeownerFields,
-  mapAdminFields,
+  // mapAdminFields,
 } from "../lib/utils";
 
 const router = Router();
@@ -100,7 +100,7 @@ router.post("/register", async (req: Request, res: Response) => {
     }
 
     // First, create user profile in user_profiles table
-    const { data: userProfileData, error: userProfileError } = await supabase
+    const { data: _userProfileData, error: userProfileError } = await supabase
       .from("user_profiles")
       .insert([
         {
@@ -366,7 +366,6 @@ router.post("/logout", async (req: Request, res: Response) => {
       });
     }
 
-    const token = authHeader.substring(7);
     await supabase.auth.signOut();
 
     return res.json({

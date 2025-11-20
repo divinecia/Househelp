@@ -9,10 +9,7 @@ import {
   getPaymentMethods,
   getCurrentUser,
 } from "@/lib/api-client";
-import {
-  initializeFlutterwavePayment,
-  verifyFlutterwavePayment,
-} from "@/lib/flutterwave";
+import { initializeFlutterwavePayment } from "@/lib/flutterwave";
 import { toast } from "sonner";
 import { CreditCard, CheckCircle, AlertCircle, Loader } from "lucide-react";
 
@@ -90,7 +87,7 @@ export default function HomeownerPayment() {
     setIsLoadingMethods(true);
     try {
       const result = await getPaymentMethods();
-      if (result.success && result.data) {
+      if (result.success && Array.isArray(result.data)) {
         setPaymentMethods(result.data);
       }
     } catch (error) {
@@ -106,7 +103,7 @@ export default function HomeownerPayment() {
         status: "completed",
         payment_status: "unpaid",
       });
-      if (response.success && response.data) {
+      if (response.success && Array.isArray(response.data)) {
         setBookings(response.data);
       }
     } catch (error) {
@@ -204,15 +201,20 @@ export default function HomeownerPayment() {
 
       // Initialize Flutterwave payment
       const phoneNumber = currentUser.phoneNumber || currentUser.contactNumber || "";
+      const tx_ref = `HouseHelp-${Date.now()}`;
+      const userFullName = currentUser.email.split('@')[0] || "User";
       const flutterwaveResponse = await initializeFlutterwavePayment({
         amount: paymentData.amount,
         email: currentUser.email,
         phone_number: phoneNumber,
         currency: "RWF",
-        tx_ref: `HouseHelp-${Date.now()}`,
-        customizations: {
+        first_name: userFullName,
+        last_name: "", // Flutterwave requires this field but can be empty
+        tx_ref: tx_ref,
+        description: paymentData.description || "HouseHelp Payment",
+        redirect_url: `${window.location.origin}/homeowner/payment?transaction_id=${tx_ref}`,
+        meta: {
           title: "HouseHelp Payment",
-          description: paymentData.description,
           logo: "https://example.com/logo.png",
         },
       });
@@ -222,11 +224,12 @@ export default function HomeownerPayment() {
         flutterwaveResponse.data?.link
       ) {
         // First create payment record in database
+        const transactionRef = tx_ref;
         const paymentRecord = await createPayment({
           bookingId: paymentData.bookingId,
           amount: paymentData.amount,
           paymentMethod: "flutterwave",
-          transactionRef: flutterwaveResponse.data.tx_ref,
+          transactionRef: transactionRef,
           description: paymentData.description,
           status: "pending",
         });

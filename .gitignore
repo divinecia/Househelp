@@ -21,3 +21,4 @@ dist-ss
 
 .config/
 !.env
+.env

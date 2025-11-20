@@ -48,17 +48,17 @@ export default function AdminOverview() {
             apiGet("/trainings"),
           ]);
 
-        const workers = workersRes.data || [];
-        const homeowners = homeownersRes.data || [];
-        const allBookings = bookingsRes.data || [];
-        const payments = paymentsRes.data || [];
-        const trainings = trainingsRes.data || [];
+        const workers = Array.isArray(workersRes.data) ? workersRes.data : [];
+        const homeowners = Array.isArray(homeownersRes.data) ? homeownersRes.data : [];
+        const allBookings = Array.isArray(bookingsRes.data) ? bookingsRes.data : [];
+        const payments = Array.isArray(paymentsRes.data) ? paymentsRes.data : [];
+        const trainings = Array.isArray(trainingsRes.data) ? trainingsRes.data : [];
 
         const totalWorkers = workers.length;
         const totalHomeowners = homeowners.length;
 
         const activeBookings = allBookings.filter(
-          (b: any) => b.status === "in_progress" || b.status === "confirmed",
+          (b) => b.status === "in_progress" || b.status === "confirmed",
         ).length;
 
         const totalRevenue = payments

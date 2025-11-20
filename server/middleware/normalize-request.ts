@@ -43,7 +43,7 @@ export const convertKeysToSnakeCase = (
  */
 export const normalizeRequestBody = (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) => {
   // Only process POST, PUT, PATCH requests with JSON body

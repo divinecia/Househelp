@@ -6,7 +6,6 @@ import {
   getBookings,
   createBooking,
   deleteBooking,
-  apiGet,
 } from "@/lib/api-client";
 import { toast } from "sonner";
 
@@ -25,7 +24,7 @@ interface Booking {
 }
 
 export default function HomeownerBooking() {
-  const user = getUser("homeowner") as HomeownerData & { id?: string };
+  const user = getUser("homeowner") as unknown as HomeownerData & { id?: string };
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,20 +48,22 @@ export default function HomeownerBooking() {
     try {
       const response = await getBookings({ homeowner_id: user.id });
       if (response.success && response.data) {
-        const formattedBookings = response.data.map((booking: any) => ({
-          id: booking.id,
-          service_type: booking.service_type || "Service",
-          jobTitle: booking.service_type || "Service",
-          booking_date: booking.booking_date,
-          scheduledDate: booking.booking_date,
-          scheduled_time: booking.scheduled_time,
-          scheduledTime: booking.scheduled_time,
-          status: booking.status || "pending",
-          amount: booking.amount,
-          budget: booking.amount ? parseFloat(booking.amount) : 0,
-          worker_name: booking.worker_id || "Pending Assignment",
-        }));
-        setBookings(formattedBookings);
+          const formattedBookings = Array.isArray(response.data) 
+            ? response.data.map((booking: any) => ({
+                id: booking.id,
+                service_type: booking.service_type || "Service",
+                jobTitle: booking.service_type || "Service",
+                booking_date: booking.booking_date,
+                scheduledDate: booking.booking_date,
+                scheduled_time: booking.scheduled_time,
+                scheduledTime: booking.scheduled_time,
+                status: booking.status || "pending",
+                amount: booking.amount,
+                budget: booking.amount ? parseFloat(booking.amount) : 0,
+                worker_name: booking.worker_id || "Pending Assignment",
+              }))
+            : [];
+          setBookings(formattedBookings);
       }
     } catch (error) {
       console.error("Error fetching bookings:", error);
@@ -220,9 +221,9 @@ export default function HomeownerBooking() {
                     </td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">
                       {booking.scheduledDate || booking.booking_date
-                        ? new Date(
-                            booking.scheduledDate || booking.booking_date
-                          ).toLocaleDateString()
+                          ? new Date(
+                              booking.scheduledDate || booking.booking_date || ""
+                            ).toLocaleDateString()
                         : "-"}
                     </td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">

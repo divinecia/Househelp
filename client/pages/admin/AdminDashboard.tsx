@@ -2,11 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getUser, logoutUser } from "@/lib/auth";
-import { getUserRole } from "@/lib/jwt-auth";
+import { getUser, logoutUser, isAuthenticated } from "@/lib/auth";
 import type { AdminData } from "@/lib/auth";
 import {
-  BarChart3,
   Users,
   Home,
   BookOpen,
@@ -28,27 +26,36 @@ type AdminSection = "overview" | "workers" | "homeowners" | "training" | "bookin
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const user = getUser("admin") as AdminData;
+  const [user, setUser] = useState<AdminData | null>(null);
   const [activeSection, setActiveSection] = useState<AdminSection>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/admin/login");
-      return;
-    }
+    const checkAuth = async () => {
+      const isAuth = await isAuthenticated("admin");
+      if (!isAuth) {
+        navigate("/admin/login");
+        return;
+      }
 
-    // Verify user role is admin
-    const userRole = getUserRole();
-    if (userRole !== "admin") {
-      // User is logged in but not an admin
-      logoutUser("admin");
-      navigate("/");
-    }
-  }, [user, navigate]);
+      try {
+        const userData = await getUser("admin");
+        if (userData) {
+          setUser(userData as AdminData);
+        } else {
+          navigate("/admin/login");
+        }
+      } catch (error) {
+        console.error("Failed to get admin user:", error);
+        navigate("/admin/login");
+      }
+    };
 
-  const handleLogout = () => {
-    logoutUser("admin");
+    checkAuth();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    await logoutUser();
     navigate("/");
   };
 

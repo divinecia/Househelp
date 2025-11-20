@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Star, AlertCircle, LogOut, Send, X } from "lucide-react";
+import { Star, AlertCircle, LogOut, Send } from "lucide-react";
 import { updateBooking, getReportTypes, createReport } from "@/lib/api-client";
 import { toast } from "sonner";
 
@@ -30,7 +30,11 @@ export default function HomeownerMore({ onLogout }: MoreMenuProps) {
       try {
         const result = await getReportTypes();
         if (result.success && result.data) {
-          setReportTypes(result.data);
+          if (result.success && Array.isArray(result.data)) {
+            setReportTypes(result.data);
+          } else {
+            setReportTypes([]);
+          }
         }
       } catch (error) {
         console.error("Failed to load report types:", error);

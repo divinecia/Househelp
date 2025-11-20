@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getUser, logoutUser } from "@/lib/auth";
-import { getUserRole } from "@/lib/jwt-auth";
+import { getUser, logoutUser, isAuthenticated } from "@/lib/auth";
 import type { HomeownerData } from "@/lib/auth";
 import { Home, Briefcase, Calendar, User, MoreVertical, LogOut, Star } from "lucide-react";
 import HomeownerHome from "@/components/homeowner/HomeownerHome";
@@ -16,26 +15,36 @@ type HomeownerSection = "home" | "jobs" | "booking" | "profile" | "more";
 
 export default function HomeownerDashboard() {
   const navigate = useNavigate();
-  const user = getUser("homeowner") as HomeownerData;
+  const [user, setUser] = useState<HomeownerData | null>(null);
   const [activeSection, setActiveSection] = useState<HomeownerSection>("home");
   const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/homeowner/login");
-      return;
-    }
+    const checkAuth = async () => {
+      const isAuth = await isAuthenticated("homeowner");
+      if (!isAuth) {
+        navigate("/homeowner/login");
+        return;
+      }
 
-    // Verify user role is homeowner
-    const userRole = getUserRole();
-    if (userRole !== "homeowner") {
-      logoutUser("homeowner");
-      navigate("/homeowner/login");
-    }
-  }, [user, navigate]);
+      try {
+        const userData = await getUser("homeowner");
+        if (userData) {
+          setUser(userData as HomeownerData);
+        } else {
+          navigate("/homeowner/login");
+        }
+      } catch (error) {
+        console.error("Failed to get homeowner user:", error);
+        navigate("/homeowner/login");
+      }
+    };
 
-  const handleLogout = () => {
-    logoutUser("homeowner");
+    checkAuth();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    await logoutUser();
     navigate("/");
   };
 

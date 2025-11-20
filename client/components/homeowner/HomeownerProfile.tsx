@@ -13,7 +13,7 @@ import {
 import { toast } from "sonner";
 
 export default function HomeownerProfile() {
-  const user = getUser("homeowner") as HomeownerData & { id?: string };
+  const user = getUser("homeowner") as unknown as HomeownerData & { id?: string };
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -30,6 +30,7 @@ export default function HomeownerProfile() {
     Array<{ id: string; name: string }>
   >([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
+
   const [profileData, setProfileData] = useState({
     age: "32",
     homeAddress: "KG 123 St, Kigali",
@@ -71,40 +72,38 @@ export default function HomeownerProfile() {
             apiGet(`/homeowners/${user.id}`),
           ]);
 
-        if (residences.success && residences.data)
-          setResidenceTypes(residences.data);
-        if (workerInfoOpts.success && workerInfoOpts.data)
-          setWorkerInfos(workerInfoOpts.data);
-        if (genders.success && genders.data) setGendersList(genders.data);
-        if (payments.success && payments.data) setPaymentModes(payments.data);
+          setResidenceTypes(Array.isArray(residences.data) ? residences.data : []);
+          setWorkerInfos(Array.isArray(workerInfoOpts.data) ? workerInfoOpts.data : []);
+        if (genders.success && Array.isArray(genders.data)) setGendersList(genders.data);
+        if (payments.success && Array.isArray(payments.data)) setPaymentModes(payments.data);
 
         // Load homeowner profile from database
         if (homeownerData.success && homeownerData.data) {
           const dbData = homeownerData.data;
           const newProfileData = {
-            age: dbData.age || "32",
-            homeAddress: dbData.home_address || "KG 123 St, Kigali",
-            typeOfResidence: dbData.type_of_residence || "apartment",
-            numberOfFamilyMembers: dbData.number_of_family_members || "4",
-            homeComposition: dbData.home_composition || "2 Adults, 2 Children",
-            workerInfo: dbData.worker_info || "Full-time",
-            specificDuties: dbData.specific_duties || "Cleaning, Cooking, Childcare",
+            age: (dbData as any).age || "32",
+            homeAddress: (dbData as any).home_address || "KG 123 St, Kigali",
+            typeOfResidence: (dbData as any).type_of_residence || "apartment",
+            numberOfFamilyMembers: (dbData as any).number_of_family_members || "4",
+            homeComposition: (dbData as any).home_composition || "2 Adults, 2 Children",
+            workerInfo: (dbData as any).worker_info || "Full-time",
+            specificDuties: (dbData as any).specific_duties || "Cleaning, Cooking, Childcare",
             workingHoursAndSchedule:
-              dbData.working_hours_and_schedule || "08:00 - 17:00, Mon-Fri",
-            numberOfWorkersNeeded: dbData.number_of_workers_needed || "2",
-            preferredGender: dbData.preferred_gender || "Female",
-            languagePreference: dbData.language_preference || "English, Kinyarwanda",
-            wagesOffered: dbData.wages_offered || "50,000 - 100,000 RWF",
-            reasonForHiring: dbData.reason_for_hiring || "Household management assistance",
-            specialRequirements: dbData.special_requirements || "Must have experience with children",
-            startDateRequired: dbData.start_date_required || "2024-02-01",
-            criminalRecord: dbData.criminal_record_required || "Yes, cleared",
-            preferredPaymentMode: dbData.payment_mode || "Bank Transfer",
-            bankDetails: dbData.bank_details || "Sample Bank, Account: ****5678",
-            religious: dbData.religious_preferences || "Christian",
+              (dbData as any).working_hours_and_schedule || "08:00 - 17:00, Mon-Fri",
+            numberOfWorkersNeeded: (dbData as any).number_of_workers_needed || "2",
+            preferredGender: (dbData as any).preferred_gender || "Female",
+            languagePreference: (dbData as any).language_preference || "English, Kinyarwanda",
+            wagesOffered: (dbData as any).wages_offered || "50,000 - 100,000 RWF",
+            reasonForHiring: (dbData as any).reason_for_hiring || "Household management assistance",
+            specialRequirements: (dbData as any).special_requirements || "Must have experience with children",
+            startDateRequired: (dbData as any).start_date_required || "2024-02-01",
+            criminalRecord: (dbData as any).criminal_record_required || "Yes, cleared",
+            preferredPaymentMode: (dbData as any).payment_mode || "Bank Transfer",
+            bankDetails: (dbData as any).bank_details || "ABC Bank, Account: ****5678",
+            religious: (dbData as any).religious_preferences || "Christian",
             smokingDrinkingRestrictions:
-              dbData.smoking_drinking_restrictions || "No smoking",
-            specificSkillsNeeded: dbData.specific_skills_needed || "Childcare, Cooking, Organization",
+              (dbData as any).smoking_drinking_restrictions || "No smoking",
+            specificSkillsNeeded: (dbData as any).specific_skills_needed || "Childcare, Cooking, Organization",
           };
           setProfileData(newProfileData);
           setTempData(newProfileData);
@@ -223,6 +222,7 @@ export default function HomeownerProfile() {
                 </label>
                 <input
                   type="number"
+                  name="age"
                   value={tempData.age}
                   onChange={(e) => handleChange("age", e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -234,6 +234,7 @@ export default function HomeownerProfile() {
                 </label>
                 <input
                   type="text"
+                  name="homeAddress"
                   value={tempData.homeAddress}
                   onChange={(e) => handleChange("homeAddress", e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -244,6 +245,7 @@ export default function HomeownerProfile() {
                   Type of Residence
                 </label>
                 <select
+                  name="typeOfResidence"
                   value={tempData.typeOfResidence}
                   onChange={(e) =>
                     handleChange("typeOfResidence", e.target.value)
@@ -267,6 +269,7 @@ export default function HomeownerProfile() {
                 </label>
                 <input
                   type="number"
+                  name="numberOfFamilyMembers"
                   value={tempData.numberOfFamilyMembers}
                   onChange={(e) =>
                     handleChange("numberOfFamilyMembers", e.target.value)
@@ -280,6 +283,7 @@ export default function HomeownerProfile() {
                 </label>
                 <input
                   type="text"
+                  name="homeComposition"
                   value={tempData.homeComposition}
                   onChange={(e) =>
                     handleChange("homeComposition", e.target.value)
@@ -292,6 +296,7 @@ export default function HomeownerProfile() {
                   Worker Info
                 </label>
                 <select
+                  name="workerInfo"
                   value={tempData.workerInfo}
                   onChange={(e) => handleChange("workerInfo", e.target.value)}
                   disabled={loadingOptions}
@@ -312,6 +317,7 @@ export default function HomeownerProfile() {
                   Specific Duties
                 </label>
                 <textarea
+                  name="specificDuties"
                   value={tempData.specificDuties}
                   onChange={(e) =>
                     handleChange("specificDuties", e.target.value)
@@ -326,6 +332,7 @@ export default function HomeownerProfile() {
                 </label>
                 <input
                   type="text"
+                  name="workingHoursAndSchedule"
                   value={tempData.workingHoursAndSchedule}
                   onChange={(e) =>
                     handleChange("workingHoursAndSchedule", e.target.value)
@@ -339,6 +346,7 @@ export default function HomeownerProfile() {
                 </label>
                 <input
                   type="number"
+                  name="numberOfWorkersNeeded"
                   value={tempData.numberOfWorkersNeeded}
                   onChange={(e) =>
                     handleChange("numberOfWorkersNeeded", e.target.value)
@@ -351,6 +359,7 @@ export default function HomeownerProfile() {
                   Preferred Gender
                 </label>
                 <select
+                  name="preferredGender"
                   value={tempData.preferredGender}
                   onChange={(e) =>
                     handleChange("preferredGender", e.target.value)
@@ -375,6 +384,7 @@ export default function HomeownerProfile() {
                 </label>
                 <input
                   type="text"
+                  name="languagePreference"
                   value={tempData.languagePreference}
                   onChange={(e) =>
                     handleChange("languagePreference", e.target.value)
@@ -388,6 +398,7 @@ export default function HomeownerProfile() {
                 </label>
                 <input
                   type="text"
+                  name="wagesOffered"
                   value={tempData.wagesOffered}
                   onChange={(e) => handleChange("wagesOffered", e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -399,6 +410,7 @@ export default function HomeownerProfile() {
                 </label>
                 <input
                   type="text"
+                  name="reasonForHiring"
                   value={tempData.reasonForHiring}
                   onChange={(e) =>
                     handleChange("reasonForHiring", e.target.value)
@@ -411,6 +423,7 @@ export default function HomeownerProfile() {
                   Special Requirements
                 </label>
                 <textarea
+                  name="specialRequirements"
                   value={tempData.specialRequirements}
                   onChange={(e) =>
                     handleChange("specialRequirements", e.target.value)
@@ -425,6 +438,7 @@ export default function HomeownerProfile() {
                 </label>
                 <input
                   type="date"
+                  name="startDateRequired"
                   value={tempData.startDateRequired}
                   onChange={(e) =>
                     handleChange("startDateRequired", e.target.value)
@@ -438,6 +452,7 @@ export default function HomeownerProfile() {
                 </label>
                 <input
                   type="text"
+                  name="criminalRecord"
                   value={tempData.criminalRecord}
                   onChange={(e) =>
                     handleChange("criminalRecord", e.target.value)
@@ -450,6 +465,7 @@ export default function HomeownerProfile() {
                   Preferred Payment Mode
                 </label>
                 <select
+                  name="preferredPaymentMode"
                   value={tempData.preferredPaymentMode}
                   onChange={(e) =>
                     handleChange("preferredPaymentMode", e.target.value)
@@ -473,6 +489,7 @@ export default function HomeownerProfile() {
                 </label>
                 <input
                   type="text"
+                  name="bankDetails"
                   value={tempData.bankDetails}
                   onChange={(e) => handleChange("bankDetails", e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -484,6 +501,7 @@ export default function HomeownerProfile() {
                 </label>
                 <input
                   type="text"
+                  name="religious"
                   value={tempData.religious}
                   onChange={(e) => handleChange("religious", e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -495,6 +513,7 @@ export default function HomeownerProfile() {
                 </label>
                 <input
                   type="text"
+                  name="smokingDrinkingRestrictions"
                   value={tempData.smokingDrinkingRestrictions}
                   onChange={(e) =>
                     handleChange("smokingDrinkingRestrictions", e.target.value)
@@ -507,6 +526,7 @@ export default function HomeownerProfile() {
                   Specific Skills Needed
                 </label>
                 <textarea
+                  name="specificSkillsNeeded"
                   value={tempData.specificSkillsNeeded}
                   onChange={(e) =>
                     handleChange("specificSkillsNeeded", e.target.value)

@@ -3,7 +3,7 @@ import axios from "axios";
 import { supabase } from "../lib/supabase";
 import { validatePaymentData } from "../middleware/validation";
 import { initializePayPackPayment, verifyPayPackPayment } from "../services/paypack";
-import { sendAdminReportEmail } from "../services/email";
+// import { sendAdminReportEmail } from "../services/email";
 
 const router = Router();
 

@@ -3,7 +3,8 @@
  * Handles all HTTP requests with proper error handling
  */
 
-import { getAccessToken, refreshAccessToken } from "./jwt-auth";
+// JWT functions are no longer used - authentication is handled by Supabase
+// import { getAccessToken, refreshAccessToken } from "./jwt-auth";
 
 // Use relative path for API calls (works in both dev and production)
 // In dev: /api → http://localhost:5173/api
@@ -15,6 +16,18 @@ interface ApiResponse<T> {
   data?: T;
   error?: string;
   message?: string;
+}
+
+interface ListResponse<T> {
+  success: boolean;
+  data?: T[];
+  error?: string;
+  message?: string;
+}
+
+interface OptionItem {
+  id: string;
+  name: string;
 }
 
 interface RequestOptions extends RequestInit {
@@ -46,16 +59,8 @@ async function apiRequest<T>(
 
   // Add authorization token if available and not skipped
   if (!skipAuth) {
-    let token = getAccessToken();
-
-    // Try to refresh if token is missing
-    if (!token) {
-      token = await refreshAccessToken();
-    }
-
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
+    // Supabase handles authentication automatically via cookies
+    // No need for manual token management
   }
 
   const url = `${API_BASE_URL}${endpoint}`;
@@ -79,16 +84,14 @@ async function apiRequest<T>(
     if (!response.ok) {
       // Handle 401 - token expired or invalid
       if (response.status === 401 && !skipAuth && !_hasRetried) {
-        // Try to refresh token once (prevent infinite recursion)
-        const newToken = await refreshAccessToken();
-        if (newToken) {
-          // Retry request with new token, marking that we've already retried
-          return apiRequest<T>(endpoint, {
-            ...options,
-            skipAuth: false,
-            _hasRetried: true,
-          });
+        // Redirect to login if token is invalid
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
         }
+        return {
+          success: false,
+          error: "Unauthorized - Please login again",
+        };
       }
 
       throw new Error(data.error || `HTTP Error: ${response.status}`);
@@ -175,7 +178,27 @@ export interface RegisterPayload {
   password: string;
   fullName: string;
   role: "worker" | "homeowner" | "admin";
-  [key: string]: any;
+  dateOfBirth?: string;
+  gender?: string;
+  phoneNumber?: string;
+  maritalStatus?: string;
+  nationalId?: string;
+  criminalRecord?: string;
+  typeOfWork?: string;
+  workExperience?: string;
+  expectedWages?: string;
+  workingHoursAndDays?: string;
+  educationQualification?: string;
+  educationCertificate?: string;
+  trainingCertificate?: string;
+  languageProficiency?: string;
+  healthCondition?: string;
+  emergencyName?: string;
+  emergencyContact?: string;
+  bankAccountNumber?: string;
+  accountHolder?: string;
+  insuranceCompany?: string;
+  termsAccepted?: boolean;
 }
 
 export interface LoginPayload {
@@ -402,53 +425,53 @@ export async function deleteReport(id: string) {
 // ============================================================
 
 export async function getGenders() {
-  return apiGet("/options/genders", true);
+  return apiGet<ListResponse<OptionItem>>("/options/genders", true);
 }
 
 export async function getMaritalStatuses() {
-  return apiGet("/options/marital-statuses", true);
+  return apiGet<ListResponse<OptionItem>>("/options/marital-statuses", true);
 }
 
 export async function getServiceTypes() {
-  return apiGet("/options/service-types", true);
+  return apiGet<ListResponse<OptionItem>>("/options/service-types", true);
 }
 
 export async function getInsuranceCompanies() {
-  return apiGet("/options/insurance-companies", true);
+  return apiGet<ListResponse<OptionItem>>("/options/insurance-companies", true);
 }
 
 export async function getPaymentMethods() {
-  return apiGet("/options/payment-methods", true);
+  return apiGet<ListResponse<OptionItem>>("/options/payment-methods", true);
 }
 
 export async function getReportTypes() {
-  return apiGet("/options/report-types", true);
+  return apiGet<ListResponse<OptionItem>>("/options/report-types", true);
 }
 
 export async function getTrainingCategories() {
-  return apiGet("/options/training-categories", true);
+  return apiGet<ListResponse<OptionItem>>("/options/training-categories", true);
 }
 
 export async function getWageUnits() {
-  return apiGet("/options/wage-units", true);
+  return apiGet<ListResponse<OptionItem>>("/options/wage-units", true);
 }
 
 export async function getLanguageLevels() {
-  return apiGet("/options/language-levels", true);
+  return apiGet<ListResponse<OptionItem>>("/options/language-levels", true);
 }
 
 export async function getResidenceTypes() {
-  return apiGet("/options/residence-types", true);
+  return apiGet<ListResponse<OptionItem>>("/options/residence-types", true);
 }
 
 export async function getWorkerInfoOptions() {
-  return apiGet("/options/worker-info-options", true);
+  return apiGet<ListResponse<OptionItem>>("/options/worker-info-options", true);
 }
 
 export async function getCriminalRecordOptions() {
-  return apiGet("/options/criminal-record-options", true);
+  return apiGet<ListResponse<OptionItem>>("/options/criminal-record-options", true);
 }
 
 export async function getSmokingDrinkingOptions() {
-  return apiGet("/options/smoking-drinking-options", true);
+  return apiGet<ListResponse<OptionItem>>("/options/smoking-drinking-options", true);
 }

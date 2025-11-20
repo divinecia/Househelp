@@ -26,13 +26,13 @@ export default function AdminHomeowners() {
     try {
       // Fetch homeowners
       const homeownerRes = await getHomeowners();
-      if (homeownerRes.success && homeownerRes.data) {
+      if (homeownerRes.success && Array.isArray(homeownerRes.data)) {
         // Fetch bookings to count per homeowner
         const bookingsRes = await getBookings();
-        const allBookings = bookingsRes.data || [];
+        const allBookings = Array.isArray(bookingsRes.data) ? bookingsRes.data : [];
 
         // Enrich homeowner data with booking count
-        const enrichedHomeowners = homeownerRes.data.map((homeowner: any) => {
+        const enrichedHomeowners = homeownerRes.data.map((homeowner) => {
           const bookingCount = allBookings.filter(
             (booking: any) => booking.homeowner_id === homeowner.id
           ).length;

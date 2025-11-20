@@ -25,7 +25,11 @@ export default function WorkerMore({ onLogout }: MoreMenuProps) {
       try {
         const result = await getReportTypes();
         if (result.success && result.data) {
-          setReportTypes(result.data);
+          if (result.success && Array.isArray(result.data)) {
+            setReportTypes(result.data);
+          } else {
+            setReportTypes([]);
+          }
         }
       } catch (error) {
         console.error("Failed to load report types:", error);

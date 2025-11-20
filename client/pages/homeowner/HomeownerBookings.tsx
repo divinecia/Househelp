@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getBookings, updateBooking } from "@/lib/api-client";
 import { toast } from "sonner";
-import { Calendar, Clock, User, MapPin, AlertCircle, CheckCircle, XCircle, Edit2 } from "lucide-react";
+import { Calendar, Clock, User, AlertCircle, CheckCircle, XCircle, Edit2 } from "lucide-react";
 
 interface Booking {
   id: string;
@@ -42,7 +42,7 @@ export default function HomeownerBookings() {
     try {
       setLoading(true);
       const response = await getBookings();
-      if (response.success && response.data) {
+      if (response.success && Array.isArray(response.data)) {
         setBookings(response.data);
         filterBookings(selectedStatus);
       } else {

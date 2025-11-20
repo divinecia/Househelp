@@ -1,19 +1,35 @@
 import { Request, Response, NextFunction } from "express";
+import { sanitizeObject } from "../lib/utils";
 
 /**
  * Centralized error handler middleware
  */
-export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error("[Error]", err);
-  
-  // Return safe error message (don't expose internal details in production)
-  const message = process.env.NODE_ENV === "production" 
-    ? "An error occurred" 
-    : err.message || "An error occurred";
+export class AppError extends Error {
+  constructor(
+    public statusCode: number,
+    public message: string,
+    public isOperational = true
+  ) {
+    super(message);
+    Object.setPrototypeOf(this, AppError.prototype);
+  }
+}
 
-  res.status(err.status || 500).json({
+export const errorHandler = (err: any, _req: Request, res: Response, _next: NextFunction) => {
+  let statusCode = err.statusCode || 500;
+  let message = err.message || 'Internal Server Error';
+
+  if (process.env.NODE_ENV === 'production' && !err.isOperational) {
+    statusCode = 500;
+    message = 'Something went wrong';
+  }
+
+  res.status(statusCode).json({
     success: false,
-    error: message,
+    error: {
+      message,
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    }
   });
 };
 
@@ -150,4 +166,25 @@ export const validateTrainingData = (req: Request, res: Response, next: NextFunc
 export const validateUUID = (id: string): boolean => {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return uuidRegex.test(id);
+};
+
+/**
+ * 🔐 Additional Security Fixes
+ *
+ * ### 9. **Input Validation Issues**
+ * Issue**: Missing input sanitization in several API endpoints.
+ *
+ * **Fix**: Add validation middleware:
+ */
+export const sanitizeInput = (req: Request, _res: Response, next: NextFunction) => {
+  if (req.body) {
+    req.body = sanitizeObject(req.body);
+  }
+  if (req.query) {
+    req.query = sanitizeObject(req.query);
+  }
+  if (req.params) {
+    req.params = sanitizeObject(req.params);
+  }
+  next();
 };

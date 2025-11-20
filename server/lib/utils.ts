@@ -1,4 +1,26 @@
 /**
+ * Sanitize object by removing dangerous properties
+ */
+export const sanitizeObject = <T extends Record<string, any>>(obj: T): T => {
+  const dangerous = ["__proto__", "constructor", "prototype"];
+  const sanitized: Record<string, any> = {};
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (!dangerous.includes(key)) {
+      if (typeof value === "object" && value !== null) {
+        sanitized[key] = sanitizeObject(value);
+      } else if (typeof value === "string") {
+        sanitized[key] = value.replace(/[<>]/g, "").trim();
+      } else {
+        sanitized[key] = value;
+      }
+    }
+  }
+
+  return sanitized as T;
+};
+
+/**
  * Convert camelCase keys to snake_case
  */
 export const camelToSnakeCase = (

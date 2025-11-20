@@ -54,7 +54,7 @@ export default function WorkerTraining() {
                 progress: training.progress || 0,
                 hasCertificate: !!training.certificate_url,
                 skills: training.description
-                  ? training.description.split(",").map((s) => s.trim())
+                  ? training.description.split(",").map((s: string) => s.trim())
                   : [],
                 description: training.description,
               };

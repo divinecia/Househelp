@@ -32,8 +32,11 @@ export default function AdminWorkers() {
     setIsLoading(true);
     try {
       const response = await getWorkers();
-      if (response.success && response.data) {
+      if (response.success && Array.isArray(response.data)) {
         setWorkers(response.data);
+      } else {
+        console.error("Invalid response data format");
+        setWorkers([]);
       }
     } catch (error) {
       toast.error("Failed to fetch workers");

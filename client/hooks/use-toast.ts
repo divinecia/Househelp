@@ -176,7 +176,7 @@ function useToast() {
         listeners.splice(index, 1);
       }
     };
-  }, [state]);
+  }, []); // Empty dependency array - no memory leak
 
   return {
     ...state,

@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getWorkers, createBooking, getServiceTypes } from "@/lib/api-client";
-import { decodeJWT, getAccessToken } from "@/lib/jwt-auth";
 import { toast } from "sonner";
-import { Search, MapPin, Star, Calendar, Clock } from "lucide-react";
+import { Search, Star, Calendar } from "lucide-react";
 
 interface Worker {
   id: string;
@@ -56,7 +55,7 @@ export default function HomeownerBooking() {
     setIsLoadingServices(true);
     try {
       const result = await getServiceTypes();
-      if (result.success && result.data) {
+      if (result.success && Array.isArray(result.data)) {
         setServiceTypes(result.data);
       } else {
         console.error("Failed to load service types from database");
@@ -88,7 +87,7 @@ export default function HomeownerBooking() {
     try {
       setLoading(true);
       const response = await getWorkers({ status: "active" });
-      if (response.success && response.data) {
+      if (response.success && Array.isArray(response.data)) {
         setWorkers(response.data);
         setFilteredWorkers(response.data);
       } else {
@@ -157,24 +156,13 @@ export default function HomeownerBooking() {
     try {
       setLoading(true);
 
-      // Get homeowner ID from JWT token
-      const token = getAccessToken();
-      const payload = token ? decodeJWT(token) : null;
-      const homeownerId = payload?.id;
-
-      if (!homeownerId) {
-        toast.error("Unable to determine your user ID. Please log in again.");
-        setLoading(false);
-        return;
-      }
-
+      // The API will automatically determine the homeowner ID from the session
       const response = await createBooking({
-        workerId: bookingData.workerId,
-        homeownerId: homeownerId,
-        bookingDate: bookingData.bookingDate,
-        startTime: bookingData.startTime,
-        endTime: bookingData.endTime,
-        serviceType: bookingData.serviceType,
+        worker_id: bookingData.workerId,
+        booking_date: bookingData.bookingDate,
+        start_time: bookingData.startTime,
+        end_time: bookingData.endTime,
+        service_type: bookingData.serviceType,
         description: bookingData.description,
         status: "pending",
       });

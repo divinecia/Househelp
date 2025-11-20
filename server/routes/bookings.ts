@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { supabase } from "../lib/supabase";
-import { sendBookingConfirmation, sendWorkerAssignmentEmail } from "../services/email";
+// import { sendBookingConfirmation, sendWorkerAssignmentEmail } from "../services/email";
 import { validateBookingData } from "../middleware/validation";
 
 const router = Router();

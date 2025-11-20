@@ -37,7 +37,7 @@ export default function HomeownerPayments() {
     try {
       setLoading(true);
       const response = await getPayments();
-      if (response.success && response.data) {
+      if (response.success && Array.isArray(response.data)) {
         setPayments(response.data);
         filterPayments(selectedStatus);
       } else {
@@ -69,19 +69,6 @@ export default function HomeownerPayments() {
         return <AlertCircle className="w-5 h-5 text-red-500" />;
       default:
         return null;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-50 border-yellow-200";
-      case "success":
-        return "bg-green-50 border-green-200";
-      case "failed":
-        return "bg-red-50 border-red-200";
-      default:
-        return "bg-gray-50 border-gray-200";
     }
   };
 

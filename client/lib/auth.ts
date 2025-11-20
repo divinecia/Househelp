@@ -13,6 +13,7 @@ export interface WorkerData {
   expectedWages: string;
   workingHoursAndDays: string;
   educationQualification: string;
+  educationCertificate?: string;
   trainingCertificate: string;
   languageProficiency: string;
   healthCondition: string;
@@ -20,6 +21,7 @@ export interface WorkerData {
   emergencyContact: string;
   bankAccountNumber: string;
   accountHolder: string;
+  insuranceCompany?: string;
   termsAccepted: boolean;
 }
 
@@ -70,53 +72,36 @@ export interface AdminData {
 
 export type UserData = WorkerData | HomeownerData | AdminData;
 
-// Get user from localStorage
-export const getUser = (role: string) => {
-  const users = JSON.parse(localStorage.getItem(`${role}_users`) || "[]");
-  const currentUserId = localStorage.getItem(`${role}_current_user`);
-  return users.find((u: any) => u.id === currentUserId);
-};
+// Get user from API (replaces insecure localStorage usage)
+export const getUser = async (role: string) => {
+  const token = sessionStorage.getItem("auth_token");
+  if (!token) return null;
 
-// Register user
-export const registerUser = (role: string, data: UserData) => {
-  const users = JSON.parse(localStorage.getItem(`${role}_users`) || "[]");
-  const newUser = {
-    id: Date.now().toString(),
-    ...data,
-  };
-  users.push(newUser);
-  localStorage.setItem(`${role}_users`, JSON.stringify(users));
-  localStorage.setItem(`${role}_current_user`, newUser.id);
-  return newUser;
-};
-
-// Login user
-export const loginUser = (role: string, email: string, password: string) => {
-  const users = JSON.parse(localStorage.getItem(`${role}_users`) || "[]");
-  const user = users.find(
-    (u: any) => u.email === email && u.password === password
-  );
-  if (user) {
-    localStorage.setItem(`${role}_current_user`, user.id);
-    return user;
-  }
-  return null;
-};
-
-// Logout user
-export const logoutUser = (role: string) => {
-  localStorage.removeItem(`${role}_current_user`);
-};
-
-// Check if user is authenticated
-export const isAuthenticated = (role: string) => {
-  return !!localStorage.getItem(`${role}_current_user`);
-};
-
-// Register user via API (for database persistence)
-export const registerUserViaAPI = async (role: string, data: UserData) => {
   try {
-    // Use the centralized auth endpoint for all roles
+    const response = await fetch("/api/auth/user", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (response.ok) {
+      const userData = await response.json();
+      if (userData.role === role) {
+        return userData;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error("Failed to fetch user:", error);
+    return null;
+  }
+};
+
+// Register user via API only (removes insecure localStorage registration)
+export const registerUser = async (role: string, data: UserData) => {
+  try {
     const response = await fetch("/api/auth/register", {
       method: "POST",
       headers: {
@@ -134,20 +119,108 @@ export const registerUserViaAPI = async (role: string, data: UserData) => {
     }
 
     const result = await response.json();
-
-    // Also save to localStorage for quick access
-    const users = JSON.parse(localStorage.getItem(`${role}_users`) || "[]");
-    const newUser = {
-      id: result.data?.id || Date.now().toString(),
-      ...data,
-    };
-    users.push(newUser);
-    localStorage.setItem(`${role}_users`, JSON.stringify(users));
-    localStorage.setItem(`${role}_current_user`, newUser.id);
-
-    return result.data || newUser;
+    return result.data;
   } catch (error) {
     console.error("API registration error:", error);
     throw error;
+  }
+};
+
+// Login user via API only (removes insecure localStorage login)
+export const loginUser = async (role: string, email: string, password: string) => {
+  try {
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+        role,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Login failed");
+    }
+
+    const result = await response.json();
+    
+    // Store tokens securely
+    if (result.data?.session) {
+      sessionStorage.setItem("auth_token", result.data.session.access_token);
+      sessionStorage.setItem("refresh_token", result.data.session.refresh_token || "");
+      
+      if (result.data.user) {
+        sessionStorage.setItem("user_info", JSON.stringify({
+          id: result.data.user.id,
+          email: result.data.user.email,
+          role: result.data.user.role || role
+        }));
+      }
+    }
+
+    return result.data?.user || null;
+  } catch (error) {
+    console.error("API login error:", error);
+    throw error;
+  }
+};
+
+// Logout user (clear all auth data)
+export const logoutUser = async () => {
+  try {
+    const token = sessionStorage.getItem("auth_token");
+    
+    // Call API logout if token exists
+    if (token) {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Logout API error:", error);
+  } finally {
+    // Always clear local storage
+    sessionStorage.removeItem("auth_token");
+    sessionStorage.removeItem("refresh_token");
+    sessionStorage.removeItem("user_info");
+  }
+};
+
+// Check if user is authenticated via API
+export const isAuthenticated = async (role?: string): Promise<boolean> => {
+  const token = sessionStorage.getItem("auth_token");
+  if (!token) return false;
+
+  try {
+    const response = await fetch("/api/auth/verify", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (response.ok) {
+      const userData = await response.json();
+      
+      // If role is specified, check if it matches
+      if (role && userData.role !== role) {
+        return false;
+      }
+      
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error("Auth verification error:", error);
+    return false;
   }
 };

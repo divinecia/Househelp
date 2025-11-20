@@ -19,9 +19,7 @@ interface Job {
 export default function WorkerHome() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [homeownersMap, setHomeownersMap] = useState<Record<string, string>>(
-    {},
-  );
+  const [, setHomeownersMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const fetchData = async () => {

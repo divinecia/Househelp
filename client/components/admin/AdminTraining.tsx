@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import {
   apiGet,
   apiPost,
-  apiDelete,
   getTrainingCategories,
 } from "../../lib/api-client";
 
@@ -45,12 +44,13 @@ export default function AdminTraining() {
     setIsLoadingCategories(true);
     try {
       const result = await getTrainingCategories();
-      if (result.success && result.data) {
-        setCategories(result.data);
-        if (result.data.length > 0) {
-          setFormData((prev) => ({ ...prev, category: result.data[0].name }));
+        if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+          setCategories(result.data);
+          setFormData((prev) => ({ ...prev, category: Array.isArray(result.data) && result.data.length > 0 ? result.data[0].name : "beginner" }));
+        } else {
+          console.error("Failed to load training categories or no data available");
+          setCategories([]);
         }
-      }
     } catch (error) {
       console.error("Failed to load training categories:", error);
     } finally {
@@ -62,10 +62,11 @@ export default function AdminTraining() {
     setIsLoading(true);
     try {
       const result = await apiGet("/trainings");
-      if (result.success && result.data) {
+      if (result.success && Array.isArray(result.data)) {
         setTrainings(result.data);
       } else {
         toast.error(result.error || "Failed to fetch trainings");
+        setTrainings([]);
       }
     } catch (error) {
       toast.error("Failed to fetch trainings");

@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { getUserRole, isAuthenticated } from "./jwt-auth";
+import { getUserInfo, isAuthenticated } from "./jwt-auth";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -16,7 +16,7 @@ export function ProtectedRoute({
   fallbackPath = "/",
 }: ProtectedRouteProps) {
   const authenticated = isAuthenticated();
-  const userRole = getUserRole();
+  const userInfo = getUserInfo();
 
   // Check if user is authenticated
   if (!authenticated) {
@@ -24,7 +24,7 @@ export function ProtectedRoute({
   }
 
   // Check if user has required role
-  if (requiredRole && userRole !== requiredRole) {
+  if (requiredRole && userInfo?.role !== requiredRole) {
     return <Navigate to={fallbackPath} replace />;
   }
 

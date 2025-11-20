@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, MapPin, Star, TrendingUp } from "lucide-react";
+import { Search, MapPin, TrendingUp } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -36,7 +36,7 @@ interface ChartData {
 
 export default function HomeownerHome() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSkill, setSelectedSkill] = useState("all");
+  // const [selectedSkill, setSelectedSkill] = useState("all");
   const [services, setServices] = useState<Service[]>([]);
   const [courses, setCourses] = useState<Training[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);

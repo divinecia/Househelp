@@ -10,14 +10,13 @@ import {
 import { toast } from "sonner";
 
 export default function WorkerProfile() {
-  const user = getUser("worker") as WorkerData & { id?: string };
+  const user = getUser("worker") as unknown as WorkerData & { id?: string };
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [maritalStatuses, setMaritalStatuses] = useState<
     Array<{ id: string; name: string }>
   >([]);
-  const [isLoadingStatuses, setIsLoadingStatuses] = useState(false);
   const [profileData, setProfileData] = useState({
     maritalStatus: "single",
     typeOfWork: "Cleaning",
@@ -45,7 +44,9 @@ export default function WorkerProfile() {
         // Load marital statuses
         const statusesResult = await getMaritalStatuses();
         if (statusesResult.success && statusesResult.data) {
-          setMaritalStatuses(statusesResult.data);
+          if (statusesResult.success && Array.isArray(statusesResult.data)) {
+            setMaritalStatuses(statusesResult.data);
+          }
         }
 
         // Load worker profile from database
@@ -53,19 +54,19 @@ export default function WorkerProfile() {
         if (workerRes.success && workerRes.data) {
           const dbData = workerRes.data;
           setProfileData({
-            maritalStatus: dbData.marital_status || "single",
-            typeOfWork: dbData.type_of_work || "Cleaning",
-            workExperience: dbData.work_experience || "5",
-            expectedWages: dbData.expected_wages || "50000 per hour",
-            workingHoursAndDays: dbData.working_hours_and_days || "08:00 - 17:00, Mon-Fri",
-            educationQualification: dbData.education_qualification || "High School",
-            trainingCertificate: dbData.training_certificate_url || "Advanced Cleaning",
-            languageProficiency: dbData.language_proficiency || "English (Fluent), Kinyarwanda (Native)",
-            healthCondition: dbData.health_condition || "No allergies",
-            emergencyName: dbData.emergency_contact_name || "John Doe",
-            emergencyContact: dbData.emergency_contact_phone || "+250 123 456 789",
-            bankAccountNumber: dbData.bank_account_number || "****5678",
-            accountHolder: dbData.account_holder_name || "Jane Smith",
+            maritalStatus: (dbData as any).marital_status || "single",
+            typeOfWork: (dbData as any).type_of_work || "Cleaning",
+            workExperience: (dbData as any).work_experience || "5",
+            expectedWages: (dbData as any).expected_wages || "50000 per hour",
+            workingHoursAndDays: (dbData as any).working_hours_and_days || "08:00 - 17:00, Mon-Fri",
+            educationQualification: (dbData as any).education_qualification || "High School",
+            trainingCertificate: (dbData as any).training_certificate_url || "Advanced Cleaning",
+            languageProficiency: (dbData as any).language_proficiency || "English (Fluent), Kinyarwanda (Native)",
+            healthCondition: (dbData as any).health_condition || "No allergies",
+            emergencyName: (dbData as any).emergency_contact_name || "John Doe",
+            emergencyContact: (dbData as any).emergency_contact_phone || "+250 123 456 789",
+            bankAccountNumber: (dbData as any).bank_account_number || "****5678",
+            accountHolder: (dbData as any).account_holder_name || "Jane Smith",
           });
           setTempData(profileData);
         }
@@ -179,11 +180,11 @@ export default function WorkerProfile() {
                     onChange={(e) =>
                       handleChange("maritalStatus", e.target.value)
                     }
-                    disabled={isLoadingStatuses}
+                    disabled={isLoading}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
                   >
                     <option value="">
-                      {isLoadingStatuses ? "Loading..." : "Select Status"}
+                      {isLoading ? "Loading..." : "Select Status"}
                     </option>
                     {maritalStatuses.map((status) => (
                       <option key={status.id} value={status.name.toLowerCase()}>

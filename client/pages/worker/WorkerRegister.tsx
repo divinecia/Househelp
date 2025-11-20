@@ -4,9 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { registerUser } from "@/lib/auth";
 import type { WorkerData } from "@/lib/auth";
-import { validateRwandaID, parseRwandaID } from "@/lib/rwandaId";
 import {
-  registerUser as apiRegisterWorker,
   getGenders,
   getMaritalStatuses,
   getWageUnits,
@@ -15,6 +13,7 @@ import {
 } from "@/lib/api-client";
 import { toast } from "sonner";
 import { X } from "lucide-react";
+import { validateRwandaID, parseRwandaID } from "@/lib/rwandaId";
 
 export default function WorkerRegister() {
   const navigate = useNavigate();
@@ -98,28 +97,28 @@ export default function WorkerRegister() {
             getLanguageLevels(),
             getInsuranceCompanies(),
           ]);
-        if (genders.success && genders.data && genders.data.length > 0) {
+        if (genders.success && Array.isArray(genders.data) && genders.data.length > 0) {
           setGendersList(genders.data);
         } else {
           console.error("Failed to load genders from database");
           toast.error("Failed to load form options. Please refresh the page.");
         }
-        if (maritalStatus.success && maritalStatus.data && maritalStatus.data.length > 0) {
+        if (maritalStatus.success && Array.isArray(maritalStatus.data) && maritalStatus.data.length > 0) {
           setMaritalStatuses(maritalStatus.data);
         } else {
           console.error("Failed to load marital statuses from database");
         }
-        if (wages.success && wages.data && wages.data.length > 0) {
+        if (wages.success && Array.isArray(wages.data) && wages.data.length > 0) {
           setWageUnits(wages.data);
         } else {
           console.error("Failed to load wage units from database");
         }
-        if (levels.success && levels.data && levels.data.length > 0) {
+        if (levels.success && Array.isArray(levels.data) && levels.data.length > 0) {
           setLanguageLevels(levels.data);
         } else {
           console.error("Failed to load language levels from database");
         }
-        if (insurance.success && insurance.data && insurance.data.length > 0) {
+        if (insurance.success && Array.isArray(insurance.data) && insurance.data.length > 0) {
           setInsuranceCompanies(insurance.data);
         } else {
           console.error("Failed to load insurance companies from database");
@@ -201,22 +200,15 @@ export default function WorkerRegister() {
         termsAccepted: formData.termsAccepted,
       };
 
-      // Call API to register
-      const response = await apiRegisterWorker(dataToSubmit);
+      // Call API to register (replaces insecure localStorage registration)
+      const user = await registerUser("worker", dataToSubmit as WorkerData);
 
-      if (!response.success) {
-        toast.error(response.error || "Registration failed");
-        return;
+      if (user) {
+        toast.success("Registration successful! Redirecting to login...");
+        setTimeout(() => {
+          navigate("/worker/login");
+        }, 1000);
       }
-
-      toast.success("Registration successful! Redirecting to login...");
-
-      // Also save to localStorage as fallback
-      registerUser("worker", formData as WorkerData);
-
-      setTimeout(() => {
-        navigate("/worker/login");
-      }, 1000);
     } catch (error) {
       const errorMsg =
         error instanceof Error ? error.message : "Registration failed";
@@ -923,9 +915,10 @@ export default function WorkerRegister() {
             <div className="flex gap-4">
               <button
                 type="submit"
+                disabled={false}
                 className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors"
               >
-                Complete Registration
+                {"Complete Registration"}
               </button>
               <button
                 type="button"

@@ -2,16 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { registerUserViaAPI } from "@/lib/auth";
+import { registerUser } from "@/lib/auth";
 import type { HomeownerData } from "@/lib/auth";
-import { validateRwandaID, parseRwandaID } from "@/lib/rwandaId";
 import {
-  registerUser as apiRegisterHomeowner,
   getResidenceTypes,
+  getPaymentMethods,
   getWorkerInfoOptions,
   getGenders,
   getCriminalRecordOptions,
-  getPaymentMethods,
   getSmokingDrinkingOptions,
 } from "@/lib/api-client";
 import { toast } from "sonner";
@@ -51,6 +49,7 @@ export default function HomeownerRegister() {
     Array<{ id: string; name: string }>
   >([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
+  // State for form submission management
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -95,46 +94,52 @@ export default function HomeownerRegister() {
       try {
         const [
           residences,
+          paymentMethodsResult,
           workerInfoOpts,
           genders,
           criminalRecords,
-          payments,
-          smokingDrinking,
+          smokingDrinking
         ] = await Promise.all([
           getResidenceTypes(),
+          getPaymentMethods(),
           getWorkerInfoOptions(),
           getGenders(),
           getCriminalRecordOptions(),
-          getPaymentMethods(),
-          getSmokingDrinkingOptions(),
+          getSmokingDrinkingOptions()
         ]);
-        if (residences.success && residences.data && residences.data.length > 0) {
+
+        if (residences.success && Array.isArray(residences.data) && residences.data.length > 0) {
           setResidenceTypes(residences.data);
         } else {
           console.error("Failed to load residence types from database");
         }
-        if (workerInfoOpts.success && workerInfoOpts.data && workerInfoOpts.data.length > 0) {
+        
+        if (paymentMethodsResult.success && Array.isArray(paymentMethodsResult.data) && paymentMethodsResult.data.length > 0) {
+          setPaymentModes(paymentMethodsResult.data);
+        } else {
+          console.error("Failed to load payment methods from database");
+        }
+
+        if (workerInfoOpts.success && Array.isArray(workerInfoOpts.data) && workerInfoOpts.data.length > 0) {
           setWorkerInfos(workerInfoOpts.data);
         } else {
           console.error("Failed to load worker info options from database");
         }
-        if (genders.success && genders.data && genders.data.length > 0) {
+
+        if (genders.success && Array.isArray(genders.data) && genders.data.length > 0) {
           setGendersList(genders.data);
         } else {
           console.error("Failed to load genders from database");
           toast.error("Failed to load form options. Please refresh the page.");
         }
-        if (criminalRecords.success && criminalRecords.data && criminalRecords.data.length > 0) {
+
+        if (criminalRecords.success && Array.isArray(criminalRecords.data) && criminalRecords.data.length > 0) {
           setCriminalRecordOptions(criminalRecords.data);
         } else {
           console.error("Failed to load criminal record options from database");
         }
-        if (payments.success && payments.data && payments.data.length > 0) {
-          setPaymentModes(payments.data);
-        } else {
-          console.error("Failed to load payment methods from database");
-        }
-        if (smokingDrinking.success && smokingDrinking.data && smokingDrinking.data.length > 0) {
+
+        if (smokingDrinking.success && Array.isArray(smokingDrinking.data) && smokingDrinking.data.length > 0) {
           setSmokingDrinkingOptions(smokingDrinking.data);
         } else {
           console.error("Failed to load smoking/drinking options from database");
@@ -177,10 +182,10 @@ export default function HomeownerRegister() {
         email: formData.email!,
         password: formData.password!,
         fullName: formData.fullName!,
-        role: "homeowner",
+        role: "homeowner" as const,
         age: formData.age,
-        contactNumber: formData.contactNumber,
-        homeAddress: formData.homeAddress,
+        contactNumber: formData.contactNumber || '',
+        homeAddress: formData.homeAddress || '',
         typeOfResidence: formData.typeOfResidence,
         numberOfFamilyMembers: formData.numberOfFamilyMembers,
         homeComposition: formData.homeComposition,
@@ -208,25 +213,18 @@ export default function HomeownerRegister() {
         smokingDrinkingRestrictions: formData.smokingDrinkingRestrictions,
         specificSkillsNeeded: formData.specificSkillsNeeded,
         selectedDays: selectedDays.join(", "),
-        termsAccepted: formData.termsAccepted,
+        termsAccepted: formData.termsAccepted || false,
       };
 
-      // Call API to register
-      const response = await apiRegisterHomeowner(dataToSubmit);
+      // Call API to register (replaces insecure localStorage registration)
+      const user = await registerUser("homeowner", dataToSubmit);
 
-      if (!response.success) {
-        toast.error(response.error || "Registration failed");
-        return;
+      if (user) {
+        toast.success("Registration successful! Redirecting to login...");
+        setTimeout(() => {
+          navigate("/homeowner/login");
+        }, 1000);
       }
-
-      toast.success("Registration successful! Redirecting to login...");
-
-      // Also save to localStorage as fallback
-      await registerUserViaAPI("homeowner", formData as HomeownerData);
-
-      setTimeout(() => {
-        navigate("/homeowner/login");
-      }, 1000);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Registration failed";
@@ -972,12 +970,13 @@ export default function HomeownerRegister() {
 
             {/* Submit Button */}
             <div className="flex gap-4">
-              <button
-                type="submit"
-                className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                Complete Registration
-              </button>
+            <button
+              type="submit"
+              disabled={false}
+              className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              {"Complete Registration"}
+            </button>
               <button
                 type="button"
                 onClick={() => navigate("/")}

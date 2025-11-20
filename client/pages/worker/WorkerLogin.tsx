@@ -3,14 +3,13 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { loginUser } from "@/lib/auth";
-import { loginUser as apiLoginUser } from "@/lib/api-client";
-import { storeTokens } from "@/lib/jwt-auth";
 import { toast } from "sonner";
 
 export default function WorkerLogin() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.currentTarget;
@@ -23,48 +22,29 @@ export default function WorkerLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
     if (!formData.email || !formData.password) {
       setError("Please fill in all fields");
+      setIsLoading(false);
       return;
     }
 
     try {
-      // Try API login first
-      const response = await apiLoginUser({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (!response.success) {
-        setError(response.error || "Invalid email or password");
-        return;
+      const user = await loginUser("worker", formData.email, formData.password);
+      
+      if (user) {
+        toast.success("Login successful!");
+        navigate("/worker/dashboard");
+      } else {
+        setError("Invalid email or password");
       }
-
-      // Store tokens and user info if session exists
-      if (response.data?.session && response.data?.user) {
-        storeTokens(
-          {
-            accessToken: response.data.session.access_token,
-            refreshToken: response.data.session.refresh_token || "",
-          },
-          {
-            id: response.data.user.id,
-            email: response.data.user.email,
-            role: response.data.user.role || "worker",
-          }
-        );
-      }
-
-      // Also login locally as fallback
-      const user = loginUser("worker", formData.email, formData.password);
-
-      toast.success("Login successful!");
-      navigate("/worker/dashboard");
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Login failed";
       setError(errorMsg);
       toast.error(errorMsg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -121,9 +101,10 @@ export default function WorkerLogin() {
 
             <button
               type="submit"
-              className="w-full px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors mb-4"
+              disabled={isLoading}
+              className="w-full px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors mb-4 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Sign In
+              {isLoading ? "Signing In..." : "Sign In"}
             </button>
 
             <button

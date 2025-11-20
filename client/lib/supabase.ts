@@ -11,4 +11,34 @@ if (!supabaseUrl || !supabaseKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-export type Database = any;
+// Database types definition
+export interface Database {
+  public: {
+    Tables: {
+      user_profiles: {
+        Row: {
+          id: string;
+          email: string;
+          full_name: string;
+          role: 'worker' | 'homeowner' | 'admin';
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          email: string;
+          full_name: string;
+          role: 'worker' | 'homeowner' | 'admin';
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          full_name?: string;
+          role?: 'worker' | 'homeowner' | 'admin';
+          created_at?: string;
+        };
+      };
+      // Add other tables as needed
+    };
+  };
+}

@@ -4,24 +4,23 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { registerUser } from "@/lib/auth";
 import type { AdminData } from "@/lib/auth";
-import { registerUser as apiRegisterAdmin, getGenders } from "@/lib/api-client";
+import { getGenders } from "@/lib/api-client";
 import { toast } from "sonner";
 
 export default function AdminRegister() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<Partial<AdminData>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [genders, setGenders] = useState<Array<{ id: string; name: string }>>(
-    [],
-  );
+  const [genders, setGenders] = useState<Array<{ id: string; name: string }>>([]);
   const [isLoadingGenders, setIsLoadingGenders] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const loadGenders = async () => {
       setIsLoadingGenders(true);
       try {
         const result = await getGenders();
-        if (result.success && result.data && result.data.length > 0) {
+        if (result.success && Array.isArray(result.data) && result.data.length > 0) {
           setGenders(result.data);
         } else {
           console.error("Failed to load genders from database");
@@ -62,8 +61,11 @@ export default function AdminRegister() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    
     if (!validateForm()) {
       toast.error("Please fix the errors above");
+      setIsSubmitting(false);
       return;
     }
 
@@ -77,18 +79,10 @@ export default function AdminRegister() {
         gender: formData.gender,
       };
 
-      // Call API to register
-      const response = await apiRegisterAdmin(dataToSubmit);
-
-      if (!response.success) {
-        toast.error(response.error || "Registration failed");
-        return;
-      }
+      // Call API to register (replaces insecure localStorage registration)
+      await registerUser("admin", dataToSubmit as AdminData);
 
       toast.success("Registration successful! Redirecting to login...");
-
-      // Also save to localStorage as fallback
-      registerUser("admin", formData as AdminData);
 
       setTimeout(() => {
         navigate("/admin/login");
@@ -98,6 +92,8 @@ export default function AdminRegister() {
         error instanceof Error ? error.message : "Registration failed";
       toast.error(errorMsg);
       console.error("Registration failed:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -236,9 +232,10 @@ export default function AdminRegister() {
 
             <button
               type="submit"
-              className="w-full px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors mb-4"
+              disabled={isSubmitting}
+              className="w-full px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors mb-4 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Create Admin Account
+              {isSubmitting ? "Creating Account..." : "Create Admin Account"}
             </button>
 
             <button

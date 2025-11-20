@@ -12,10 +12,27 @@ import reportRoutes from "./routes/reports";
 import serviceRoutes from "./routes/services";
 import optionsRoutes from "./routes/options";
 import normalizeRequestBody from "./middleware/normalize-request";
-import { verifyToken, adminOnly } from "./middleware/auth";
+// import { verifyToken } from "./middleware/auth";
+import rateLimit from "express-rate-limit";
 
 export function createServer() {
   const app = express();
+
+  // Add environment validation
+  const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'];
+  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+  
+  if (missingVars.length > 0) {
+    console.error(`Missing required environment variables: ${missingVars.join(', ')}`);
+    process.exit(1);
+  }
+
+  // Rate limiter for authentication endpoints
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // limit each IP to 5 requests per windowMs
+    message: 'Too many authentication attempts, please try again later'
+  });
 
   // Middleware
   // CORS configuration - allow requests from any origin for development
@@ -23,21 +40,25 @@ export function createServer() {
   const isDevelopment =
     process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev";
 
-  app.use(
-    cors({
-      origin: isDevelopment
-        ? true // Allow all origins in development (for localhost and preview URLs)
-        : process.env.ALLOWED_ORIGINS?.split(",") || ["https://example.com"],
-      credentials: isDevelopment ? false : true, // Disable credentials check with wildcard origin
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-      allowedHeaders: ["Content-Type", "Authorization"],
-    }),
-  );
+  const corsOptions = {
+    origin: isDevelopment 
+      ? ['http://localhost:5173', 'http://localhost:3000'] 
+      : process.env.ALLOWED_ORIGINS?.split(',') || ['https://yourdomain.com'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    maxAge: 86400 // 24 hours
+  };
+
+  app.use(cors(corsOptions));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
   // Normalize request body from camelCase to snake_case
   app.use(normalizeRequestBody);
+
+  // Apply rate limiter to auth routes
+  app.use('/api/auth', authLimiter);
 
   // Health check routes
   app.get("/api/ping", (_req, res) => {

@@ -26,9 +26,9 @@ interface Service {
 export default function AdminBooking() {
   const [activeTab, setActiveTab] = useState<"all" | "payment" | "jobs" | "services">("all");
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [workers, setWorkers] = useState<any[]>([]);
-  const [homeowners, setHomeowners] = useState<any[]>([]);
+  const [services, ] = useState<Service[]>([]);
+  const [workers, setWorkers] = useState<Array<{id: string, full_name: string}>>([]);
+  const [homeowners, setHomeowners] = useState<Array<{id: string, full_name: string}>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showJobForm, setShowJobForm] = useState(false);
   const [showServiceForm, setShowServiceForm] = useState(false);
@@ -58,12 +58,28 @@ export default function AdminBooking() {
         getHomeowners(),
       ]);
 
-      if (bookingsRes.success && bookingsRes.data) {
-        const enrichedBookings = bookingsRes.data.map((booking: any) => {
-          const worker = workersRes.data?.find((w: any) => w.id === booking.worker_id);
-          const homeowner = homeownersRes.data?.find(
-            (h: any) => h.id === booking.homeowner_id
-          );
+      if (workersRes.success && Array.isArray(workersRes.data)) {
+        setWorkers(workersRes.data);
+      } else {
+        console.error("Failed to load workers");
+        setWorkers([]);
+      }
+
+      if (homeownersRes.success && Array.isArray(homeownersRes.data)) {
+        setHomeowners(homeownersRes.data);
+      } else {
+        console.error("Failed to load homeowners");
+        setHomeowners([]);
+      }
+
+      if (bookingsRes.success && Array.isArray(bookingsRes.data)) {
+        const enrichedBookings = bookingsRes.data.map((booking) => {
+          const worker = workersRes.success && Array.isArray(workersRes.data) 
+            ? workersRes.data.find((w: any) => w.id === booking.worker_id)
+            : null;
+          const homeowner = homeownersRes.success && Array.isArray(homeownersRes.data)
+            ? homeownersRes.data.find((h: any) => h.id === booking.homeowner_id)
+            : null;
           return {
             ...booking,
             worker_name: worker?.full_name || "Unknown",
@@ -71,14 +87,6 @@ export default function AdminBooking() {
           };
         });
         setBookings(enrichedBookings);
-      }
-
-      if (workersRes.success && workersRes.data) {
-        setWorkers(workersRes.data);
-      }
-
-      if (homeownersRes.success && homeownersRes.data) {
-        setHomeowners(homeownersRes.data);
       }
     } catch (error) {
       toast.error("Error fetching data");

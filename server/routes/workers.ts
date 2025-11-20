@@ -94,7 +94,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
 // Search workers by skills or location
 router.get("/search/advanced", async (req: Request, res: Response) => {
   try {
-    const { skill, location, rate } = req.query;
+    const { skill, location: _location, rate: _rate } = req.query;
     let query = supabase.from("workers").select("*");
 
     if (skill) {

@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getUser, logoutUser } from "@/lib/auth";
-import { getUserRole } from "@/lib/jwt-auth";
+import { getUser, logoutUser, isAuthenticated } from "@/lib/auth";
 import type { WorkerData } from "@/lib/auth";
 import { Home, CheckSquare, User, BookOpen, MoreVertical, LogOut } from "lucide-react";
 import WorkerHome from "@/components/worker/WorkerHome";
@@ -16,26 +15,31 @@ type WorkerSection = "home" | "tasks" | "profile" | "training" | "more";
 
 export default function WorkerDashboard() {
   const navigate = useNavigate();
-  const user = getUser("worker") as WorkerData;
+  const [user, setUser] = useState<WorkerData | null>(null);
   const [activeSection, setActiveSection] = useState<WorkerSection>("home");
   const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/worker/login");
-      return;
-    }
+    const checkAuth = async () => {
+      const isAuth = await isAuthenticated("worker");
+      if (!isAuth) {
+        navigate("/worker/login");
+        return;
+      }
 
-    // Verify user role is worker
-    const userRole = getUserRole();
-    if (userRole !== "worker") {
-      logoutUser("worker");
-      navigate("/worker/login");
-    }
-  }, [user, navigate]);
+      const userData = await getUser("worker");
+      if (userData) {
+        setUser(userData as WorkerData);
+      } else {
+        navigate("/worker/login");
+      }
+    };
 
-  const handleLogout = () => {
-    logoutUser("worker");
+    checkAuth();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    await logoutUser();
     navigate("/");
   };
 

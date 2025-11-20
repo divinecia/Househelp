@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Trash2, Eye, Loader } from "lucide-react";
+import { Trash2, Eye } from "lucide-react";
 import { getReportTypes } from "@/lib/api-client";
 
 interface Report {
@@ -59,11 +59,19 @@ export default function AdminReports() {
       setIsLoadingTypes(true);
       try {
         const result = await getReportTypes();
-        if (result.success && result.data) {
+        if (result.success && Array.isArray(result.data) && result.data.length > 0) {
           setReportTypes(result.data);
-          if (result.data.length > 0) {
-            setFormData((prev) => ({ ...prev, type: result.data[0].name }));
-          }
+          setFormData((prev) => ({ ...prev, type: Array.isArray(result.data) && result.data.length > 0 ? result.data[0].name : "system_issue" }));
+        } else {
+          console.error("Failed to load report types or no data available");
+          // Set default report types if API fails
+          setReportTypes([
+            { id: "1", name: "system_issue" },
+            { id: "2", name: "worker_behavior" },
+            { id: "3", name: "review" },
+            { id: "4", name: "rating" }
+          ]);
+          setFormData((prev) => ({ ...prev, type: "system_issue" }));
         }
       } catch (error) {
         console.error("Failed to load report types:", error);
@@ -79,7 +87,8 @@ export default function AdminReports() {
     if (formData.title) {
       const newReport: Report = {
         id: Date.now().toString(),
-        ...formData,
+        type: formData.type as "system_issue" | "worker_behavior" | "review" | "rating",
+        title: formData.title,
         reporter: "Admin",
         status: "pending",
         createdDate: new Date().toISOString().split("T")[0],
@@ -91,7 +100,9 @@ export default function AdminReports() {
   };
 
   const handleDeleteReport = (id: string) => {
-    setReports(reports.filter((r) => r.id !== id));
+    if (Array.isArray(reports)) {
+      setReports(reports.filter((r) => r.id !== id));
+    }
   };
 
   const getTypeColor = (type: string) => {

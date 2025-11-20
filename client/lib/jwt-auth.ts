@@ -1,229 +1,139 @@
 /**
- * JWT-based authentication with secure token management
- * This replaces plain localStorage usage with secure, token-based auth
+ * Secure JWT-based authentication with token management
+ * This module provides secure token handling and validation
  */
 
-interface JWTPayload {
+export interface UserInfo {
   id: string;
   email: string;
-  role: "worker" | "homeowner" | "admin";
-  iat: number;
-  exp: number;
+  role: string;
 }
 
-interface AuthTokens {
+export interface TokenData {
   accessToken: string;
   refreshToken: string;
 }
 
-const TOKEN_KEY = "auth_token";
-const REFRESH_TOKEN_KEY = "refresh_token";
-const USER_INFO_KEY = "user_info";
-const TOKEN_EXPIRY = 3600; // 1 hour in seconds
-const REFRESH_TOKEN_EXPIRY = 604800; // 7 days in seconds
+export interface SessionTokens {
+  accessToken: string;
+  refreshToken: string;
+}
 
-/**
- * Encode JWT token (client-side simulation)
- * In production, this should be done by the backend
- */
-export const encodeJWT = (payload: Omit<JWTPayload, "iat" | "exp">, expirySeconds = TOKEN_EXPIRY): string => {
-  const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
-  const now = Math.floor(Date.now() / 1000);
-  const tokenPayload = {
-    ...payload,
-    iat: now,
-    exp: now + expirySeconds,
-  };
-  const encodedPayload = btoa(JSON.stringify(tokenPayload));
-  const signature = btoa("client-side-signature-placeholder");
-
-  return `${header}.${encodedPayload}.${signature}`;
-};
-
-/**
- * Decode and validate JWT token
- */
-export const decodeJWT = (token: string): JWTPayload | null => {
+// Store tokens and user info securely
+export const storeTokens = (tokens: TokenData, userInfo: UserInfo) => {
   try {
-    const parts = token.split(".");
-    if (parts.length !== 3) {
-      return null;
-    }
-
-    const payload = JSON.parse(atob(parts[1]));
-
-    // Check if token is expired
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-      return null;
-    }
-
-    return payload;
-  } catch {
-    return null;
+    sessionStorage.setItem("access_token", tokens.accessToken);
+    sessionStorage.setItem("refresh_token", tokens.refreshToken);
+    sessionStorage.setItem("user_info", JSON.stringify(userInfo));
+  } catch (error) {
+    console.error("Failed to store authentication tokens:", error);
+    throw new Error("Failed to store authentication data");
   }
 };
 
-/**
- * Check if token is expired
- */
-export const isTokenExpired = (token: string): boolean => {
-  const payload = decodeJWT(token);
-  if (!payload) return true;
-  return payload.exp < Math.floor(Date.now() / 1000);
-};
-
-/**
- * Store tokens and user info securely
- */
-export const storeTokens = (
-  tokens: AuthTokens,
-  userInfo?: { id: string; email: string; role: "worker" | "homeowner" | "admin" }
-): void => {
-  // In production, use httpOnly cookies via backend
-  // For now, store in sessionStorage (more secure than localStorage for sensitive data)
-  if (typeof window !== "undefined") {
-    sessionStorage.setItem(TOKEN_KEY, tokens.accessToken);
-    sessionStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
-    if (userInfo) {
-      sessionStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo));
-    }
-  }
-};
-
-/**
- * Get access token
- */
+// Get access token securely
 export const getAccessToken = (): string | null => {
-  if (typeof window === "undefined") return null;
-  const token = sessionStorage.getItem(TOKEN_KEY);
-
-  if (token && !isTokenExpired(token)) {
-    return token;
-  }
-
-  return null;
-};
-
-/**
- * Get refresh token
- */
-export const getRefreshToken = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return sessionStorage.getItem(REFRESH_TOKEN_KEY);
-};
-
-/**
- * Clear all tokens and user info
- */
-export const clearTokens = (): void => {
-  if (typeof window !== "undefined") {
-    sessionStorage.removeItem(TOKEN_KEY);
-    sessionStorage.removeItem(REFRESH_TOKEN_KEY);
-    sessionStorage.removeItem(USER_INFO_KEY);
-  }
-};
-
-/**
- * Refresh access token using refresh token
- */
-export const refreshAccessToken = async (): Promise<string | null> => {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) {
+  try {
+    return sessionStorage.getItem("access_token");
+  } catch (error) {
+    console.error("Failed to retrieve access token:", error);
     return null;
   }
+};
+
+// Get refresh token securely
+export const getRefreshToken = (): string | null => {
+  try {
+    return sessionStorage.getItem("refresh_token");
+  } catch (error) {
+    console.error("Failed to retrieve refresh token:", error);
+    return null;
+  }
+};
+
+// Get user info from session storage securely
+export const getUserInfo = (): UserInfo | null => {
+  try {
+    const userInfo = sessionStorage.getItem("user_info");
+    return userInfo ? JSON.parse(userInfo) : null;
+  } catch (error) {
+    console.error("Failed to retrieve user info:", error);
+    return null;
+  }
+};
+
+// Clear all auth data securely
+export const clearAuthData = () => {
+  try {
+    sessionStorage.removeItem("access_token");
+    sessionStorage.removeItem("refresh_token");
+    sessionStorage.removeItem("user_info");
+  } catch (error) {
+    console.error("Failed to clear authentication data:", error);
+  }
+};
+
+// Check if user is authenticated by validating token presence
+export const isAuthenticated = (): boolean => {
+  const token = getAccessToken();
+  if (!token) return false;
+  
+  // Basic token validation (check if it's a JWT format)
+  const tokenParts = token.split('.');
+  return tokenParts.length === 3; // JWT should have 3 parts
+};
+
+// Refresh token function
+export const refreshToken = async (): Promise<TokenData | null> => {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return null;
 
   try {
-    const response = await fetch('/api/auth/refresh', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken })
+    const response = await fetch("/api/auth/refresh", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${refreshToken}`
+      }
     });
 
-    if (!response.ok) {
-      clearTokens();
-      return null;
+    if (response.ok) {
+      const result = await response.json();
+      if (result.data?.access_token) {
+        const newTokens: TokenData = {
+          accessToken: result.data.access_token,
+          refreshToken: result.data.refresh_token || refreshToken
+        };
+        
+        // Update stored tokens
+        const userInfo = getUserInfo();
+        if (userInfo) {
+          storeTokens(newTokens, userInfo);
+        }
+        
+        return newTokens;
+      }
     }
-
-    const data = await response.json();
-
-    if (data.success && data.data?.accessToken) {
-      storeTokens({
-        accessToken: data.data.accessToken,
-        refreshToken: data.data.refreshToken || refreshToken,
-      });
-      return data.data.accessToken;
-    }
-
-    clearTokens();
     return null;
   } catch (error) {
     console.error("Token refresh failed:", error);
-    clearTokens();
     return null;
   }
 };
 
-/**
- * Get current user from stored user info
- */
-export const getCurrentUser = (): (Omit<JWTPayload, "iat" | "exp"> & { isAuthenticated: boolean }) | null => {
-  const token = getAccessToken();
-  if (!token) {
-    return null;
-  }
-
-  // Try to get user info from sessionStorage first
-  if (typeof window !== "undefined") {
-    const userInfoStr = sessionStorage.getItem(USER_INFO_KEY);
-    if (userInfoStr) {
-      try {
-        const userInfo = JSON.parse(userInfoStr);
-        return {
-          ...userInfo,
-          isAuthenticated: true,
-        };
-      } catch {
-        // Fall through to JWT decode
+// Token validation function
+export const validateToken = async (token: string): Promise<boolean> => {
+  try {
+    const response = await fetch("/api/auth/verify", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
       }
-    }
+    });
+    return response.ok;
+  } catch (error) {
+    console.error("Token validation failed:", error);
+    return false;
   }
-
-  // Fallback to JWT decode (for backwards compatibility)
-  const payload = decodeJWT(token);
-  if (!payload) {
-    return null;
-  }
-
-  return {
-    id: payload.id,
-    email: payload.email,
-    role: payload.role,
-    isAuthenticated: true,
-  };
-};
-
-/**
- * Check if user is authenticated
- */
-export const isAuthenticated = (): boolean => {
-  return getCurrentUser() !== null;
-};
-
-/**
- * Get user role
- */
-export const getUserRole = (): "worker" | "homeowner" | "admin" | null => {
-  const user = getCurrentUser();
-  return user?.role || null;
-};
-
-/**
- * Add JWT token to request headers
- */
-export const getAuthHeaders = (): Record<string, string> => {
-  const token = getAccessToken();
-  return {
-    "Content-Type": "application/json",
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
 };
