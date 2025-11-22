@@ -27,19 +27,44 @@ export default function WorkerRegister() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [gendersList, setGendersList] = useState<
     Array<{ id: string; name: string }>
-  >([]);
+  >([
+    { id: '1', name: 'Male' },
+    { id: '2', name: 'Female' },
+    { id: '3', name: 'Other' }
+  ]);
   const [maritalStatuses, setMaritalStatuses] = useState<
     Array<{ id: string; name: string }>
-  >([]);
+  >([
+    { id: '1', name: 'Single' },
+    { id: '2', name: 'Married' },
+    { id: '3', name: 'Divorced' },
+    { id: '4', name: 'Widowed' }
+  ]);
   const [wageUnits, setWageUnits] = useState<
     Array<{ id: string; name: string }>
-  >([]);
+  >([
+    { id: '1', name: 'per hour' },
+    { id: '2', name: 'per day' },
+    { id: '3', name: 'per week' },
+    { id: '4', name: 'per month' }
+  ]);
   const [languageLevels, setLanguageLevels] = useState<
     Array<{ id: string; name: string }>
-  >([]);
+  >([
+    { id: '1', name: 'Beginner' },
+    { id: '2', name: 'Intermediate' },
+    { id: '3', name: 'Advanced' },
+    { id: '4', name: 'Fluent' },
+    { id: '5', name: 'Native' }
+  ]);
   const [insuranceCompanies, setInsuranceCompanies] = useState<
     Array<{ id: string; name: string }>
-  >([]);
+  >([
+    { id: '1', name: 'Radiant Insurance' },
+    { id: '2', name: 'Prime Insurance' },
+    { id: '3', name: 'SONARWA Insurance' },
+    { id: '4', name: 'Other' }
+  ]);
   const [loadingOptions, setLoadingOptions] = useState(false);
 
   const handleChange = (
@@ -911,6 +936,20 @@ export default function WorkerRegister() {
               )}
             </div>
 
+            {/* Already have account link */}
+            <div className="mb-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => navigate("/worker/login")}
+                  className="text-primary hover:text-primary/80 font-medium underline"
+                >
+                  Login here
+                </button>
+              </p>
+            </div>
+
             {/* Submit Button */}
             <div className="flex gap-4">
               <button
@@ -935,3 +974,4 @@ export default function WorkerRegister() {
     </div>
   );
 }
+

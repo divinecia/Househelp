@@ -1,16 +1,7 @@
 import { supabase } from "./supabase";
+import type { Database } from "../../shared/types";
 
-export interface Notification {
-  id: string;
-  user_id: string;
-  type: "payment" | "message" | "booking" | "system" | "alert";
-  title: string;
-  message: string;
-  read: boolean;
-  data?: Record<string, any>;
-  created_at: string;
-  updated_at: string;
-}
+type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 
 export const createNotification = async (
   userId: string,
@@ -20,18 +11,18 @@ export const createNotification = async (
   data?: Record<string, any>
 ): Promise<Notification> => {
   try {
-    const { data: notification, error } = await supabase
-      .from("notifications")
-      .insert([
-        {
-          user_id: userId,
-          type,
-          title,
-          message,
-          data: data || {},
-          read: false,
-        },
-      ])
+    const insertData: Database["public"]["Tables"]["notifications"]["Insert"] = {
+      user_id: userId,
+      type,
+      title,
+      message,
+      data: data || {},
+      read: false,
+    };
+
+    const { data: notification, error } = await (supabase
+      .from("notifications") as any)
+      .insert([insertData])
       .select()
       .single();
 
@@ -39,7 +30,7 @@ export const createNotification = async (
       throw new Error(error.message);
     }
 
-    return notification;
+    return notification as Notification;
   } catch (error) {
     console.error("Error creating notification:", error);
     throw error;
@@ -57,7 +48,7 @@ export const getNotifications = async (
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+      .range(offset, offset + limit - 1) as { data: Notification[]; error: any };
 
     if (error) {
       throw new Error(error.message);
@@ -76,7 +67,7 @@ export const getUnreadNotificationCount = async (userId: string): Promise<number
       .from("notifications")
       .select("*", { count: "exact" })
       .eq("user_id", userId)
-      .eq("read", false);
+      .eq("read", false) as { count: number; error: any };
 
     if (error) {
       throw new Error(error.message);
@@ -91,8 +82,8 @@ export const getUnreadNotificationCount = async (userId: string): Promise<number
 
 export const markNotificationAsRead = async (notificationId: string): Promise<void> => {
   try {
-    const { error } = await supabase
-      .from("notifications")
+    const { error } = await (supabase
+      .from("notifications") as any)
       .update({ read: true })
       .eq("id", notificationId);
 
@@ -107,8 +98,8 @@ export const markNotificationAsRead = async (notificationId: string): Promise<vo
 
 export const markAllNotificationsAsRead = async (userId: string): Promise<void> => {
   try {
-    const { error } = await supabase
-      .from("notifications")
+    const { error } = await (supabase
+      .from("notifications") as any)
       .update({ read: true })
       .eq("user_id", userId)
       .eq("read", false);
@@ -153,7 +144,9 @@ export const subscribeToNotifications = (
         filter: `user_id=eq.${userId}`,
       },
       (payload) => {
-        callback(payload.new as Notification);
+        if (payload.new) {
+          callback(payload.new as Notification);
+        }
       }
     )
     .subscribe();
@@ -188,7 +181,7 @@ export const broadcastPaymentNotification = async (
 
   return createNotification(
     userId,
-    "payment",
+    "info",
     `Payment ${status}`,
     messages[status],
     {

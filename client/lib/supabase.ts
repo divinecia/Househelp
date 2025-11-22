@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "../../shared/types";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 
   (typeof window !== "undefined" ? (window as any).NEXT_PUBLIC_SUPABASE_URL : "");
@@ -9,36 +10,4 @@ if (!supabaseUrl || !supabaseKey) {
   console.warn("Supabase credentials not found in environment variables");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
-
-// Database types definition
-export interface Database {
-  public: {
-    Tables: {
-      user_profiles: {
-        Row: {
-          id: string;
-          email: string;
-          full_name: string;
-          role: 'worker' | 'homeowner' | 'admin';
-          created_at: string;
-        };
-        Insert: {
-          id: string;
-          email: string;
-          full_name: string;
-          role: 'worker' | 'homeowner' | 'admin';
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          email?: string;
-          full_name?: string;
-          role?: 'worker' | 'homeowner' | 'admin';
-          created_at?: string;
-        };
-      };
-      // Add other tables as needed
-    };
-  };
-}
+export const supabase = createClient<Database>(supabaseUrl, supabaseKey);

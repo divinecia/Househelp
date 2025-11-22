@@ -3,23 +3,75 @@ import { supabase } from "../lib/supabase";
 
 const router = Router();
 
-// Get all services
+// Get all services with worker counts
 router.get("/", async (req: Request, res: Response) => {
   try {
     const { active, limit = 50, offset = 0 } = req.query;
-    let query = supabase.from("services").select("*");
 
-    if (active) {
-      query = query.eq("active", active === "true");
+    // Get services from database if table exists, otherwise return hardcoded services with worker counts
+    let services = [];
+
+    try {
+      let query = supabase.from("services").select("*");
+
+      if (active) {
+        query = query.eq("active", active === "true");
+      }
+
+      const { data: servicesData, error: servicesError } = await query
+        .order("name", { ascending: true })
+        .range(parseInt(offset as string), parseInt(offset as string) + parseInt(limit as string) - 1);
+
+      if (!servicesError && servicesData) {
+        services = servicesData;
+      }
+    } catch (err) {
+      // Services table doesn't exist, use hardcoded services
     }
 
-    const { data, error, count } = await query
-      .order("name", { ascending: true })
-      .range(parseInt(offset as string), parseInt(offset as string) + parseInt(limit as string) - 1);
+    // If no services from database, use hardcoded ones
+    if (services.length === 0) {
+      services = [
+        { id: "cooking", name: "Cooking", active: true },
+        { id: "washing", name: "Washing", active: true },
+        { id: "cleaning", name: "Cleaning", active: true },
+        { id: "gardening", name: "Gardening", active: true },
+        { id: "elderlycare", name: "Elderly Care", active: true },
+        { id: "petcare", name: "Pet Care", active: true },
+        { id: "childcare", name: "Child Care", active: true },
+        { id: "laundry", name: "Laundry & Ironing", active: true },
+      ];
+    }
 
-    if (error) throw new Error(error.message);
+    // Get worker counts for each service
+    const servicesWithCounts = await Promise.all(
+      services.map(async (service: any) => {
+        try {
+          // Count workers with this type of work
+          const { count, error: countError } = await supabase
+            .from("workers")
+            .select("*", { count: "exact", head: true })
+            .eq("type_of_work", service.name)
+            .eq("status", "active");
 
-    return res.json({ success: true, data, total: count });
+          return {
+            ...service,
+            workers: countError ? 0 : (count || 0),
+          };
+        } catch (err) {
+          return {
+            ...service,
+            workers: 0,
+          };
+        }
+      })
+    );
+
+    return res.json({
+      success: true,
+      data: servicesWithCounts,
+      total: servicesWithCounts.length
+    });
   } catch (error: any) {
     return res.status(500).json({ success: false, error: error.message });
   }

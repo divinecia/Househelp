@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import { supabase } from "./lib/supabase";
 import { handleDemo } from "./routes/demo";
 import authRoutes from "./routes/auth";
 import homeownerRoutes from "./routes/homeowners";
@@ -64,6 +65,38 @@ export function createServer() {
   app.get("/api/ping", (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
     res.json({ message: ping });
+  });
+
+  // Database health check endpoint
+  app.get("/api/health/db", async (_req, res) => {
+    try {
+      // Test database connection by querying a system table
+      const { data, error } = await supabase
+        .from('pg_tables')
+        .select('tablename')
+        .eq('schemaname', 'public')
+        .limit(1);
+
+      if (error) {
+        return res.status(500).json({
+          status: 'error',
+          message: 'Database connection failed',
+          error: error.message
+        });
+      }
+
+      res.json({
+        status: 'healthy',
+        message: 'Database connection successful',
+        tables_count: data?.length || 0
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'error',
+        message: 'Database connection test failed',
+        error: error.message
+      });
+    }
   });
 
   app.get("/api/demo", handleDemo);

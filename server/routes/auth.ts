@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabase";
 import {
   mapWorkerFields,
   mapHomeownerFields,
-  // mapAdminFields,
+  mapAdminFields,
 } from "../lib/utils";
 
 const router = Router();
@@ -135,11 +135,12 @@ router.post("/register", async (req: Request, res: Response) => {
       mappedProfileData = mapHomeownerFields(profileData);
     } else if (role === "admin") {
       profileTable = "admins";
-      // For admin, only include contact_number and gender
-      mappedProfileData = {
-        contact_number: contactNumber,
-        gender: gender,
-      };
+      // Use mapAdminFields for consistent field mapping
+      mappedProfileData = mapAdminFields({
+        contactNumber,
+        gender,
+        termsAccepted: req.body.termsAccepted || req.body.terms_accepted || true,
+      });
     }
 
     // Build insertion data based on role (only admins have 'role' column)
@@ -185,6 +186,12 @@ router.post("/register", async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
+    console.error('Registration error details:', {
+      message: error.message,
+      stack: error.stack,
+      body: req.body,
+      role: req.body.role
+    });
     return res.status(500).json({
       success: false,
       error: error.message || "Registration failed",

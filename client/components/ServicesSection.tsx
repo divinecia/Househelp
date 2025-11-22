@@ -161,8 +161,7 @@ export default function ServicesSection({ className }: ServicesSectionProps) {
                 id: service.id,
                 name: service.name,
                 icon,
-                workers:
-                  service.workers || Math.floor(Math.random() * 200) + 50,
+                workers: service.workers || 0, // Use actual count from database
                 description: service.description,
               };
             },

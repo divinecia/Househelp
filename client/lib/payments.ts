@@ -30,20 +30,20 @@ export const createPayment = async (
   try {
     const transactionRef = `TXN-${userId}-${Date.now()}`;
 
-    const { data: payment, error } = await supabase
-      .from("payments")
-      .insert([
-        {
-          user_id: userId,
-          amount,
-          currency,
-          status: "pending",
-          transaction_ref: transactionRef,
-          payment_method: "flutterwave",
-          description,
-          metadata: metadata || {},
-        },
-      ])
+    const insertData = {
+      user_id: userId,
+      amount,
+      currency,
+      status: "pending",
+      transaction_ref: transactionRef,
+      payment_method: "flutterwave",
+      description,
+      metadata: metadata || {},
+    };
+
+    const { data: payment, error } = await (supabase
+      .from("payments") as any)
+      .insert([insertData])
       .select()
       .single();
 
@@ -125,7 +125,7 @@ export const verifyPayment = async (transactionId: string): Promise<Payment> => 
       .from("payments")
       .select("*")
       .eq("transaction_ref", txRef)
-      .single();
+      .single() as { data: Payment; error: any };
 
     if (paymentError) {
       throw new Error("Payment record not found");
@@ -134,8 +134,8 @@ export const verifyPayment = async (transactionId: string): Promise<Payment> => 
     const isSuccessful = flutterwaveVerification.data.status === "successful";
     const newStatus = isSuccessful ? "success" : "failed";
 
-    const { data: updatedPayment, error: updateError } = await supabase
-      .from("payments")
+    const { data: updatedPayment, error: updateError } = await (supabase
+      .from("payments") as any)
       .update({ status: newStatus })
       .eq("id", payment.id)
       .select()
@@ -200,7 +200,7 @@ export const getPaymentStats = async (userId: string) => {
       .from("payments")
       .select("amount, status")
       .eq("user_id", userId)
-      .eq("status", "success");
+      .eq("status", "success") as { data: Payment[]; error: any };
 
     if (error) {
       throw new Error(error.message);
@@ -226,8 +226,8 @@ export const getPaymentStats = async (userId: string) => {
 
 export const cancelPayment = async (paymentId: string): Promise<Payment> => {
   try {
-    const { data: payment, error } = await supabase
-      .from("payments")
+    const { data: payment, error } = await (supabase
+      .from("payments") as any)
       .update({ status: "cancelled" })
       .eq("id", paymentId)
       .select()

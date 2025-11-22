@@ -1,21 +1,15 @@
 import { supabase } from "./supabase";
 import type { WorkerData, HomeownerData, AdminData } from "./auth";
+import type { Database } from "../../shared/types";
 
 export type UserRole = "worker" | "homeowner" | "admin";
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  role: UserRole;
-  fullName: string;
-  createdAt: string;
-  profileData: Record<string, any>;
-}
+type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
 export const registerUserSupabase = async (
   role: UserRole,
   data: WorkerData | HomeownerData | AdminData
-) => {
+): Promise<{ user: any; profile: UserProfile }> => {
   try {
     const email = data.email || "";
     const password = data.password || "";
@@ -33,17 +27,16 @@ export const registerUserSupabase = async (
       throw new Error("Registration failed: User not created");
     }
 
-    const { data: profileData, error: profileError } = await supabase
+    const profileData = {
+      id: authData.user.id,
+      email,
+      role,
+      full_name: data.fullName || "",
+    };
+
+    const { data: profile, error: profileError } = await supabase
       .from("user_profiles")
-      .insert([
-        {
-          id: authData.user.id,
-          email,
-          role,
-          fullName: data.fullName || "",
-          profileData: data,
-        },
-      ])
+      .insert([profileData] as any)
       .select()
       .single();
 
@@ -53,7 +46,7 @@ export const registerUserSupabase = async (
 
     return {
       user: authData.user,
-      profile: profileData,
+      profile: profile as UserProfile,
     };
   } catch (error) {
     console.error("Supabase registration error:", error);
@@ -61,7 +54,10 @@ export const registerUserSupabase = async (
   }
 };
 
-export const loginUserSupabase = async (email: string, password: string) => {
+export const loginUserSupabase = async (
+  email: string,
+  password: string
+): Promise<{ user: any; profile: UserProfile }> => {
   try {
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
@@ -76,11 +72,11 @@ export const loginUserSupabase = async (email: string, password: string) => {
       throw new Error("Login failed: User not found");
     }
 
-    const { data: profileData, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("user_profiles")
       .select("*")
       .eq("id", authData.user.id)
-      .single();
+      .single() as { data: UserProfile; error: any };
 
     if (profileError) {
       throw new Error(profileError.message);
@@ -88,7 +84,7 @@ export const loginUserSupabase = async (email: string, password: string) => {
 
     return {
       user: authData.user,
-      profile: profileData,
+      profile: profile as UserProfile,
     };
   } catch (error) {
     console.error("Supabase login error:", error);
@@ -96,30 +92,38 @@ export const loginUserSupabase = async (email: string, password: string) => {
   }
 };
 
-export const getCurrentUser = async () => {
+export const getCurrentUser = async (): Promise<{
+  user: any;
+  profile: UserProfile | null;
+}> => {
   try {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
-      return null;
+      return { user: null, profile: null };
     }
 
-    const { data: profileData } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("user_profiles")
       .select("*")
       .eq("id", sessionData.session.user.id)
-      .single();
+      .single() as { data: UserProfile; error: any };
+
+    if (profileError) {
+      console.error("Error fetching profile:", profileError.message);
+      return { user: sessionData.session.user, profile: null };
+    }
 
     return {
       user: sessionData.session.user,
-      profile: profileData,
+      profile: profile as UserProfile,
     };
   } catch (error) {
     console.error("Error getting current user:", error);
-    return null;
+    return { user: null, profile: null };
   }
 };
 
-export const logoutUserSupabase = async () => {
+export const logoutUserSupabase = async (): Promise<void> => {
   try {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -133,16 +137,12 @@ export const logoutUserSupabase = async () => {
 
 export const updateUserProfile = async (
   userId: string,
-  profileData: Record<string, any>
-) => {
+  profileData: Partial<Database["public"]["Tables"]["user_profiles"]["Update"]>
+): Promise<UserProfile | null> => {
   try {
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .update({
-        profileData: {
-          ...profileData,
-        },
-      })
+    const { data, error } = await (supabase
+      .from("user_profiles") as any)
+      .update(profileData)
       .eq("id", userId)
       .select()
       .single();
@@ -151,7 +151,7 @@ export const updateUserProfile = async (
       throw new Error(error.message);
     }
 
-    return data;
+    return data as UserProfile;
   } catch (error) {
     console.error("Error updating user profile:", error);
     throw error;

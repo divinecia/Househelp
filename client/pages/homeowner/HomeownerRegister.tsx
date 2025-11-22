@@ -968,6 +968,20 @@ export default function HomeownerRegister() {
               )}
             </div>
 
+            {/* Already have account link */}
+            <div className="mb-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => navigate("/homeowner/login")}
+                  className="text-primary hover:text-primary/80 font-medium underline"
+                >
+                  Login here
+                </button>
+              </p>
+            </div>
+
             {/* Submit Button */}
             <div className="flex gap-4">
             <button
