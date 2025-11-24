@@ -1,5 +1,9 @@
-import { useState } from "react";
-import { Eye, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Eye, User, Loader } from "lucide-react";
+import { getUser } from "@/lib/auth";
+import type { HomeownerData } from "@/lib/auth";
+import { getBookings, getWorkers } from "@/lib/api-client";
+import { toast } from "sonner";
 
 interface Job {
   id: string;
@@ -14,36 +18,49 @@ interface Job {
 
 export default function HomeownerJobs() {
   const [activeTab, setActiveTab] = useState<"pending" | "completed" | "history">("pending");
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [jobs] = useState<Job[]>([
-    {
-      id: "1",
-      title: "House Cleaning",
-      worker: "John Doe",
-      status: "pending",
-      budget: 50000,
-    },
-    {
-      id: "2",
-      title: "Cooking Services",
-      worker: "Sarah Johnson",
-      status: "completed",
-      budget: 75000,
-      completedDate: "2024-01-27",
-      rating: 5,
-      review: "Excellent work! Very professional and thorough.",
-    },
-    {
-      id: "3",
-      title: "Garden Maintenance",
-      worker: "Mike Smith",
-      status: "completed",
-      budget: 40000,
-      completedDate: "2024-01-20",
-      rating: 4,
-      review: "Good job, very satisfied with the results.",
-    },
-  ]);
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        setLoading(true);
+        const user = getUser("homeowner") as unknown as HomeownerData & { id?: string };
+        
+        if (!user?.id) {
+          toast.error("User not found");
+          return;
+        }
+
+        const response = await getBookings({ homeowner_id: user.id });
+        
+        if (response.success && response.data) {
+          // Transform booking data to job format
+          const transformedJobs: Job[] = response.data.map((booking: any) => ({
+            id: booking.id,
+            title: booking.service_type || booking.jobTitle || "Service",
+            worker: booking.worker_name || booking.worker?.full_name || "Pending Assignment",
+            status: booking.status || "pending",
+            budget: parseFloat(booking.amount) || parseFloat(booking.budget) || 0,
+            completedDate: booking.completed_date || booking.completedAt,
+            rating: booking.rating,
+            review: booking.review,
+          }));
+          
+          setJobs(transformedJobs);
+        } else {
+          toast.error("Failed to load jobs");
+        }
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+        toast.error("Error loading jobs");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobs();
+  }, []);
 
   const tabs = ["pending", "completed", "history"] as const;
 

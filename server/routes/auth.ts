@@ -1,484 +1,137 @@
-import { Router, Request, Response } from "express";
-import { supabase } from "../lib/supabase";
-import {
-  mapWorkerFields,
-  mapHomeownerFields,
-  mapAdminFields,
-} from "../lib/utils";
+import { Router } from 'express';
+import bcrypt from 'bcrypt';
+import { supabase } from '@/server/lib/supabase';
+import { Admin } from '@/server/lib/types';
+
+const PHONE_REGEX = /^\+\d{12,15}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const router = Router();
 
-/**
- * Register user (Worker, Homeowner, or Admin)
- */
-router.post("/register", async (req: Request, res: Response) => {
+// Register a new admin
+router.post('/register', async (req, res) => {
+  const { fullName, contactNumber, gender, email, password } = req.body;
+
+  // Comprehensive validation
+  const errors: string[] = [];
+
+  if (!fullName?.trim()) {
+    errors.push('Full name is required');
+  }
+
+  if (!contactNumber?.trim()) {
+    errors.push('Contact number is required');
+  } else if (!PHONE_REGEX.test(contactNumber)) {
+    errors.push('Please provide a valid international phone number (e.g., +25078xxxxxxx)');
+  }
+
+  if (gender && !['male', 'female', 'other'].includes(gender.toLowerCase())) {
+    errors.push('Gender must be male, female, or other');
+  }
+
+  if (!email?.trim()) {
+    errors.push('Email is required');
+  } else if (!EMAIL_REGEX.test(email)) {
+    errors.push('Please provide a valid email address');
+  }
+
+  if (!password?.trim()) {
+    errors.push('Password is required');
+  } else if (password.length < 6) {
+    errors.push('Password must be at least 6 characters long');
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({ errors });
+  }
+
   try {
-    // Handle both camelCase and snake_case for compatibility
-    const email = req.body.email;
-    const password = req.body.password;
-    const fullName = req.body.full_name || req.body.fullName;
-    const role = req.body.role;
-    const contactNumber = req.body.contact_number || req.body.contactNumber;
-    const gender = req.body.gender;
+    // Check if email already exists in user_profiles (central user management)
+    const { data: existingUsers } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('email', email.toLowerCase()) // Normalize email case
+      .limit(1);
 
-    // Extract remaining profile data
-    const {
-      email: _e,
-      password: _p,
-      full_name: _fn,
-      fullName: _fN,
-      role: _r,
-      contact_number: _cn,
-      contactNumber: _cN,
-      gender: _g,
-      ...profileData
-    } = req.body;
-
-    if (!email || !password || !fullName || !role) {
-      console.error("Registration validation failed:", {
-        email: !!email,
-        password: !!password,
-        fullName: !!fullName,
-        role: !!role,
-      });
-      console.error("Request body:", JSON.stringify(req.body, null, 2));
-      return res.status(400).json({
-        success: false,
-        error: "Missing required fields: email, password, fullName, role",
+    if (existingUsers?.length > 0) {
+      return res.status(400).json({ 
+        error: 'Email already exists',
+        code: 'EMAIL_EXISTS' // More specific error code
       });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid email format",
-      });
-    }
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    // Validate password strength
-    if (password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        error: "Password must be at least 6 characters long",
-      });
-    }
+    // Start a transaction by creating user profile first
+    const adminId = crypto.randomUUID();
 
-    // Check if email already exists
-    const { data: existingUser } = await supabase
-      .from("user_profiles")
-      .select("id")
-      .eq("email", email)
-      .single();
-
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        error: "Email already registered",
-      });
-    }
-
-    // Sign up user in Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (authError) {
-      return res.status(400).json({
-        success: false,
-        error: authError.message,
-      });
-    }
-
-    if (!authData.user) {
-      return res.status(400).json({
-        success: false,
-        error: "User creation failed",
-      });
-    }
-
-    // First, create user profile in user_profiles table
-    const { data: _userProfileData, error: userProfileError } = await supabase
-      .from("user_profiles")
+    // Create user profile first (central user management)
+    const { data: userProfile, error: profileError } = await supabase
+      .from('user_profiles')
       .insert([
         {
-          id: authData.user.id,
-          email,
+          id: adminId,
+          email: email.toLowerCase(),
           full_name: fullName,
-          role,
-          created_at: new Date().toISOString(),
+          role: 'admin',
         },
       ])
       .select()
       .single();
 
-    if (userProfileError) {
-      console.error(`User profile creation error:`, userProfileError);
-      // Note: Can't delete auth user with anon key, would need service role key
-      return res.status(400).json({
-        success: false,
-        error: "Failed to create user profile: " + userProfileError.message,
+    if (profileError) {
+      console.error('User profile creation error:', profileError);
+      return res.status(500).json({ 
+        error: 'Failed to create user profile',
+        code: 'PROFILE_CREATION_FAILED'
       });
     }
 
-    // Then, create role-specific profile
-    let profileTable = "user_profiles";
-    let mappedProfileData: any = {};
-
-    if (role === "worker") {
-      profileTable = "workers";
-      mappedProfileData = mapWorkerFields(profileData);
-    } else if (role === "homeowner") {
-      profileTable = "homeowners";
-      mappedProfileData = mapHomeownerFields(profileData);
-    } else if (role === "admin") {
-      profileTable = "admins";
-      // Use mapAdminFields for consistent field mapping
-      mappedProfileData = mapAdminFields({
-        contactNumber,
-        gender,
-        termsAccepted: req.body.termsAccepted || req.body.terms_accepted || true,
-      });
-    }
-
-    // Build insertion data based on role (only admins have 'role' column)
-    const insertData: any = {
-      id: authData.user.id,
-      email,
-      full_name: fullName,
-      ...mappedProfileData,
-      created_at: new Date().toISOString(),
-    };
-
-    // Only include 'role' field for admins table (workers/homeowners don't have it)
-    if (role === "admin") {
-      insertData.role = role;
-    }
-
-    const { data: profileDataResult, error: profileError } = await supabase
-      .from(profileTable)
-      .insert([insertData])
+    // Create admin record with correct field names matching the database schema
+    const { data: newAdmin, error: adminError } = await supabase
+      .from('admins')
+      .insert([
+        {
+          id: adminId,
+          email: email.toLowerCase(),
+          full_name: fullName,
+          contact_number: contactNumber,
+          gender: gender,
+          password_hash: passwordHash,
+        },
+      ])
       .select()
       .single();
 
-    if (profileError) {
-      // Clean up user profile if role-specific profile creation fails
-      console.error(`Profile creation error for ${role}:`, profileError);
-      await supabase.from("user_profiles").delete().eq("id", authData.user.id);
-      // Note: Can't delete auth user with anon key, would need service role key
-      return res.status(400).json({
-        success: false,
-        error: "Failed to create user profile: " + profileError.message,
+    if (adminError) {
+      console.error('Admin creation error:', adminError);
+      // Rollback: delete the user profile if admin creation failed
+      await supabase.from('user_profiles').delete().eq('id', adminId);
+      return res.status(500).json({ 
+        error: 'Failed to create admin',
+        code: 'ADMIN_CREATION_FAILED'
       });
     }
 
-    return res.status(201).json({
-      success: true,
+    res.status(201).json({
       data: {
-        user: {
-          id: authData.user.id,
-          email: authData.user.email,
-          role,
-        },
-        profile: profileDataResult,
+        id: newAdmin.id,
+        email: newAdmin.email,
+        // Don't return sensitive data
       },
+      message: 'Admin registered successfully',
     });
-  } catch (error: any) {
-    console.error('Registration error details:', {
-      message: error.message,
-      stack: error.stack,
-      body: req.body,
-      role: req.body.role
-    });
-    return res.status(500).json({
-      success: false,
-      error: error.message || "Registration failed",
-    });
-  }
-});
-
-/**
- * Login user
- */
-router.post("/login", async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        error: "Missing required fields: email, password",
+  } catch (error) {
+    console.error('Admin registration error:', error);
+    // Better error handling
+    if (error instanceof Error) {
+      return res.status(500).json({ 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
-
-    // Sign in user
-    const { data: authData, error: authError } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-    if (authError) {
-      return res.status(401).json({
-        success: false,
-        error: authError.message,
-      });
-    }
-
-    if (!authData.user) {
-      return res.status(401).json({
-        success: false,
-        error: "Login failed",
-      });
-    }
-
-    // Get user profile
-    const { data: profileData, error: profileError } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("id", authData.user.id)
-      .single();
-
-    if (profileError) {
-      return res.status(400).json({
-        success: false,
-        error: "Failed to fetch user profile",
-      });
-    }
-
-    return res.json({
-      success: true,
-      data: {
-        user: {
-          id: authData.user.id,
-          email: authData.user.email,
-          role: profileData.role,
-        },
-        profile: profileData,
-        session: authData.session,
-      },
-    });
-  } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      error: error.message || "Login failed",
-    });
-  }
-});
-
-/**
- * Get current user
- */
-router.get("/me", async (req: Request, res: Response) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        success: false,
-        error: "Missing authorization header",
-      });
-    }
-
-    const token = authHeader.substring(7);
-
-    // Verify token with Supabase
-    const { data, error } = await supabase.auth.getUser(token);
-
-    if (error || !data.user) {
-      return res.status(401).json({
-        success: false,
-        error: "Invalid token",
-      });
-    }
-
-    // Get user profile
-    const { data: profileData } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("id", data.user.id)
-      .single();
-
-    return res.json({
-      success: true,
-      data: {
-        user: {
-          id: data.user.id,
-          email: data.user.email,
-        },
-        profile: profileData,
-      },
-    });
-  } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      error: error.message || "Failed to get user",
-    });
-  }
-});
-
-/**
- * Refresh access token
- */
-router.post("/refresh", async (req: Request, res: Response) => {
-  try {
-    const { refreshToken } = req.body;
-
-    if (!refreshToken) {
-      return res.status(400).json({
-        success: false,
-        error: "Refresh token is required",
-      });
-    }
-
-    // Use Supabase to refresh the session
-    const { data, error } = await supabase.auth.refreshSession({
-      refresh_token: refreshToken,
-    });
-
-    if (error || !data.session) {
-      return res.status(401).json({
-        success: false,
-        error: "Failed to refresh token",
-      });
-    }
-
-    return res.json({
-      success: true,
-      data: {
-        accessToken: data.session.access_token,
-        refreshToken: data.session.refresh_token,
-        expiresIn: data.session.expires_in,
-      },
-    });
-  } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      error: error.message || "Token refresh failed",
-    });
-  }
-});
-
-/**
- * Logout user (client-side only, but included for completeness)
- */
-router.post("/logout", async (req: Request, res: Response) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.json({
-        success: true,
-        message: "Logged out",
-      });
-    }
-
-    await supabase.auth.signOut();
-
-    return res.json({
-      success: true,
-      message: "Logged out successfully",
-    });
-  } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      error: error.message || "Logout failed",
-    });
-  }
-});
-
-/**
- * Request password reset
- */
-router.post("/forgot-password", async (req: Request, res: Response) => {
-  try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        error: "Email is required",
-      });
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid email format",
-      });
-    }
-
-    // Send password reset email via Supabase
-    // Note: Supabase will only send if email exists, but we always return success for security
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${req.headers.origin || "http://localhost:5173"}/reset-password`,
-    });
-
-    if (error) {
-      console.error("Password reset error:", error);
-      // Don't expose whether email exists
-    }
-
-    return res.json({
-      success: true,
-      message:
-        "If an account exists with this email, you will receive a password reset link.",
-    });
-  } catch (error: any) {
-    console.error("Forgot password error:", error);
-    return res.status(500).json({
-      success: false,
-      error: "Failed to process password reset request",
-    });
-  }
-});
-
-/**
- * Reset password with token
- */
-router.post("/reset-password", async (req: Request, res: Response) => {
-  try {
-    const { password, token } = req.body;
-
-    if (!password || !token) {
-      return res.status(400).json({
-        success: false,
-        error: "Password and token are required",
-      });
-    }
-
-    // Validate password strength
-    if (password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        error: "Password must be at least 6 characters long",
-      });
-    }
-
-    // Update password using Supabase
-    const { error } = await supabase.auth.updateUser({
-      password: password,
-    });
-
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        error: error.message,
-      });
-    }
-
-    return res.json({
-      success: true,
-      message: "Password updated successfully",
-    });
-  } catch (error: any) {
-    console.error("Reset password error:", error);
-    return res.status(500).json({
-      success: false,
-      error: "Failed to reset password",
-    });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

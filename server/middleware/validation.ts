@@ -1,190 +1,218 @@
-import { Request, Response, NextFunction } from "express";
-import { sanitizeObject } from "../lib/utils";
+import { NextFunction, Request, Response } from 'express';
 
-/**
- * Centralized error handler middleware
- */
-export class AppError extends Error {
-  constructor(
-    public statusCode: number,
-    public message: string,
-    public isOperational = true
-  ) {
-    super(message);
-    Object.setPrototypeOf(this, AppError.prototype);
-  }
-}
+export const validateAdminRegistration = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { fullName, contactNumber, gender, email, password } = req.body;
 
-export const errorHandler = (err: any, _req: Request, res: Response, _next: NextFunction) => {
-  let statusCode = err.statusCode || 500;
-  let message = err.message || 'Internal Server Error';
+  // Basic validation
+  const errors: string[] = [];
 
-  if (process.env.NODE_ENV === 'production' && !err.isOperational) {
-    statusCode = 500;
-    message = 'Something went wrong';
+  if (!fullName?.trim()) {
+    errors.push('Full name is required');
   }
 
-  res.status(statusCode).json({
-    success: false,
-    error: {
-      message,
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  if (!contactNumber?.trim()) {
+    errors.push('Contact number is required');
+  } else if (!/^\+\d{12,15}$/.test(contactNumber)) {
+    errors.push('Please provide a valid international phone number');
+  }
+
+  if (!gender?.trim()) {
+    errors.push('Gender is required');
+  }
+
+  if (!email?.trim()) {
+    errors.push('Email is required');
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errors.push('Please provide a valid email address');
+  }
+
+  if (!password?.trim()) {
+    errors.push('Password is required');
+  } else if (password.length < 6) {
+    errors.push('Password must be at least 6 characters long');
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({
+      errors,
+    });
+  }
+
+  next();
+};
+
+export const validateBookingData = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { homeowner_id, job_title, description, scheduled_date, duration_hours } = req.body;
+
+  const errors: string[] = [];
+
+  if (!homeowner_id?.trim()) {
+    errors.push('Homeowner ID is required');
+  }
+
+  if (!job_title?.trim()) {
+    errors.push('Job title is required');
+  }
+
+  if (!scheduled_date) {
+    errors.push('Scheduled date is required');
+  } else {
+    const date = new Date(scheduled_date);
+    if (isNaN(date.getTime())) {
+      errors.push('Invalid scheduled date format');
+    } else if (date < new Date()) {
+      errors.push('Scheduled date must be in the future');
     }
-  });
-};
+  }
 
-/**
- * Validate required fields in request body
- */
-export const validateRequiredFields = (requiredFields: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const missing = requiredFields.filter((field) => !req.body[field]);
-
-    if (missing.length > 0) {
-      return res.status(400).json({
-        success: false,
-        error: `Missing required fields: ${missing.join(", ")}`,
-      });
+  if (duration_hours !== undefined && duration_hours !== null) {
+    if (typeof duration_hours !== 'number' || duration_hours <= 0) {
+      errors.push('Duration hours must be a positive number');
     }
-
-    next();
-  };
-};
-
-/**
- * Validate email format
- */
-export const validateEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-/**
- * Validate phone number format (basic)
- */
-export const validatePhone = (phone: string): boolean => {
-  // Basic validation: should contain only digits, spaces, and common phone chars
-  const phoneRegex = /^[\d\s\-\+\(\)]+$/;
-  return phoneRegex.test(phone) && phone.replace(/\D/g, "").length >= 9;
-};
-
-/**
- * Validate payment amount
- */
-export const validateAmount = (amount: any): boolean => {
-  const num = parseFloat(amount);
-  return !isNaN(num) && num > 0;
-};
-
-/**
- * Sanitize string input (basic XSS prevention)
- */
-export const sanitizeString = (str: string): string => {
-  return str
-    .replace(/[<>]/g, "")
-    .trim()
-    .substring(0, 500); // Limit length
-};
-
-/**
- * Validate request body for booking creation
- */
-export const validateBookingData = (req: Request, res: Response, next: NextFunction) => {
-  const { homeowner_id, booking_date, service_type, amount } = req.body;
-
-  const errors: string[] = [];
-
-  if (!homeowner_id) errors.push("homeowner_id is required");
-  if (!booking_date) errors.push("booking_date is required");
-  if (!service_type) errors.push("service_type is required");
-
-  if (amount !== undefined && !validateAmount(amount)) {
-    errors.push("amount must be a positive number");
   }
 
   if (errors.length > 0) {
     return res.status(400).json({
-      success: false,
-      error: errors.join("; "),
-      received_fields: Object.keys(req.body),
+      errors,
     });
   }
 
   next();
 };
 
-/**
- * Validate request body for payment creation
- */
-export const validatePaymentData = (req: Request, res: Response, next: NextFunction) => {
-  const { booking_id, amount, payment_method } = req.body;
+export const validatePaymentData = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { booking_id, amount, payment_method, transaction_ref, description, status } = req.body;
 
   const errors: string[] = [];
 
-  if (!booking_id) errors.push("booking_id is required");
-  if (!amount || !validateAmount(amount)) errors.push("amount must be a positive number");
-  if (!payment_method) errors.push("payment_method is required");
-  if (payment_method && !["flutterwave", "bank_transfer", "cash"].includes(payment_method)) {
-    errors.push("payment_method must be one of: flutterwave, bank_transfer, cash");
+  if (!amount || typeof amount !== 'number' || amount <= 0) {
+    errors.push('Amount is required and must be a positive number');
+  }
+
+  if (!payment_method?.trim()) {
+    errors.push('Payment method is required');
+  }
+
+  if (booking_id !== undefined && booking_id !== null && !booking_id.trim()) {
+    errors.push('Booking ID cannot be empty if provided');
+  }
+
+  if (transaction_ref !== undefined && transaction_ref !== null && !transaction_ref.trim()) {
+    errors.push('Transaction reference cannot be empty if provided');
+  }
+
+  if (description !== undefined && description !== null && !description.trim()) {
+    errors.push('Description cannot be empty if provided');
+  }
+
+  if (status !== undefined && status !== null) {
+    const validStatuses = ['pending', 'completed', 'failed', 'cancelled', 'refunded'];
+    if (!validStatuses.includes(status)) {
+      errors.push('Invalid payment status');
+    }
   }
 
   if (errors.length > 0) {
     return res.status(400).json({
-      success: false,
-      error: errors.join("; "),
-      received_fields: Object.keys(req.body),
+      errors,
     });
   }
 
   next();
 };
 
-/**
- * Validate request body for training creation
- */
-export const validateTrainingData = (req: Request, res: Response, next: NextFunction) => {
-  const { title, instructor } = req.body;
+export const validateBookingData = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { homeowner_id, service_id, job_title, job_description, scheduled_date, address, phone_number } = req.body;
 
   const errors: string[] = [];
 
-  if (!title) errors.push("title is required");
-  if (!instructor) errors.push("instructor is required");
+  if (!homeowner_id) {
+    errors.push('Homeowner ID is required');
+  }
+
+  if (!service_id) {
+    errors.push('Service ID is required');
+  }
+
+  if (!job_title?.trim()) {
+    errors.push('Job title is required');
+  }
+
+  if (!job_description?.trim()) {
+    errors.push('Job description is required');
+  }
+
+  if (!scheduled_date) {
+    errors.push('Scheduled date is required');
+  } else {
+    const scheduledDate = new Date(scheduled_date);
+    const now = new Date();
+    if (scheduledDate <= now) {
+      errors.push('Scheduled date must be in the future');
+    }
+  }
+
+  if (!address?.trim()) {
+    errors.push('Address is required');
+  }
+
+  if (!phone_number?.trim()) {
+    errors.push('Phone number is required');
+  } else if (!/^\+\d{12,15}$/.test(phone_number)) {
+    errors.push('Please provide a valid international phone number');
+  }
 
   if (errors.length > 0) {
-    return res.status(400).json({
-      success: false,
-      error: errors.join("; "),
-    });
+    return res.status(400).json({ errors });
   }
 
   next();
 };
 
-/**
- * Validate UUID format
- */
-export const validateUUID = (id: string): boolean => {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(id);
-};
+export const validatePaymentData = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { booking_id, amount, payment_method, payment_reference } = req.body;
 
-/**
- * 🔐 Additional Security Fixes
- *
- * ### 9. **Input Validation Issues**
- * Issue**: Missing input sanitization in several API endpoints.
- *
- * **Fix**: Add validation middleware:
- */
-export const sanitizeInput = (req: Request, _res: Response, next: NextFunction) => {
-  if (req.body) {
-    req.body = sanitizeObject(req.body);
+  const errors: string[] = [];
+
+  if (!booking_id) {
+    errors.push('Booking ID is required');
   }
-  if (req.query) {
-    req.query = sanitizeObject(req.query);
+
+  if (!amount || amount <= 0) {
+    errors.push('Amount must be greater than 0');
   }
-  if (req.params) {
-    req.params = sanitizeObject(req.params);
+
+  if (!payment_method?.trim()) {
+    errors.push('Payment method is required');
   }
+
+  if (!payment_reference?.trim()) {
+    errors.push('Payment reference is required');
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({ errors });
+  }
+
   next();
 };

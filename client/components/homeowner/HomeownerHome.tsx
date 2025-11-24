@@ -82,13 +82,11 @@ export default function HomeownerHome() {
           );
         }
 
-        // Generate satisfaction chart data
-        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-        const satisfactionData: ChartData[] = months.map((month, index) => ({
-          month,
-          satisfaction: 85 + index * 2,
-        }));
-        setChartData(satisfactionData);
+        // Fetch satisfaction data from database
+        const satisfactionRes = await apiGet("/reports/satisfaction-trend");
+        if (satisfactionRes.success && Array.isArray(satisfactionRes.data)) {
+          setChartData(satisfactionRes.data);
+        }
       } catch (error) {
         console.error("Error fetching homeowner home data:", error);
         toast.error("Failed to load services and courses from database. Please refresh the page.");

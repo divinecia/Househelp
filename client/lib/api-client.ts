@@ -256,9 +256,8 @@ export async function deleteWorker(id: string) {
 }
 
 export async function searchWorkers(filters: Record<string, any>) {
-  return apiGet(
-    `/workers/search/advanced?${new URLSearchParams(filters).toString()}`,
-  );
+  const params = new URLSearchParams(filters || {});
+  return apiGet(`/workers?${params.toString()}`);
 }
 
 // ============================================================
