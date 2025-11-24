@@ -45,50 +45,7 @@ export const validateAdminRegistration = (
   next();
 };
 
-export const validateBookingData = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { homeowner_id, job_title, description, scheduled_date, duration_hours } = req.body;
-
-  const errors: string[] = [];
-
-  if (!homeowner_id?.trim()) {
-    errors.push('Homeowner ID is required');
-  }
-
-  if (!job_title?.trim()) {
-    errors.push('Job title is required');
-  }
-
-  if (!scheduled_date) {
-    errors.push('Scheduled date is required');
-  } else {
-    const date = new Date(scheduled_date);
-    if (isNaN(date.getTime())) {
-      errors.push('Invalid scheduled date format');
-    } else if (date < new Date()) {
-      errors.push('Scheduled date must be in the future');
-    }
-  }
-
-  if (duration_hours !== undefined && duration_hours !== null) {
-    if (typeof duration_hours !== 'number' || duration_hours <= 0) {
-      errors.push('Duration hours must be a positive number');
-    }
-  }
-
-  if (errors.length > 0) {
-    return res.status(400).json({
-      errors,
-    });
-  }
-
-  next();
-};
-
-export const validatePaymentData = (
+export const validateBasicPaymentData = (
   req: Request,
   res: Response,
   next: NextFunction

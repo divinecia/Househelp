@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
-import { supabase } from '@/server/lib/supabase';
-import { Admin } from '@/server/lib/types';
+import { supabase } from '../lib/supabase';
+import { Admin } from '../lib/types';
 
 const PHONE_REGEX = /^\+\d{12,15}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

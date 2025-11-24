@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS public.smoking_drinking_restrictions (
 
 -- Insert default dropdown data
 INSERT INTO public.genders (name) VALUES 
-    ('Male'), ('Female'), ('Other'), ('No preference')
+    ('Male'), ('Female'), ('Other')
 ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO public.marital_statuses (name) VALUES 
@@ -122,7 +122,7 @@ INSERT INTO public.marital_statuses (name) VALUES
 ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO public.payment_methods (name) VALUES 
-    ('Cash'), ('Bank Transfer'), ('Mobile Money'), ('Check')
+    ('Bank Transfer'), ('Mobile Money')
 ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO public.residence_types (name) VALUES 
@@ -164,7 +164,7 @@ INSERT INTO public.services (name, description) VALUES
     ('Pet Care', 'Pet feeding, walking, and basic care'),
     ('Child Care', 'Child supervision and basic care'),
     ('Laundry & Ironing', 'Complete laundry and ironing services')
-ON CONFLICT (name) DO NOTHING;
+;
 
 -- Enable Row Level Security (RLS) on all tables
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
