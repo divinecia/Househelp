@@ -32,6 +32,9 @@ export interface HomeownerData {
   password: string;
   age?: string;
   homeAddress: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
   typeOfResidence?: string;
   numberOfFamilyMembers?: string;
   homeComposition?: {

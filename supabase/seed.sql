@@ -18,15 +18,33 @@ CREATE TABLE IF NOT EXISTS public.workers (
     full_name TEXT NOT NULL,
     contact_number TEXT,
     gender TEXT,
-    age INTEGER,
-    national_id TEXT,
-    home_address TEXT,
-    type_of_work TEXT,
+    date_of_birth DATE,
+    marital_status TEXT,
+    nationality TEXT,
+    languages TEXT[],
+    religion TEXT,
+    education_level TEXT,
     experience_years INTEGER,
     skills TEXT[],
-    languages TEXT[],
+    hourly_rate DECIMAL(10,2),
     availability_status TEXT DEFAULT 'available',
-    status TEXT DEFAULT 'pending',
+    profile_image_url TEXT,
+    address TEXT,
+    city TEXT,
+    state TEXT,
+    postal_code TEXT,
+    emergency_contact_name TEXT,
+    emergency_contact_number TEXT,
+    emergency_contact_relationship TEXT,
+    background_check_completed BOOLEAN DEFAULT FALSE,
+    background_check_status TEXT DEFAULT 'pending',
+    rating DECIMAL(3,2) DEFAULT 0.00,
+    total_reviews INTEGER DEFAULT 0,
+    verification_status TEXT DEFAULT 'pending',
+    verified_at TIMESTAMP WITH TIME ZONE,
+    password_hash TEXT NOT NULL,
+    reset_token TEXT,
+    reset_token_expiry TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -38,26 +56,35 @@ CREATE TABLE IF NOT EXISTS public.homeowners (
     full_name TEXT NOT NULL,
     contact_number TEXT,
     gender TEXT,
-    age INTEGER,
-    national_id TEXT,
-    home_address TEXT,
-    type_of_residence TEXT,
-    number_of_family_members INTEGER,
-    home_composition JSONB,
-    home_composition_details TEXT,
-    worker_info TEXT,
-    specific_duties TEXT,
-    working_days TEXT[],
-    working_hours_start TIME,
-    working_hours_end TIME,
-    salary_expectation DECIMAL(10,2),
-    payment_mode TEXT,
-    criminal_record_check BOOLEAN,
-    smoking_drinking_restrictions TEXT,
-    special_requirements TEXT,
-    specific_skills_needed TEXT,
-    religious_preferences TEXT,
-    terms_accepted BOOLEAN DEFAULT FALSE,
+    date_of_birth DATE,
+    marital_status TEXT,
+    nationality TEXT,
+    languages TEXT[],
+    religion TEXT,
+    occupation TEXT,
+    employer TEXT,
+    employer_address TEXT,
+    monthly_income DECIMAL(12,2),
+    household_size INTEGER,
+    residence_type TEXT,
+    address TEXT,
+    city TEXT,
+    state TEXT,
+    postal_code TEXT,
+    home_ownership_status TEXT,
+    years_at_residence INTEGER,
+    emergency_contact_name TEXT,
+    emergency_contact_number TEXT,
+    emergency_contact_relationship TEXT,
+    profile_image_url TEXT,
+    preferred_payment_method TEXT,
+    rating DECIMAL(3,2) DEFAULT 0.00,
+    total_reviews INTEGER DEFAULT 0,
+    verification_status TEXT DEFAULT 'pending',
+    verified_at TIMESTAMP WITH TIME ZONE,
+    password_hash TEXT NOT NULL,
+    reset_token TEXT,
+    reset_token_expiry TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -72,6 +99,8 @@ CREATE TABLE IF NOT EXISTS public.admins (
     role TEXT NOT NULL DEFAULT 'admin',
     permissions TEXT[],
     password_hash TEXT NOT NULL,
+    reset_token TEXT,
+    reset_token_expiry TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -172,9 +201,51 @@ ALTER TABLE public.workers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.homeowners ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
 
+-- Create RLS policies for registration (allow unauthenticated inserts)
+CREATE POLICY "Allow registration for user_profiles" ON public.user_profiles
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow registration for workers" ON public.workers
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow registration for homeowners" ON public.homeowners
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow registration for admins" ON public.admins
+    FOR INSERT WITH CHECK (true);
+
+-- Create RLS policies for reading (allow users to read their own data)
+CREATE POLICY "Users can view own profile" ON public.user_profiles
+    FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can view own worker profile" ON public.workers
+    FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can view own homeowner profile" ON public.homeowners
+    FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can view own admin profile" ON public.admins
+    FOR SELECT USING (auth.uid() = id);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_user_profiles_email ON public.user_profiles(email);
 CREATE INDEX IF NOT EXISTS idx_user_profiles_role ON public.user_profiles(role);
-CREATE INDEX IF NOT EXISTS idx_workers_status ON public.workers(status);
+CREATE INDEX IF NOT EXISTS idx_user_profiles_created_at ON public.user_profiles(created_at);
+
+CREATE INDEX IF NOT EXISTS idx_admins_email ON public.admins(email);
+CREATE INDEX IF NOT EXISTS idx_admins_reset_token ON public.admins(reset_token);
+CREATE INDEX IF NOT EXISTS idx_admins_reset_token_expiry ON public.admins(reset_token_expiry);
+
+CREATE INDEX IF NOT EXISTS idx_workers_email ON public.workers(email);
+CREATE INDEX IF NOT EXISTS idx_workers_reset_token ON public.workers(reset_token);
+CREATE INDEX IF NOT EXISTS idx_workers_reset_token_expiry ON public.workers(reset_token_expiry);
+CREATE INDEX IF NOT EXISTS idx_workers_skills ON public.workers USING GIN(skills);
 CREATE INDEX IF NOT EXISTS idx_workers_availability ON public.workers(availability_status);
-CREATE INDEX IF NOT EXISTS idx_homeowners_type_of_residence ON public.homeowners(type_of_residence);
+CREATE INDEX IF NOT EXISTS idx_workers_rating ON public.workers(rating);
+CREATE INDEX IF NOT EXISTS idx_workers_verification ON public.workers(verification_status);
+
+CREATE INDEX IF NOT EXISTS idx_homeowners_email ON public.homeowners(email);
+CREATE INDEX IF NOT EXISTS idx_homeowners_reset_token ON public.homeowners(reset_token);
+CREATE INDEX IF NOT EXISTS idx_homeowners_reset_token_expiry ON public.homeowners(reset_token_expiry);
+CREATE INDEX IF NOT EXISTS idx_homeowners_residence_type ON public.homeowners(residence_type);
+CREATE INDEX IF NOT EXISTS idx_homeowners_verification ON public.homeowners(verification_status);

@@ -186,6 +186,9 @@ export default function HomeownerRegister() {
         age: formData.age,
         contactNumber: formData.contactNumber || '',
         homeAddress: formData.homeAddress || '',
+        city: formData.city || '',
+        state: formData.state || '',
+        postalCode: formData.postalCode || '',
         typeOfResidence: formData.typeOfResidence,
         numberOfFamilyMembers: formData.numberOfFamilyMembers,
         homeComposition: formData.homeComposition,
@@ -326,6 +329,57 @@ export default function HomeownerRegister() {
                       {errors.homeAddress}
                     </p>
                   )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="city"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    id="city"
+                    name="city"
+                    value={formData.city || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="state"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
+                    State/Province
+                  </label>
+                  <input
+                    type="text"
+                    id="state"
+                    name="state"
+                    value={formData.state || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="postalCode"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
+                    Postal Code
+                  </label>
+                  <input
+                    type="text"
+                    id="postalCode"
+                    name="postalCode"
+                    value={formData.postalCode || ""}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
                 </div>
 
                 <div>
