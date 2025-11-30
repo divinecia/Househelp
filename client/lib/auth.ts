@@ -150,12 +150,24 @@ export const loginUser = async (role: string, email: string, password: string) =
     }
 
     const result = await response.json();
-    
-    // Store tokens securely
-    if (result.data?.session) {
+
+    // Store tokens securely - handle both session-based and token-based auth
+    if (result.data?.token) {
+      sessionStorage.setItem("auth_token", result.data.token);
+
+      if (result.data.user) {
+        sessionStorage.setItem("user_info", JSON.stringify({
+          id: result.data.user.id,
+          email: result.data.user.email,
+          role: result.data.user.role || role,
+          fullName: result.data.user.fullName
+        }));
+      }
+    } else if (result.data?.session) {
+      // Legacy support for session-based auth
       sessionStorage.setItem("auth_token", result.data.session.access_token);
       sessionStorage.setItem("refresh_token", result.data.session.refresh_token || "");
-      
+
       if (result.data.user) {
         sessionStorage.setItem("user_info", JSON.stringify({
           id: result.data.user.id,
@@ -212,13 +224,16 @@ export const isAuthenticated = async (role?: string): Promise<boolean> => {
     });
 
     if (response.ok) {
-      const userData = await response.json();
-      
+      const result = await response.json();
+
+      // Handle both response formats
+      const userData = result.data?.user || result;
+
       // If role is specified, check if it matches
       if (role && userData.role !== role) {
         return false;
       }
-      
+
       return true;
     }
     return false;

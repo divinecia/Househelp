@@ -11,11 +11,13 @@ const router = Router();
 
 // Register a new user (supports admin, homeowner, and worker roles)
 router.post('/register', async (req, res) => {
-  const { role, fullName, full_name, contactNumber, contact_number, gender, email, password } = req.body;
+  // The normalizeRequestBody middleware converts camelCase to snake_case
+  // So we primarily use snake_case, but support camelCase as fallback
+  const { role, full_name, fullName, contact_number, contactNumber, gender, email, password } = req.body;
 
-  // Normalize field names
-  const normalizedFullName = fullName || full_name;
-  const normalizedContactNumber = contactNumber || contact_number;
+  // Normalize field names (snake_case takes priority due to middleware)
+  const normalizedFullName = full_name || fullName;
+  const normalizedContactNumber = contact_number || contactNumber;
 
   // Validate role
   if (!role || !['admin', 'homeowner', 'worker'].includes(role)) {
@@ -54,18 +56,22 @@ router.post('/register', async (req, res) => {
      errors.push('Password must be at least 6 characters long');
   }
 
-  // Role-specific validation
+  // Role-specific validation (snake_case takes priority due to middleware)
   if (role === 'homeowner') {
-    if (!req.body.home_address?.trim()) {
+    const homeAddress = req.body.home_address || req.body.homeAddress;
+    if (!homeAddress?.trim()) {
       errors.push('Home address is required for homeowners');
     }
   }
 
   if (role === 'worker') {
-    if (!req.body.dateOfBirth?.trim()) {
+    const dateOfBirth = req.body.date_of_birth || req.body.dateOfBirth;
+    const nationalId = req.body.national_id || req.body.nationalId;
+
+    if (!dateOfBirth?.trim()) {
       errors.push('Date of birth is required for workers');
     }
-    if (!req.body.nationalId?.trim()) {
+    if (!nationalId?.trim()) {
       errors.push('National ID is required for workers');
     }
   }
@@ -139,6 +145,10 @@ router.post('/register', async (req, res) => {
       roleData = data;
       roleError = error;
     } else if (role === 'worker') {
+      // Normalize field names for worker registration (snake_case takes priority)
+      const dateOfBirth = req.body.date_of_birth || req.body.dateOfBirth;
+      const nationalId = req.body.national_id || req.body.nationalId;
+
       console.log('Creating worker with data:', {
         id: userId,
         email: email.toLowerCase(),
@@ -146,11 +156,11 @@ router.post('/register', async (req, res) => {
         contact_number: normalizedContactNumber,
         gender: gender,
         password_hash: passwordHash,
-        date_of_birth: req.body.dateOfBirth,
+        date_of_birth: dateOfBirth,
         // Add missing required fields
         verification_status: 'pending'
       });
-      
+
       const { data, error } = await supabaseService
         .from('workers')
         .insert([
@@ -161,7 +171,7 @@ router.post('/register', async (req, res) => {
             contact_number: normalizedContactNumber,
             gender: gender,
             password_hash: passwordHash,
-            date_of_birth: req.body.dateOfBirth,
+            date_of_birth: dateOfBirth,
             // Add missing required fields
             verification_status: 'pending'
           },
@@ -171,6 +181,12 @@ router.post('/register', async (req, res) => {
       roleData = data;
       roleError = error;
     } else if (role === 'homeowner') {
+      // Normalize field names for homeowner registration (snake_case takes priority)
+      const homeAddress = req.body.home_address || req.body.homeAddress;
+      const typeOfResidence = req.body.type_of_residence || req.body.typeOfResidence;
+      const numberOfFamilyMembers = req.body.number_of_family_members || req.body.numberOfFamilyMembers;
+      const postalCode = req.body.postal_code || req.body.postalCode;
+
       console.log('Creating homeowner with data:', {
         id: userId,
         email: email.toLowerCase(),
@@ -178,16 +194,16 @@ router.post('/register', async (req, res) => {
         contact_number: normalizedContactNumber,
         gender: gender,
         password_hash: passwordHash,
-        address: req.body.homeAddress,
-        residence_type: req.body.typeOfResidence,
-        household_size: req.body.numberOfFamilyMembers ? parseInt(req.body.numberOfFamilyMembers) : null,
+        address: homeAddress,
+        residence_type: typeOfResidence,
+        household_size: numberOfFamilyMembers ? parseInt(numberOfFamilyMembers) : null,
         // Add required fields that might be missing
         city: req.body.city || null,
         state: req.body.state || null,
-        postal_code: req.body.postalCode || null,
+        postal_code: postalCode || null,
         verification_status: 'pending'
       });
-      
+
       const { data, error } = await supabaseService
         .from('homeowners')
         .insert([
@@ -198,13 +214,13 @@ router.post('/register', async (req, res) => {
             contact_number: normalizedContactNumber,
             gender: gender,
             password_hash: passwordHash,
-            address: req.body.homeAddress,
-            residence_type: req.body.typeOfResidence,
-            household_size: req.body.numberOfFamilyMembers ? parseInt(req.body.numberOfFamilyMembers) : null,
+            address: homeAddress,
+            residence_type: typeOfResidence,
+            household_size: numberOfFamilyMembers ? parseInt(numberOfFamilyMembers) : null,
             // Add missing required fields
             city: req.body.city || null,
             state: req.body.state || null,
-            postal_code: req.body.postalCode || null,
+            postal_code: postalCode || null,
             verification_status: 'pending'
           },
         ])
@@ -247,18 +263,26 @@ router.post('/register', async (req, res) => {
 
 // Login endpoint
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
 
   // Validation
   if (!email?.trim() || !password?.trim()) {
-    return res.status(400).json({ 
-      error: 'Email and password are required' 
+    return res.status(400).json({
+      error: 'Email and password are required'
     });
   }
 
   if (!EMAIL_REGEX.test(email)) {
-    return res.status(400).json({ 
-      error: 'Please provide a valid email address' 
+    return res.status(400).json({
+      error: 'Please provide a valid email address'
+    });
+  }
+
+  // Validate role if provided (optional but recommended for security)
+  if (role && !['admin', 'homeowner', 'worker'].includes(role)) {
+    return res.status(400).json({
+      error: 'Invalid role specified',
+      code: 'INVALID_ROLE'
     });
   }
 
@@ -271,7 +295,15 @@ router.post('/login', async (req, res) => {
       .single();
 
     if (profileError || !userProfile) {
-      return res.status(401).json({ 
+      return res.status(401).json({
+        error: 'Invalid email or password',
+        code: 'INVALID_CREDENTIALS'
+      });
+    }
+
+    // If role is specified, verify it matches the user's role
+    if (role && userProfile.role !== role) {
+      return res.status(401).json({
         error: 'Invalid email or password',
         code: 'INVALID_CREDENTIALS'
       });
