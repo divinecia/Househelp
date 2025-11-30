@@ -3,6 +3,7 @@ import { Router } from 'express';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { supabaseService } from '../lib/supabase';
+import { jwtService } from '../services/jwt';
 
 const PHONE_REGEX = /^\+\d{12,15}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -336,16 +337,17 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Create JWT token (you might want to use a proper JWT library)
+    // Create JWT token with RS256 signing
     const tokenPayload = {
       userId: userProfile.id,
       email: userProfile.email,
-      role: userProfile.role,
-      // Add expiration if needed
+      role: userProfile.role as "admin" | "homeowner" | "worker",
     };
 
-    // For now, return a simple success response
-    // In a production app, you'd want to use JWT tokens
+    // Create access token (24 hours) and refresh token (30 days)
+    const accessToken = jwtService.createToken(tokenPayload, 24 * 60 * 60);
+    const refreshToken = jwtService.createRefreshToken(tokenPayload);
+
     res.json({
       success: true,
       data: {
@@ -355,7 +357,8 @@ router.post('/login', async (req, res) => {
           role: userProfile.role,
           fullName: userProfile.full_name,
         },
-        token: Buffer.from(JSON.stringify(tokenPayload)).toString('base64'), // Simple token for now
+        token: accessToken,
+        refreshToken: refreshToken,
       },
       message: 'Login successful'
     });
@@ -382,10 +385,18 @@ router.get('/verify', async (req, res) => {
     }
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    
-    // Decode the token (simple base64 for now)
+
+    // Verify JWT token with RS256
+    const tokenPayload = jwtService.verifyToken(token);
+
+    if (!tokenPayload) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid or expired token'
+      });
+    }
+
     try {
-      const tokenPayload = JSON.parse(Buffer.from(token, 'base64').toString());
       
       // Verify user still exists
       const { data: userProfile, error: profileError } = await supabaseService

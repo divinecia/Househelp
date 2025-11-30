@@ -15,6 +15,12 @@ import optionsRoutes from "./routes/options";
 import reviewRoutes from "./routes/reviews";
 import messageRoutes from "./routes/messages";
 import notificationRoutes from "./routes/notifications";
+import applicationRoutes from "./routes/applications";
+import disputeRoutes from "./routes/disputes";
+import favoriteRoutes from "./routes/favorites";
+import availabilityRoutes from "./routes/availability";
+import documentRoutes from "./routes/documents";
+import withdrawalRoutes from "./routes/withdrawals";
 import normalizeRequestBody from "./middleware/normalize-request";
 // import { verifyToken } from "./middleware/auth";
 import rateLimit from "express-rate-limit";
@@ -119,6 +125,12 @@ export function createServer() {
   app.use("/api/reviews", reviewRoutes);
   app.use("/api/messages", messageRoutes);
   app.use("/api/notifications", notificationRoutes);
+  app.use("/api/applications", applicationRoutes);
+  app.use("/api/disputes", disputeRoutes);
+  app.use("/api/favorites", favoriteRoutes);
+  app.use("/api/availability", availabilityRoutes);
+  app.use("/api/documents", documentRoutes);
+  app.use("/api/withdrawals", withdrawalRoutes);
 
   return app;
 }
