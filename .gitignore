@@ -22,3 +22,7 @@ dist-ss
 .config/
 !.env
 .env
+
+# JWT RSA Keys
+.keys/
+*.pem

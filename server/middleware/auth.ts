@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { supabase } from "../lib/supabase";
+import { jwtService } from "../services/jwt";
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -11,6 +11,7 @@ export interface AuthenticatedRequest extends Request {
 
 /**
  * Verify JWT token and attach user to request
+ * Uses RS256 cryptographic signing for security
  */
 export const verifyToken = async (
   req: AuthenticatedRequest,
@@ -28,27 +29,20 @@ export const verifyToken = async (
 
     const token = authHeader.substring(7);
 
-    // Verify token with Supabase
-    const { data, error } = await supabase.auth.getUser(token);
+    // Verify token using JWT service with RS256
+    const payload = jwtService.verifyToken(token);
 
-    if (error || !data.user) {
+    if (!payload) {
       return res.status(401).json({
         success: false,
         error: "Invalid or expired token",
       });
     }
 
-    // Get user profile to get role
-    const { data: profileData } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("id", data.user.id)
-      .single();
-
     req.user = {
-      id: data.user.id,
-      email: data.user.email || "",
-      role: profileData?.role || "worker",
+      id: payload.userId,
+      email: payload.email,
+      role: payload.role,
     };
 
     next();
