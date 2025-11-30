@@ -12,6 +12,9 @@ import trainingRoutes from "./routes/trainings";
 import reportRoutes from "./routes/reports";
 import serviceRoutes from "./routes/services";
 import optionsRoutes from "./routes/options";
+import reviewRoutes from "./routes/reviews";
+import messageRoutes from "./routes/messages";
+import notificationRoutes from "./routes/notifications";
 import normalizeRequestBody from "./middleware/normalize-request";
 // import { verifyToken } from "./middleware/auth";
 import rateLimit from "express-rate-limit";
@@ -113,6 +116,9 @@ export function createServer() {
   app.use("/api/reports", reportRoutes);
   app.use("/api/services", serviceRoutes);
   app.use("/api/options", optionsRoutes);
+  app.use("/api/reviews", reviewRoutes);
+  app.use("/api/messages", messageRoutes);
+  app.use("/api/notifications", notificationRoutes);
 
   return app;
 }
