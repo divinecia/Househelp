@@ -27,16 +27,15 @@ export const registerUserSupabase = async (
       throw new Error("Registration failed: User not created");
     }
 
-    const profileData = {
-      id: authData.user.id,
-      email,
-      role,
-      full_name: data.fullName || "",
-    };
-
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await (supabase as any)
       .from("user_profiles")
-      .insert([profileData] as any)
+      .insert([
+        {
+          user_id: authData.user.id,
+          full_name: data.fullName || "",
+          role,
+        },
+      ])
       .select()
       .single();
 
@@ -72,10 +71,10 @@ export const loginUserSupabase = async (
       throw new Error("Login failed: User not found");
     }
 
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await (supabase as any)
       .from("user_profiles")
       .select("*")
-      .eq("id", authData.user.id)
+      .eq("user_id", authData.user.id)
       .single() as { data: UserProfile; error: any };
 
     if (profileError) {
@@ -102,10 +101,10 @@ export const getCurrentUser = async (): Promise<{
       return { user: null, profile: null };
     }
 
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await (supabase as any)
       .from("user_profiles")
       .select("*")
-      .eq("id", sessionData.session.user.id)
+      .eq("user_id", sessionData.session.user.id)
       .single() as { data: UserProfile; error: any };
 
     if (profileError) {

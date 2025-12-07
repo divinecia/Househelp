@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getUser, logoutUser, isAuthenticated } from "@/lib/auth";
+import { getUser, logoutUser, isAuthenticatedAsync } from "@/lib/auth";
 import type { WorkerData } from "@/lib/auth";
 import { Home, CheckSquare, User, BookOpen, MoreVertical, LogOut } from "lucide-react";
 import WorkerHome from "@/components/worker/WorkerHome";
@@ -21,15 +21,39 @@ export default function WorkerDashboard() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const isAuth = await isAuthenticated("worker");
+      const isAuth = await isAuthenticatedAsync("worker");
       if (!isAuth) {
         navigate("/worker/login");
         return;
       }
 
       const userData = await getUser("worker");
-      if (userData) {
-        setUser(userData as WorkerData);
+      if (userData && userData.profile) {
+        const workerData: WorkerData = {
+          fullName: userData.profile.full_name,
+          dateOfBirth: '',
+          gender: '',
+          email: userData.user?.email || '',
+          password: '',
+          phoneNumber: '',
+          maritalStatus: '',
+          nationalId: '',
+          criminalRecord: '',
+          typeOfWork: '',
+          workExperience: '',
+          expectedWages: '',
+          workingHoursAndDays: '',
+          educationQualification: '',
+          trainingCertificate: '',
+          languageProficiency: '',
+          healthCondition: '',
+          emergencyName: '',
+          emergencyContact: '',
+          bankAccountNumber: '',
+          accountHolder: '',
+          termsAccepted: true
+        };
+        setUser(workerData);
       } else {
         navigate("/worker/login");
       }
@@ -54,7 +78,7 @@ export default function WorkerDashboard() {
       case "training":
         return <WorkerTraining />;
       case "more":
-        return <WorkerMore onLogout={handleLogout} />;
+        return <WorkerMore />;
       default:
         return <WorkerHome />;
     }

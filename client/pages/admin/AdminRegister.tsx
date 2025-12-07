@@ -6,10 +6,18 @@ import { registerUser } from "@/lib/auth";
 import type { AdminData } from "@/lib/auth";
 import { getGenders } from "@/lib/api-client";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 export default function AdminRegister() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<Partial<AdminData>>({});
+  const [formData, setFormData] = useState<Partial<AdminData>>({
+    fullName: "",
+    email: "",
+    password: "",
+    contactNumber: "",
+    gender: "",
+    termsAccepted: false,
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [genders, setGenders] = useState<Array<{ id: string; name: string }>>([]);
   const [isLoadingGenders, setIsLoadingGenders] = useState(false);
@@ -39,15 +47,24 @@ export default function AdminRegister() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    const { name, value } = e.currentTarget;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    const { name, value, type } = e.currentTarget;
+    if (type === "checkbox") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: (e.target as HTMLInputElement).checked,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
+    
+    // Personal Information
     if (!formData.fullName) newErrors.fullName = "Full name is required";
     if (!formData.contactNumber)
       newErrors.contactNumber = "Contact number is required";
@@ -55,41 +72,44 @@ export default function AdminRegister() {
     if (!formData.email) newErrors.email = "Email is required";
     if (!formData.password || formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
+    
+    // Terms and Conditions
+    if (!formData.termsAccepted)
+      newErrors.termsAccepted = "You must accept the terms and conditions";
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
     if (!validateForm()) {
       toast.error("Please fix the errors above");
-      setIsSubmitting(false);
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
-      const dataToSubmit = {
+      const dataToSubmit: AdminData = {
         email: formData.email!,
         password: formData.password!,
         fullName: formData.fullName!,
-        role: "admin",
-        contactNumber: formData.contactNumber,
-        gender: formData.gender,
+        contactNumber: formData.contactNumber || '',
+        gender: formData.gender || '',
+        termsAccepted: formData.termsAccepted || false,
       };
 
-      // Call API to register (replaces insecure localStorage registration)
-      await registerUser("admin", dataToSubmit as AdminData);
+      await registerUser("admin", dataToSubmit);
 
       toast.success("Registration successful! Redirecting to login...");
 
       setTimeout(() => {
         navigate("/admin/login");
-      }, 1000);
+      }, 1500);
     } catch (error) {
-      const errorMsg =
-        error instanceof Error ? error.message : "Registration failed";
+      const errorMsg = error instanceof Error ? error.message : "Registration failed";
       toast.error(errorMsg);
       console.error("Registration failed:", error);
     } finally {
@@ -230,29 +250,65 @@ export default function AdminRegister() {
               )}
             </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors mb-4 disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? "Creating Account..." : "Create Admin Account"}
-            </button>
+            {/* Terms and Conditions */}
+            <div className="mb-8">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="termsAccepted"
+                  checked={formData.termsAccepted || false}
+                  onChange={handleChange}
+                  className="mt-1 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <span className="text-sm text-foreground">
+                  I agree to the terms and conditions *
+                </span>
+              </label>
+              {errors.termsAccepted && (
+                <p className="text-destructive text-sm mt-2">
+                  {errors.termsAccepted}
+                </p>
+              )}
+            </div>
 
-            <button
-              type="button"
-              onClick={() => navigate("/admin/login")}
-              className="w-full px-6 py-3 border border-gray-300 text-foreground font-semibold rounded-lg hover:bg-gray-50 transition-colors mb-4"
-            >
-              Already have an account?
-            </button>
+            {/* Already have account link */}
+            <div className="mb-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => navigate("/admin/login")}
+                  className="text-primary hover:text-primary/80 font-medium underline"
+                >
+                  Login here
+                </button>
+              </p>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => navigate("/")}
-              className="w-full px-6 py-3 text-primary font-semibold hover:underline"
-            >
-              Back to Home
-            </button>
+            {/* Submit Button */}
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                disabled={isSubmitting || isLoadingGenders}
+                className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  "Complete Registration"
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                className="flex-1 px-6 py-3 border border-gray-300 text-foreground font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Back to Home
+              </button>
+            </div>
           </form>
         </div>
       </main>

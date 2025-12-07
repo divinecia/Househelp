@@ -1,273 +1,257 @@
 import { useState, useEffect } from "react";
-import { Trash2, Eye } from "lucide-react";
-import { getReportTypes } from "@/lib/api-client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
+import { Search, FileText, TrendingUp, Users, DollarSign, Calendar } from "lucide-react";
 
 interface Report {
   id: string;
-  type: "system_issue" | "worker_behavior" | "review" | "rating";
   title: string;
-  reporter: string;
-  targetUser?: string;
-  status: "pending" | "reviewed" | "resolved" | "closed";
-  createdDate: string;
-  rating?: number;
+  type: "monthly" | "quarterly" | "annual";
+  period: string;
+  status: "draft" | "published";
+  createdAt: string;
+  fileSize: string;
+}
+
+interface ChartData {
+  name: string;
+  value: number;
 }
 
 export default function AdminReports() {
-  const [reportTypes, setReportTypes] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
-  const [isLoadingTypes, setIsLoadingTypes] = useState(false);
-  const [reports, setReports] = useState<Report[]>([
-    {
-      id: "1",
-      type: "system_issue",
-      title: "Login page not loading",
-      reporter: "John Doe",
-      status: "pending",
-      createdDate: "2024-01-28",
-    },
-    {
-      id: "2",
-      type: "worker_behavior",
-      title: "Worker was late to appointment",
-      reporter: "Alice Johnson",
-      targetUser: "Jane Smith",
-      status: "reviewed",
-      createdDate: "2024-01-27",
-    },
-    {
-      id: "3",
-      type: "rating",
-      title: "5-star review for excellent service",
-      reporter: "Bob Wilson",
-      targetUser: "John Doe",
-      status: "closed",
-      rating: 5,
-      createdDate: "2024-01-26",
-    },
-  ]);
-
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    type: "",
-    title: "",
-  });
+  const [reports, setReports] = useState<Report[]>([]);
+  const [revenueData, setRevenueData] = useState<ChartData[]>([]);
+  const [userGrowthData, setUserGrowthData] = useState<ChartData[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadReportTypes = async () => {
-      setIsLoadingTypes(true);
-      try {
-        const result = await getReportTypes();
-        if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-          setReportTypes(result.data);
-          setFormData((prev) => ({ ...prev, type: Array.isArray(result.data) && result.data.length > 0 ? result.data[0].name : "system_issue" }));
-        } else {
-          console.error("Failed to load report types or no data available");
-          // Set default report types if API fails
-          setReportTypes([
-            { id: "1", name: "system_issue" },
-            { id: "2", name: "worker_behavior" },
-            { id: "3", name: "review" },
-            { id: "4", name: "rating" }
-          ]);
-          setFormData((prev) => ({ ...prev, type: "system_issue" }));
-        }
-      } catch (error) {
-        console.error("Failed to load report types:", error);
-      } finally {
-        setIsLoadingTypes(false);
-      }
-    };
-    loadReportTypes();
+    fetchReportsData();
   }, []);
 
-  const handleAddReport = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.title) {
-      const newReport: Report = {
-        id: Date.now().toString(),
-        type: formData.type as "system_issue" | "worker_behavior" | "review" | "rating",
-        title: formData.title,
-        reporter: "Admin",
-        status: "pending",
-        createdDate: new Date().toISOString().split("T")[0],
-      };
-      setReports([...reports, newReport]);
-      setFormData({ type: "system_issue", title: "" });
-      setShowForm(false);
+  const fetchReportsData = async () => {
+    try {
+      // TODO: Replace with actual API calls
+      setReports([
+        {
+          id: "1",
+          title: "Monthly Performance Report",
+          type: "monthly",
+          period: "January 2024",
+          status: "published",
+          createdAt: "2024-02-01",
+          fileSize: "2.5 MB",
+        },
+        {
+          id: "2",
+          title: "Quarterly Financial Summary",
+          type: "quarterly",
+          period: "Q4 2023",
+          status: "published",
+          createdAt: "2024-01-15",
+          fileSize: "4.2 MB",
+        },
+      ]);
+
+      setRevenueData([
+        { name: "Jan", value: 4500000 },
+        { name: "Feb", value: 5200000 },
+        { name: "Mar", value: 4800000 },
+        { name: "Apr", value: 6100000 },
+        { name: "May", value: 5900000 },
+        { name: "Jun", value: 6800000 },
+      ]);
+
+      setUserGrowthData([
+        { name: "Jan", value: 120 },
+        { name: "Feb", value: 145 },
+        { name: "Mar", value: 168 },
+        { name: "Apr", value: 195 },
+        { name: "May", value: 220 },
+        { name: "Jun", value: 245 },
+      ]);
+    } catch (error) {
+      console.error("Failed to fetch reports data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeleteReport = (id: string) => {
-    if (Array.isArray(reports)) {
-      setReports(reports.filter((r) => r.id !== id));
-    }
-  };
+  const filteredReports = reports.filter(report =>
+    report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    report.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    report.period.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "system_issue":
-        return "bg-red-100 text-red-700";
-      case "worker_behavior":
-        return "bg-orange-100 text-orange-700";
-      case "review":
-      case "rating":
-        return "bg-green-100 text-green-700";
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "published":
+        return <Badge className="bg-green-100 text-green-800">Published</Badge>;
+      case "draft":
+        return <Badge className="bg-yellow-100 text-yellow-800">Draft</Badge>;
       default:
-        return "bg-gray-100 text-gray-700";
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Add Report Form Toggle */}
-      <button
-        onClick={() => setShowForm(!showForm)}
-        className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-      >
-        {showForm ? "Cancel" : "Add New Report"}
-      </button>
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">RWF 33.3M</div>
+            <p className="text-xs text-muted-foreground">+12% from last month</p>
+          </CardContent>
+        </Card>
 
-      {/* Form */}
-      {showForm && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-foreground mb-4">
-            Add New Report
-          </h3>
-          <form
-            onSubmit={handleAddReport}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
-            <select
-              value={formData.type}
-              onChange={(e) =>
-                setFormData({ ...formData, type: e.target.value })
-              }
-              disabled={isLoadingTypes}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
-            >
-              <option value="">
-                {isLoadingTypes ? "Loading..." : "Select Report Type"}
-              </option>
-              {reportTypes.map((type) => (
-                <option key={type.id} value={type.name}>
-                  {type.name}
-                </option>
-              ))}
-            </select>
-            <input
-              type="text"
-              placeholder="Report Title"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              required
-            />
-            <button
-              type="submit"
-              className="md:col-span-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              Add Report
-            </button>
-          </form>
-        </div>
-      )}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">1,093</div>
+            <p className="text-xs text-muted-foreground">+8% from last month</p>
+          </CardContent>
+        </Card>
 
-      {/* Reports Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                  Title
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                  Reporter
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                  Target User
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {reports.map((report) => (
-                <tr
-                  key={report.id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-6 py-4 text-sm">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getTypeColor(report.type)}`}
-                    >
-                      {report.type.replace("_", " ")}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-foreground font-medium">
-                    {report.title}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">
-                    {report.reporter}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">
-                    {report.targetUser || "N/A"}
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        report.status === "closed"
-                          ? "bg-gray-100 text-gray-700"
-                          : report.status === "resolved"
-                            ? "bg-green-100 text-green-700"
-                            : report.status === "reviewed"
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {report.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">
-                    {report.createdDate}
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <div className="flex gap-2">
-                      <button
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="View"
-                      >
-                        <Eye size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteReport(report.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">2,847</div>
+            <p className="text-xs text-muted-foreground">+15% from last month</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Growth Rate</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">24.5%</div>
+            <p className="text-xs text-muted-foreground">+4% from last month</p>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Monthly Revenue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={revenueData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip formatter={(value) => [`RWF ${value.toLocaleString()}`, "Revenue"]} />
+                <Bar dataKey="value" fill="#3b82f6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>User Growth</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={userGrowthData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip formatter={(value) => [`${value}`, "Users"]} />
+                <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Reports List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Generated Reports</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-6">
+            <div className="relative w-96">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                type="text"
+                placeholder="Search reports..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
+          {loading ? (
+            <p className="text-center py-8">Loading reports...</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Period</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Size</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredReports.map((report) => (
+                  <TableRow key={report.id}>
+                    <TableCell className="font-medium flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-gray-400" />
+                      {report.title}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {report.type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{report.period}</TableCell>
+                    <TableCell>{getStatusBadge(report.status)}</TableCell>
+                    <TableCell>{report.createdAt}</TableCell>
+                    <TableCell>{report.fileSize}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline">
+                          View
+                        </Button>
+                        <Button size="sm">
+                          <FileText className="h-4 w-4 mr-1" />
+                          Download
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

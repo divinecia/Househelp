@@ -1,57 +1,41 @@
 import { Request, Response, NextFunction } from "express";
 
 /**
- * Convert a camelCase string to snake_case
+ * Middleware to normalize request body from camelCase to snake_case
+ * This helps maintain consistency with database column names
  */
-const camelToSnake = (str: string): string => {
-  return str
-    .replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
-    .replace(/^_/, "");
-};
+function toSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+}
 
-/**
- * Recursively convert object keys from camelCase to snake_case
- */
-export const convertKeysToSnakeCase = (
-  obj: any,
-): any => {
-  if (obj === null || obj === undefined) {
-    return obj;
-  }
+function normalizeObject(obj: any): any {
+  if (obj === null || obj === undefined) return obj;
 
   if (Array.isArray(obj)) {
-    return obj.map((item) => convertKeysToSnakeCase(item));
+    return obj.map(normalizeObject);
   }
 
-  if (typeof obj !== "object") {
-    return obj;
+  if (typeof obj === 'object' && obj.constructor === Object) {
+    const normalized: any = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const snakeKey = toSnakeCase(key);
+        normalized[snakeKey] = normalizeObject(obj[key]);
+      }
+    }
+    return normalized;
   }
 
-  const newObj: Record<string, any> = {};
+  return obj;
+}
 
-  for (const [key, value] of Object.entries(obj)) {
-    const snakeKey = camelToSnake(key);
-    newObj[snakeKey] = convertKeysToSnakeCase(value);
-  }
-
-  return newObj;
-};
-
-/**
- * Middleware to normalize request body from camelCase to snake_case
- * Stores original in req.body for reference if needed
- */
-export const normalizeRequestBody = (
+export default function normalizeRequestBody(
   req: Request,
   _res: Response,
-  next: NextFunction,
-) => {
-  // Only process POST, PUT, PATCH requests with JSON body
-  if (["POST", "PUT", "PATCH"].includes(req.method) && req.body) {
-    req.body = convertKeysToSnakeCase(req.body);
+  next: NextFunction
+) {
+  if (req.body && typeof req.body === 'object') {
+    req.body = normalizeObject(req.body);
   }
-
   next();
-};
-
-export default normalizeRequestBody;
+}

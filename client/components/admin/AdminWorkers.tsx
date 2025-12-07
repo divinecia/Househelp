@@ -1,197 +1,169 @@
 import { useState, useEffect } from "react";
-import { Trash2, Edit2, Plus, Loader } from "lucide-react";
-import { getWorkers, deleteWorker } from "@/lib/api-client";
-import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Search, UserCheck, UserX } from "lucide-react";
 
 interface Worker {
   id: string;
-  full_name: string;
+  fullName: string;
   email: string;
-  phone_number: string;
-  type_of_work: string;
-  status: "active" | "inactive" | "suspended";
-  created_at: string;
+  phoneNumber: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+  skills: string[];
 }
 
 export default function AdminWorkers() {
   const [workers, setWorkers] = useState<Worker[]>([]);
-  const [showForm, setShowForm] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phoneNumber: "",
-    typeOfWork: "",
-  });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchWorkers();
   }, []);
 
   const fetchWorkers = async () => {
-    setIsLoading(true);
     try {
-      const response = await getWorkers();
-      if (response.success && Array.isArray(response.data)) {
-        setWorkers(response.data);
-      } else {
-        console.error("Invalid response data format");
-        setWorkers([]);
-      }
+      // TODO: Replace with actual API call
+      setWorkers([
+        {
+          id: "1",
+          fullName: "John Doe",
+          email: "john@example.com",
+          phoneNumber: "+250123456789",
+          status: "approved",
+          createdAt: "2024-01-15",
+          skills: ["Cleaning", "Cooking"],
+        },
+        {
+          id: "2",
+          fullName: "Jane Smith",
+          email: "jane@example.com",
+          phoneNumber: "+250987654321",
+          status: "pending",
+          createdAt: "2024-01-20",
+          skills: ["Childcare", "Elderly Care"],
+        },
+      ]);
     } catch (error) {
-      toast.error("Failed to fetch workers");
-      console.error(error);
+      console.error("Failed to fetch workers:", error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleAddWorker = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.info("Worker registration is handled through /worker/register page");
-    setShowForm(false);
-    setFormData({ fullName: "", email: "", phoneNumber: "", typeOfWork: "" });
+  const handleStatusUpdate = async (workerId: string, status: "approved" | "rejected") => {
+    try {
+      // TODO: Replace with actual API call
+      setWorkers(workers.map(worker => 
+        worker.id === workerId ? { ...worker, status } : worker
+      ));
+    } catch (error) {
+      console.error("Failed to update worker status:", error);
+    }
   };
 
-  const handleDeleteWorker = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this worker?")) return;
+  const filteredWorkers = workers.filter(worker =>
+    worker.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    worker.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-    try {
-      const response = await deleteWorker(id);
-      if (response.success) {
-        toast.success("Worker deleted successfully");
-        setWorkers(workers.filter((w) => w.id !== id));
-      } else {
-        toast.error(response.error || "Failed to delete worker");
-      }
-    } catch (error) {
-      toast.error("Error deleting worker");
-      console.error(error);
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "approved":
+        return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
+      case "pending":
+        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+      case "rejected":
+        return <Badge className="bg-red-100 text-red-800">Rejected</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Add Worker Button */}
-      <button
-        onClick={() => setShowForm(!showForm)}
-        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-      >
-        <Plus size={18} />
-        Add New Worker
-      </button>
-
-      {/* Form */}
-      {showForm && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Add New Worker</h3>
-          <form onSubmit={handleAddWorker} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="text"
-              placeholder="Full Name"
-              value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              required
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              required
-            />
-            <input
-              type="tel"
-              placeholder="Phone Number"
-              value={formData.phoneNumber}
-              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-            <input
-              type="text"
-              placeholder="Type of Work"
-              value={formData.typeOfWork}
-              onChange={(e) => setFormData({ ...formData, typeOfWork: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-            <button
-              type="submit"
-              className="md:col-span-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              Add Worker
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* Workers Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          {isLoading ? (
-            <div className="p-6 flex items-center justify-center gap-2 text-muted-foreground">
-              <Loader size={20} className="animate-spin" />
-              <span>Loading workers...</span>
+      <Card>
+        <CardHeader>
+          <CardTitle>Worker Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-between items-center mb-6">
+            <div className="relative w-96">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                type="text"
+                placeholder="Search workers..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
-          ) : workers.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground">No workers found</div>
+          </div>
+
+          {loading ? (
+            <p className="text-center py-8">Loading workers...</p>
           ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Name</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Email</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Phone</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Type of Work</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Status</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Joined</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {workers.map((worker) => (
-                  <tr key={worker.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-foreground font-medium">{worker.full_name}</td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">{worker.email}</td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">{worker.phone_number}</td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">{worker.type_of_work}</td>
-                    <td className="px-6 py-4 text-sm">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        worker.status === 'active' ? 'bg-green-100 text-green-700' :
-                        worker.status === 'inactive' ? 'bg-gray-100 text-gray-700' :
-                        'bg-red-100 text-red-700'
-                      }`}>
-                        {worker.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {new Date(worker.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <div className="flex gap-2">
-                        <button
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteWorker(worker.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Skills</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredWorkers.map((worker) => (
+                  <TableRow key={worker.id}>
+                    <TableCell className="font-medium">{worker.fullName}</TableCell>
+                    <TableCell>{worker.email}</TableCell>
+                    <TableCell>{worker.phoneNumber}</TableCell>
+                    <TableCell>{getStatusBadge(worker.status)}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {worker.skills.map((skill, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {skill}
+                          </Badge>
+                        ))}
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                    <TableCell>
+                      {worker.status === "pending" && (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleStatusUpdate(worker.id, "approved")}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <UserCheck className="h-4 w-4 mr-1" />
+                            Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleStatusUpdate(worker.id, "rejected")}
+                            className="border-red-300 text-red-600 hover:bg-red-50"
+                          >
+                            <UserX className="h-4 w-4 mr-1" />
+                            Reject
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

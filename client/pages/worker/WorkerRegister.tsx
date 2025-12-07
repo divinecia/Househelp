@@ -12,12 +12,29 @@ import {
   getInsuranceCompanies,
 } from "@/lib/api-client";
 import { toast } from "sonner";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { validateRwandaID, parseRwandaID } from "@/lib/rwandaId";
 
 export default function WorkerRegister() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<Partial<WorkerData>>({
+    fullName: "",
+    email: "",
+    password: "",
+    dateOfBirth: "",
+    gender: "",
+    maritalStatus: "",
+    address: "",
+    phoneNumber: "",
+    nationalId: "",
+    experience: "",
+    expectedWages: "",
+    workingHoursAndDays: "",
+    educationQualification: "",
+    emergencyName: "",
+    emergencyContact: "",
+    bankAccountNumber: "",
+    accountHolder: "",
     termsAccepted: false,
   });
   const [languages, setLanguages] = useState<
@@ -61,11 +78,12 @@ export default function WorkerRegister() {
     Array<{ id: string; name: string }>
   >([
     { id: '1', name: 'Radiant Insurance' },
-    { id: '2', name: 'Prime Insurance' },
-    { id: '3', name: 'SONARWA Insurance' },
+    { id: '2', name: 'MInsurance' },
+    { id: '3', name: 'MMI Insurance' },
     { id: '4', name: 'Other' }
   ]);
   const [loadingOptions, setLoadingOptions] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -90,12 +108,45 @@ export default function WorkerRegister() {
     e: React.ChangeEvent<HTMLInputElement>,
     fieldName: string,
   ) => {
-    if (e.target.files && e.target.files[0]) {
-      const fileName = e.target.files[0].name;
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors((prev) => ({
+          ...prev,
+          [fieldName]: "File size must be less than 5MB",
+        }));
+        return;
+      }
+      
+      // Validate file type
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'image/jpeg',
+        'image/png'
+      ];
+      
+      if (!allowedTypes.includes(file.type)) {
+        setErrors((prev) => ({
+          ...prev,
+          [fieldName]: "Only PDF, DOC, DOCX, JPG, and PNG files are allowed",
+        }));
+        return;
+      }
+      
       setFormData((prev) => ({
         ...prev,
-        [fieldName]: fileName,
+        [fieldName]: file.name,
       }));
+      
+      // Clear any previous errors for this field
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
     }
   };
 
@@ -160,14 +211,30 @@ export default function WorkerRegister() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
+    
+    // Personal Information
     if (!formData.fullName) newErrors.fullName = "Full name is required";
-    if (!formData.dateOfBirth)
+    if (!formData.dateOfBirth) {
       newErrors.dateOfBirth = "Date of birth is required";
+    } else {
+      // Validate age requirement (18+)
+      const birthDate = new Date(formData.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      
+      if (age < 18 || (age === 18 && monthDiff < 0)) {
+        newErrors.dateOfBirth = "You must be at least 18 years old";
+      }
+    }
     if (!formData.email) newErrors.email = "Email is required";
     if (!formData.password || formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
     if (!formData.phoneNumber)
       newErrors.phoneNumber = "Phone number is required";
+    if (!formData.gender) newErrors.gender = "Gender is required";
+    if (!formData.maritalStatus) newErrors.maritalStatus = "Marital status is required";
+    if (!formData.address) newErrors.address = "Address is required";
     if (!formData.nationalId) {
       newErrors.nationalId = "National ID is required";
     } else {
@@ -181,8 +248,24 @@ export default function WorkerRegister() {
         }
       }
     }
+    
+    // Work Information
+    if (!formData.experience) newErrors.experience = "Experience is required";
+    if (!formData.expectedWages) newErrors.expectedWages = "Expected wages are required";
+    if (!formData.workingHoursAndDays) newErrors.workingHoursAndDays = "Working hours and days are required";
+    
+    // Emergency Contact
+    if (!formData.emergencyName) newErrors.emergencyName = "Emergency contact name is required";
+    if (!formData.emergencyContact) newErrors.emergencyContact = "Emergency contact number is required";
+    
+    // Bank Information
+    if (!formData.bankAccountNumber) newErrors.bankAccountNumber = "Bank account number is required";
+    if (!formData.accountHolder) newErrors.accountHolder = "Account holder name is required";
+    
+    // Terms and Conditions
     if (!formData.termsAccepted)
       newErrors.termsAccepted = "You must accept the terms and conditions";
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -193,6 +276,8 @@ export default function WorkerRegister() {
       toast.error("Please fix the errors above");
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       const dataToSubmit = {
@@ -225,20 +310,18 @@ export default function WorkerRegister() {
         termsAccepted: formData.termsAccepted,
       };
 
-      // Call API to register (replaces insecure localStorage registration)
-      const user = await registerUser("worker", dataToSubmit as WorkerData);
+      await registerUser("worker", dataToSubmit as WorkerData);
 
-      if (user) {
-        toast.success("Registration successful! Redirecting to login...");
-        setTimeout(() => {
-          navigate("/worker/login");
-        }, 1000);
-      }
+      toast.success("Registration successful! Redirecting to login...");
+      setTimeout(() => {
+        navigate("/worker/login");
+      }, 1500);
     } catch (error) {
-      const errorMsg =
-        error instanceof Error ? error.message : "Registration failed";
+      const errorMsg = error instanceof Error ? error.message : "Registration failed";
       toast.error(errorMsg);
       console.error("Registration failed:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -954,10 +1037,17 @@ export default function WorkerRegister() {
             <div className="flex gap-4">
               <button
                 type="submit"
-                disabled={false}
-                className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+                disabled={isSubmitting || loadingOptions}
+                className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {"Complete Registration"}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  "Complete Registration"
+                )}
               </button>
               <button
                 type="button"
@@ -974,4 +1064,3 @@ export default function WorkerRegister() {
     </div>
   );
 }
-

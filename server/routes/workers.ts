@@ -3,58 +3,91 @@ import { supabase } from "../lib/supabase";
 
 const router = Router();
 
-// Get all workers with filters
+// Get all workers (admin only). Workers can fetch their own record.
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const { typeOfWork, type_of_work, status, limit = 50, offset = 0 } = req.query;
-    let query = supabase.from("workers").select("*");
+    const profile = (req as any).userProfile;
+    const role = profile?.role;
 
-    // Accept both camelCase and snake_case for type_of_work
-    const workType = typeOfWork || type_of_work;
-    if (workType) {
-      query = query.eq("type_of_work", workType);
+    if (role === "worker") {
+      const { data, error } = await supabase
+        .from("workers")
+        .select("*")
+        .eq("user_id", profile.user_id)
+        .single();
+
+      if (error) throw new Error(error.message);
+
+      return res.json({ success: true, data: data ? [data] : [] });
     }
 
-    if (status) {
-      query = query.eq("status", status);
+    if (role !== "admin") {
+      return res.status(403).json({ success: false, error: "Forbidden" });
     }
 
-    const { data, error, count } = await query
-      .order("created_at", { ascending: false })
-      .range(parseInt(offset as string), parseInt(offset as string) + parseInt(limit as string) - 1);
+    const { data: workers, error } = await supabase
+      .from("workers")
+      .select("*");
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
 
-    return res.json({ success: true, data, total: count });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    return res.json({
+      success: true,
+      data: workers || []
+    });
+  } catch (error) {
+    console.error("Get workers error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to get workers"
+    });
   }
 });
 
-// Get single worker
+// Get worker by ID
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { data, error } = await supabase.from("workers").select("*").eq("id", id).single();
+    const profile = (req as any).userProfile;
+    const role = profile?.role;
 
-    if (error) throw new Error(error.message);
+    const { data: worker, error } = await (supabase as any)
+      .from("workers")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-    return res.json({ success: true, data });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
-  }
-});
+    if (error) {
+      throw new Error(error.message);
+    }
 
-// Create worker
-router.post("/", async (req: Request, res: Response) => {
-  try {
-    const { data, error } = await supabase.from("workers").insert([req.body]).select().single();
+    if (!worker) {
+      return res.status(404).json({
+        success: false,
+        error: "Worker not found"
+      });
+    }
 
-    if (error) throw new Error(error.message);
+    if (role === "worker" && worker.user_id !== profile.user_id) {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
 
-    return res.status(201).json({ success: true, data });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    if (role !== "admin" && role !== "worker") {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
+
+    return res.json({
+      success: true,
+      data: worker
+    });
+  } catch (error) {
+    console.error("Get worker error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to get worker"
+    });
   }
 });
 
@@ -62,18 +95,48 @@ router.post("/", async (req: Request, res: Response) => {
 router.put("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { data, error } = await supabase
+    const updateData = req.body;
+    const profile = (req as any).userProfile;
+    const role = profile?.role;
+
+    if (role === "worker") {
+      const { data: record } = await (supabase as any)
+        .from("workers")
+        .select("user_id")
+        .eq("id", id)
+        .single();
+      if (!record || (record as any).user_id !== profile.user_id) {
+        return res.status(403).json({ success: false, error: "Forbidden" });
+      }
+    } else if (role !== "admin") {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
+
+    const { data: worker, error } = await (supabase as any)
       .from("workers")
-      .update(req.body)
+      .update({
+        ...updateData,
+        updated_at: new Date().toISOString()
+      })
       .eq("id", id)
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
 
-    return res.json({ success: true, data });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    return res.json({
+      success: true,
+      data: worker,
+      message: "Worker updated successfully"
+    });
+  } catch (error) {
+    console.error("Update worker error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update worker"
+    });
   }
 });
 
@@ -81,33 +144,32 @@ router.put("/:id", async (req: Request, res: Response) => {
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { error } = await supabase.from("workers").delete().eq("id", id);
+    const profile = (req as any).userProfile;
+    const role = profile?.role;
 
-    if (error) throw new Error(error.message);
-
-    return res.json({ success: true, message: "Worker deleted successfully" });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Search workers by skills or location
-router.get("/search/advanced", async (req: Request, res: Response) => {
-  try {
-    const { skill, location: _location, rate: _rate } = req.query;
-    let query = supabase.from("workers").select("*");
-
-    if (skill) {
-      query = query.or(`type_of_work.ilike.%${skill}%,language_proficiency.ilike.%${skill}%`);
+    if (role !== "admin") {
+      return res.status(403).json({ success: false, error: "Forbidden" });
     }
 
-    const { data, error } = await query.limit(20);
+    const { error } = await supabase
+      .from("workers")
+      .delete()
+      .eq("id", id);
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
 
-    return res.json({ success: true, data });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    return res.json({
+      success: true,
+      message: "Worker deleted successfully"
+    });
+  } catch (error) {
+    console.error("Delete worker error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete worker"
+    });
   }
 });
 

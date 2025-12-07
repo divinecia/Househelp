@@ -1,29 +1,18 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import { supabase } from "./lib/supabase";
-import { handleDemo } from "./routes/demo";
-import authRoutes from "./routes/auth";
-import homeownerRoutes from "./routes/homeowners";
-import workerRoutes from "./routes/workers";
-import bookingRoutes from "./routes/bookings";
-import paymentRoutes from "./routes/payment";
-import trainingRoutes from "./routes/trainings";
-import reportRoutes from "./routes/reports";
-import serviceRoutes from "./routes/services";
-import optionsRoutes from "./routes/options";
-import reviewRoutes from "./routes/reviews";
-import messageRoutes from "./routes/messages";
-import notificationRoutes from "./routes/notifications";
-import applicationRoutes from "./routes/applications";
-import disputeRoutes from "./routes/disputes";
-import favoriteRoutes from "./routes/favorites";
-import availabilityRoutes from "./routes/availability";
-import documentRoutes from "./routes/documents";
-import withdrawalRoutes from "./routes/withdrawals";
-import normalizeRequestBody from "./middleware/normalize-request";
-// import { verifyToken } from "./middleware/auth";
 import rateLimit from "express-rate-limit";
+import normalizeRequestBody from "./middleware/normalize-request";
+import optionsRoutes from "./routes/options";
+import authRoutes from "./routes/auth";
+import workersRoutes from "./routes/workers";
+import { requireAuth } from "./middleware/require-auth";
+import homeownersRoutes from "./routes/homeowners";
+import bookingsRoutes from "./routes/bookings";
+import paymentsRoutes from "./routes/payments";
+import servicesRoutes from "./routes/services";
+import trainingsRoutes from "./routes/trainings";
+import reportsRoutes from "./routes/reports";
 
 export function createServer() {
   const app = express();
@@ -31,17 +20,17 @@ export function createServer() {
   // Add environment validation
   const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'];
   const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-  
+
   if (missingVars.length > 0) {
     console.error(`Missing required environment variables: ${missingVars.join(', ')}`);
     process.exit(1);
   }
 
-  // Rate limiter for authentication endpoints
-  const authLimiter = rateLimit({
+  // Rate limiter for API endpoints
+  const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // limit each IP to 5 requests per windowMs
-    message: 'Too many authentication attempts, please try again later'
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later'
   });
 
   // Middleware
@@ -51,8 +40,8 @@ export function createServer() {
     process.env.NODE_ENV === "development" || process.env.NODE_ENV === "dev";
 
   const corsOptions = {
-    origin: isDevelopment 
-      ? ['http://localhost:5173', 'http://localhost:3000'] 
+    origin: isDevelopment
+      ? ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5000']
       : process.env.ALLOWED_ORIGINS?.split(',') || ['https://yourdomain.com'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -67,70 +56,46 @@ export function createServer() {
   // Normalize request body from camelCase to snake_case
   app.use(normalizeRequestBody);
 
-  // Apply rate limiter to auth routes
-  app.use('/api/auth', authLimiter);
+  // Apply rate limiter to all API routes
+  app.use('/api', apiLimiter);
 
   // Health check routes
   app.get("/api/ping", (_req, res) => {
-    const ping = process.env.PING_MESSAGE ?? "ping";
+    const ping = process.env.PING_MESSAGE ?? "pong";
     res.json({ message: ping });
   });
 
-  // Database health check endpoint
-  app.get("/api/health/db", async (_req, res) => {
-    try {
-      // Test database connection by querying a system table
-      const { data, error } = await supabase
-        .from('pg_tables')
-        .select('tablename')
-        .eq('schemaname', 'public')
-        .limit(1);
-
-      if (error) {
-        return res.status(500).json({
-          status: 'error',
-          message: 'Database connection failed',
-          error: error.message
-        });
-      }
-
-      res.json({
-        status: 'healthy',
-        message: 'Database connection successful',
-        tables_count: data?.length || 0
-      });
-    } catch (error: any) {
-      res.status(500).json({
-        status: 'error',
-        message: 'Database connection test failed',
-        error: error.message
-      });
-    }
-  });
-
-  app.get("/api/demo", handleDemo);
-
-  // Auth routes
-  app.use("/api/auth", authRoutes);
-
-  // API routes
-  app.use("/api/homeowners", homeownerRoutes);
-  app.use("/api/workers", workerRoutes);
-  app.use("/api/bookings", bookingRoutes);
-  app.use("/api/payments", paymentRoutes);
-  app.use("/api/trainings", trainingRoutes);
-  app.use("/api/reports", reportRoutes);
-  app.use("/api/services", serviceRoutes);
+  // Routes
   app.use("/api/options", optionsRoutes);
-  app.use("/api/reviews", reviewRoutes);
-  app.use("/api/messages", messageRoutes);
-  app.use("/api/notifications", notificationRoutes);
-  app.use("/api/applications", applicationRoutes);
-  app.use("/api/disputes", disputeRoutes);
-  app.use("/api/favorites", favoriteRoutes);
-  app.use("/api/availability", availabilityRoutes);
-  app.use("/api/documents", documentRoutes);
-  app.use("/api/withdrawals", withdrawalRoutes);
+  app.use("/api/auth", authRoutes);  
+  
+  // Protected routes (require Supabase auth token)
+  app.use("/api/workers", requireAuth, workersRoutes);
+  app.use("/api/homeowners", requireAuth, homeownersRoutes);
+  app.use("/api/bookings", requireAuth, bookingsRoutes);
+  app.use("/api/payments", requireAuth, paymentsRoutes);
+  app.use("/api/services", requireAuth, servicesRoutes);
+  app.use("/api/trainings", requireAuth, trainingsRoutes);
+  app.use("/api/reports", requireAuth, reportsRoutes);
+
+  // Error handling middleware
+  app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    console.error('Server error:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: err.message
+    });
+  });
 
   return app;
 }
+
+// Start server if this file is run directly
+const app = createServer();
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+});

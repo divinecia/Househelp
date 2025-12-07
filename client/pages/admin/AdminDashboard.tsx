@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getUser, logoutUser, isAuthenticated } from "@/lib/auth";
+import { getUser, logoutUser, isAuthenticatedAsync } from "@/lib/auth";
 import type { AdminData } from "@/lib/auth";
 import {
   Users,
@@ -32,7 +32,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const isAuth = await isAuthenticated("admin");
+      const isAuth = await isAuthenticatedAsync("admin");
       if (!isAuth) {
         navigate("/admin/login");
         return;
@@ -40,8 +40,16 @@ export default function AdminDashboard() {
 
       try {
         const userData = await getUser("admin");
-        if (userData) {
-          setUser(userData as AdminData);
+        if (userData && userData.profile) {
+          const adminData: AdminData = {
+            fullName: userData.profile.full_name,
+            contactNumber: '',
+            gender: '',
+            email: userData.user?.email || '',
+            password: '',
+            termsAccepted: true
+          };
+          setUser(adminData);
         } else {
           navigate("/admin/login");
         }

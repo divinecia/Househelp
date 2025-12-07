@@ -1,95 +1,139 @@
 import { Router, Request, Response } from "express";
 import { supabase } from "../lib/supabase";
-import { sendAdminReportEmail } from "../services/email";
+import type { Database } from "../../shared/types";
 
 const router = Router();
 
+type ReportUpdate = Database['public']['Tables']['reports']['Update'];
+
 // Get all reports
-router.get("/", async (req: Request, res: Response) => {
+router.get("/", async (_req: Request, res: Response) => {
   try {
-    const { type, status, limit = 50, offset = 0 } = req.query;
-    let query = supabase.from("reports").select("*");
+    const { data: reports, error } = await supabase
+      .from("reports")
+      .select("*");
 
-    if (type) {
-      query = query.eq("report_type", type);
+    if (error) {
+      throw new Error(error.message);
     }
 
-    if (status) {
-      query = query.eq("status", status);
-    }
-
-    const { data, error, count } = await query
-      .order("created_at", { ascending: false })
-      .range(parseInt(offset as string), parseInt(offset as string) + parseInt(limit as string) - 1);
-
-    if (error) throw new Error(error.message);
-
-    return res.json({ success: true, data, total: count });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    return res.json({
+      success: true,
+      data: reports || []
+    });
+  } catch (error) {
+    console.error("Get reports error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to get reports"
+    });
   }
 });
 
-// Get single report
+// Get report by ID
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { data, error } = await supabase.from("reports").select("*").eq("id", id).single();
 
-    if (error) throw new Error(error.message);
+    const { data: report, error } = await supabase
+      .from("reports")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-    return res.json({ success: true, data });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        error: "Report not found"
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: report
+    });
+  } catch (error) {
+    console.error("Get report error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to get report"
+    });
   }
 });
 
 // Create report
 router.post("/", async (req: Request, res: Response) => {
   try {
-    const { data, error } = await supabase.from("reports").insert([req.body]).select().single();
+    const reportData = req.body;
 
-    if (error) throw new Error(error.message);
+    const { data: report, error } = await supabase
+      .from("reports")
+      .insert({
+        ...reportData,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
 
-    // Send admin notification email
-    try {
-      await sendAdminReportEmail(
-        req.body.issue_type || req.body.type || "General Issue",
-        req.body.reporter_email || "unknown@email.com",
-        req.body.reporter_name || "Unknown User",
-        req.body.description || req.body.title || "No description provided",
-        {
-          "Report ID": data.id,
-          "Created At": data.created_at,
-          "Status": data.status || "pending",
-        },
-      );
-    } catch (emailError) {
-      console.error("Failed to send admin notification email:", emailError);
+    if (error) {
+      throw new Error(error.message);
     }
 
-    return res.status(201).json({ success: true, data });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    return res.json({
+      success: true,
+      data: report,
+      message: "Report created successfully"
+    });
+  } catch (error) {
+    console.error("Create report error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to create report"
+    });
   }
 });
 
-// Update report status
+// Update report
 router.put("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { data, error } = await supabase
+    const updateData = req.body;
+
+    const updatePayload: ReportUpdate = {
+      title: updateData.title,
+      description: updateData.description,
+      type: updateData.type,
+      status: updateData.status,
+      updated_at: new Date().toISOString()
+    };
+
+    const { data: report, error } = await (supabase as any)
       .from("reports")
-      .update(req.body)
+      .update(updatePayload)
       .eq("id", id)
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
 
-    return res.json({ success: true, data });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    return res.json({
+      success: true,
+      data: report,
+      message: "Report updated successfully"
+    });
+  } catch (error) {
+    console.error("Update report error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update report"
+    });
   }
 });
 
@@ -97,27 +141,26 @@ router.put("/:id", async (req: Request, res: Response) => {
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { error } = await supabase.from("reports").delete().eq("id", id);
 
-    if (error) throw new Error(error.message);
+    const { error } = await supabase
+      .from("reports")
+      .delete()
+      .eq("id", id);
 
-    return res.json({ success: true, message: "Report deleted successfully" });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
-  }
-});
+    if (error) {
+      throw new Error(error.message);
+    }
 
-// Get reports for specific user
-router.get("/user/:user_id", async (req: Request, res: Response) => {
-  try {
-    const { user_id } = req.params;
-    const { data, error } = await supabase.from("reports").select("*").eq("user_id", user_id);
-
-    if (error) throw new Error(error.message);
-
-    return res.json({ success: true, data });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    return res.json({
+      success: true,
+      message: "Report deleted successfully"
+    });
+  } catch (error) {
+    console.error("Delete report error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete report"
+    });
   }
 });
 

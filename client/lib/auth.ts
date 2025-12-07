@@ -1,3 +1,6 @@
+import { supabase } from "./supabase";
+import { logoutUserSupabase, getCurrentUser as getCurrentUserSupabase } from "./supabase-auth";
+
 export interface WorkerData {
   fullName: string;
   dateOfBirth: string;
@@ -6,9 +9,11 @@ export interface WorkerData {
   password: string;
   phoneNumber: string;
   maritalStatus: string;
+  address?: string;
   nationalId: string;
   criminalRecord: string;
   typeOfWork: string;
+  experience?: string;
   workExperience: string;
   expectedWages: string;
   workingHoursAndDays: string;
@@ -36,7 +41,7 @@ export interface HomeownerData {
   state?: string;
   postalCode?: string;
   typeOfResidence?: string;
-  numberOfFamilyMembers?: string;
+  numberOfFamilyMembers?: string | number;
   homeComposition?: {
     adults: boolean;
     children: boolean;
@@ -48,7 +53,7 @@ export interface HomeownerData {
   workerInfo?: string;
   specificDuties?: string;
   workingHoursAndSchedule?: string;
-  numberOfWorkersNeeded?: string;
+  numberOfWorkersNeeded?: string | number;
   preferredGender?: string;
   languagePreference?: string;
   wagesOffered?: string;
@@ -71,174 +76,98 @@ export interface AdminData {
   gender: string;
   email: string;
   password: string;
+  termsAccepted: boolean;
 }
 
 export type UserData = WorkerData | HomeownerData | AdminData;
 
-// Get user from API (replaces insecure localStorage usage)
-export const getUser = async (role: string) => {
-  const token = sessionStorage.getItem("auth_token");
-  if (!token) return null;
-
-  try {
-    const response = await fetch("/api/auth/user", {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      }
-    });
-
-    if (response.ok) {
-      const userData = await response.json();
-      if (userData.role === role) {
-        return userData;
-      }
-    }
-    return null;
-  } catch (error) {
-    console.error("Failed to fetch user:", error);
-    return null;
-  }
-};
-
-// Register user via API only (removes insecure localStorage registration)
 export const registerUser = async (role: string, data: UserData) => {
-  try {
-    const response = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ...data,
-        role,
-      }),
-    });
+  const response = await fetch("/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...data, role }),
+  });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Registration failed");
-    }
-
-    const result = await response.json();
-    return result.data;
-  } catch (error) {
-    console.error("API registration error:", error);
-    throw error;
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || "Registration failed");
   }
+
+  const result = await response.json();
+  return result.data;
 };
 
-// Login user via API only (removes insecure localStorage login)
-export const loginUser = async (role: string, email: string, password: string) => {
-  try {
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        password,
-        role,
-      }),
-    });
+export const loginUser = async (_role: string, email: string, password: string) => {
+  const response = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Login failed");
-    }
-
-    const result = await response.json();
-
-    // Store tokens securely - handle both session-based and token-based auth
-    if (result.data?.token) {
-      sessionStorage.setItem("auth_token", result.data.token);
-
-      if (result.data.user) {
-        sessionStorage.setItem("user_info", JSON.stringify({
-          id: result.data.user.id,
-          email: result.data.user.email,
-          role: result.data.user.role || role,
-          fullName: result.data.user.fullName
-        }));
-      }
-    } else if (result.data?.session) {
-      // Legacy support for session-based auth
-      sessionStorage.setItem("auth_token", result.data.session.access_token);
-      sessionStorage.setItem("refresh_token", result.data.session.refresh_token || "");
-
-      if (result.data.user) {
-        sessionStorage.setItem("user_info", JSON.stringify({
-          id: result.data.user.id,
-          email: result.data.user.email,
-          role: result.data.user.role || role
-        }));
-      }
-    }
-
-    return result.data?.user || null;
-  } catch (error) {
-    console.error("API login error:", error);
-    throw error;
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || "Login failed");
   }
+
+  const result = await response.json();
+  const session = result.data?.session;
+  const user = result.data?.user;
+  const profile = result.data?.profile;
+
+  if (session?.access_token) {
+    sessionStorage.setItem("auth_token", session.access_token);
+    if (session.refresh_token) {
+      sessionStorage.setItem("refresh_token", session.refresh_token);
+    }
+  }
+
+  if (user) {
+    sessionStorage.setItem("user_info", JSON.stringify({
+      id: user.id,
+      email: user.email,
+      role: profile?.role,
+      fullName: profile?.full_name,
+    }));
+  }
+
+  // Mirror session into Supabase client for downstream requests
+  if (session?.access_token) {
+    await supabase.auth.setSession({
+      access_token: session.access_token,
+      refresh_token: session.refresh_token || "",
+    });
+  }
+
+  return user || null;
 };
 
-// Logout user (clear all auth data)
 export const logoutUser = async () => {
   try {
-    const token = sessionStorage.getItem("auth_token");
-    
-    // Call API logout if token exists
-    if (token) {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-    }
-  } catch (error) {
-    console.error("Logout API error:", error);
+    await logoutUserSupabase();
   } finally {
-    // Always clear local storage
     sessionStorage.removeItem("auth_token");
     sessionStorage.removeItem("refresh_token");
     sessionStorage.removeItem("user_info");
   }
 };
 
-// Check if user is authenticated via API
-export const isAuthenticated = async (role?: string): Promise<boolean> => {
-  const token = sessionStorage.getItem("auth_token");
-  if (!token) return false;
+export const getUser = async (role?: string) => {
+  const { user, profile } = await getCurrentUserSupabase();
+  if (!user) return null;
+  if (role && profile?.role !== role) return null;
+  return { user, profile };
+};
 
-  try {
-    const response = await fetch("/api/auth/verify", {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      }
-    });
+export const isAuthenticated = (_role?: string): boolean => {
+  const token = sessionStorage.getItem("auth_token") || sessionStorage.getItem("access_token");
+  return Boolean(token);
+};
 
-    if (response.ok) {
-      const result = await response.json();
-
-      // Handle both response formats
-      const userData = result.data?.user || result;
-
-      // If role is specified, check if it matches
-      if (role && userData.role !== role) {
-        return false;
-      }
-
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.error("Auth verification error:", error);
-    return false;
-  }
+export const isAuthenticatedAsync = async (role?: string): Promise<boolean> => {
+  const { data } = await supabase.auth.getSession();
+  const user = data.session?.user;
+  if (!user) return false;
+  if (!role) return true;
+  const { profile } = await getCurrentUserSupabase();
+  return profile?.role === role;
 };

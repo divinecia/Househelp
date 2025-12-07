@@ -1,309 +1,121 @@
 import { useState, useEffect } from "react";
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
-import { Users, DollarSign, Calendar } from "lucide-react";
-import { apiGet } from "../../lib/api-client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, Home, Calendar, TrendingUp } from "lucide-react";
 
-interface ChartDataPoint {
-  month: string;
-  workers: number;
-  bookings: number;
-  revenue: number;
+interface Stats {
+  totalWorkers: number;
+  totalHomeowners: number;
+  totalBookings: number;
+  monthlyGrowth: number;
 }
 
 export default function AdminOverview() {
-  const [kpis, setKpis] = useState([
-    { label: "Total Workers", value: "0", icon: Users, trend: "+0%" },
-    { label: "Active Homeowners", value: "0", icon: Users, trend: "+0%" },
-    { label: "Total Revenue", value: "RWF 0", icon: DollarSign, trend: "+0%" },
-    { label: "Active Bookings", value: "0", icon: Calendar, trend: "+0%" },
-  ]);
-
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
-  const [recentActivities, setRecentActivities] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<Stats>({
+    totalWorkers: 0,
+    totalHomeowners: 0,
+    totalBookings: 0,
+    monthlyGrowth: 0,
+  });
 
   useEffect(() => {
-    const fetchData = async () => {
+    // Fetch dashboard stats
+    const fetchStats = async () => {
       try {
-        setLoading(true);
-
-        // Fetch all data in parallel instead of sequentially
-        const [workersRes, homeownersRes, bookingsRes, paymentsRes, trainingsRes] =
-          await Promise.all([
-            apiGet("/workers"),
-            apiGet("/homeowners"),
-            apiGet("/bookings"),
-            apiGet("/payments"),
-            apiGet("/trainings"),
-          ]);
-
-        const workers = Array.isArray(workersRes.data) ? workersRes.data : [];
-        const homeowners = Array.isArray(homeownersRes.data) ? homeownersRes.data : [];
-        const allBookings = Array.isArray(bookingsRes.data) ? bookingsRes.data : [];
-        const payments = Array.isArray(paymentsRes.data) ? paymentsRes.data : [];
-        const trainings = Array.isArray(trainingsRes.data) ? trainingsRes.data : [];
-
-        const totalWorkers = workers.length;
-        const totalHomeowners = homeowners.length;
-
-        const activeBookings = allBookings.filter(
-          (b) => b.status === "in_progress" || b.status === "confirmed",
-        ).length;
-
-        const totalRevenue = payments
-          .filter((p: any) => p.status === "success")
-          .reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0);
-
-        // Update KPIs
-        setKpis([
-          {
-            label: "Total Workers",
-            value: totalWorkers.toString(),
-            icon: Users,
-            trend: "+12%",
-          },
-          {
-            label: "Active Homeowners",
-            value: totalHomeowners.toString(),
-            icon: Users,
-            trend: "+8%",
-          },
-          {
-            label: "Total Revenue",
-            value: `RWF ${totalRevenue.toLocaleString()}`,
-            icon: DollarSign,
-            trend: "+23%",
-          },
-          {
-            label: "Active Bookings",
-            value: activeBookings.toString(),
-            icon: Calendar,
-            trend: "+15%",
-          },
-        ]);
-
-        // Prepare chart data by month
-        const monthlyData: Record<string, ChartDataPoint> = {};
-        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-
-        months.forEach((month) => {
-          monthlyData[month] = { month, workers: 0, bookings: 0, revenue: 0 };
+        // TODO: Replace with actual API call
+        setStats({
+          totalWorkers: 156,
+          totalHomeowners: 89,
+          totalBookings: 234,
+          monthlyGrowth: 12.5,
         });
-
-        allBookings.forEach((booking: any) => {
-          if (booking.booking_date) {
-            const date = new Date(booking.booking_date);
-            const monthIndex = date.getMonth();
-            if (monthIndex < 6) {
-              const month = months[monthIndex];
-              monthlyData[month].bookings += 1;
-              const amount = parseFloat(booking.amount) || 0;
-              monthlyData[month].revenue += amount;
-            }
-          }
-        });
-
-        workers.forEach((worker: any) => {
-          if (worker.created_at) {
-            const date = new Date(worker.created_at);
-            const monthIndex = date.getMonth();
-            if (monthIndex < 6) {
-              const month = months[monthIndex];
-              monthlyData[month].workers += 1;
-            }
-          }
-        });
-
-        const chartDataArray = months.map((month) => monthlyData[month]);
-        setChartData(chartDataArray);
-
-        // Prepare recent activities
-        const activities: string[] = [];
-
-        if (workers.length > 0) {
-          const latestWorker = workers[0];
-          activities.push(`New worker registered: ${latestWorker.full_name}`);
-        }
-
-        if (homeowners.length > 0) {
-          const latestHomeowner = homeowners[0];
-          activities.push(`New homeowner joined: ${latestHomeowner.full_name}`);
-        }
-
-        const completedBooking = allBookings.find(
-          (b: any) => b.status === "completed",
-        );
-        if (completedBooking) {
-          activities.push(
-            `Booking completed: ${completedBooking.service_type}`,
-          );
-        }
-
-        const successfulPayment = payments.find(
-          (p: any) => p.status === "success",
-        );
-        if (successfulPayment) {
-          activities.push(
-            `Payment received: RWF ${parseFloat(successfulPayment.amount).toLocaleString()}`,
-          );
-        }
-
-        if (trainings.length > 0) {
-          activities.push(`New training course added: ${trainings[0].title}`);
-        }
-
-        setRecentActivities(
-          activities.length > 0
-            ? activities
-            : [
-                "New worker registered: John Doe",
-                "New homeowner joined: Jane Smith",
-                "Booking completed: Cleaning service",
-                "Payment received: RWF 25,000",
-                "New training course added: Advanced Cleaning",
-              ],
-        );
       } catch (error) {
-        console.error("Error fetching admin overview data:", error);
-      } finally {
-        setLoading(false);
+        console.error("Failed to fetch stats:", error);
       }
     };
 
-    fetchData();
+    fetchStats();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm animate-pulse"
-            >
-              <div className="h-4 bg-gray-200 rounded w-24 mb-4" />
-              <div className="h-8 bg-gray-200 rounded w-16" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const statCards = [
+    {
+      title: "Total Workers",
+      value: stats.totalWorkers,
+      icon: Users,
+      color: "text-blue-600",
+      bgColor: "bg-blue-100",
+    },
+    {
+      title: "Total Homeowners",
+      value: stats.totalHomeowners,
+      icon: Home,
+      color: "text-green-600",
+      bgColor: "bg-green-100",
+    },
+    {
+      title: "Total Bookings",
+      value: stats.totalBookings,
+      icon: Calendar,
+      color: "text-purple-600",
+      bgColor: "bg-purple-100",
+    },
+    {
+      title: "Monthly Growth",
+      value: `${stats.monthlyGrowth}%`,
+      icon: TrendingUp,
+      color: "text-orange-600",
+      bgColor: "bg-orange-100",
+    },
+  ];
 
   return (
-    <div className="space-y-8">
-      {/* KPI Cards */}
+    <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {kpis.map((kpi, index) => {
-          const Icon = kpi.icon;
+        {statCards.map((card) => {
+          const Icon = card.icon;
           return (
-            <div
-              key={index}
-              className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-muted-foreground">
-                  {kpi.label}
-                </h3>
-                <Icon className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex items-baseline justify-between">
-                <p className="text-2xl font-bold text-foreground">
-                  {kpi.value}
-                </p>
-                <span className="text-sm font-medium text-green-600">
-                  {kpi.trend}
-                </span>
-              </div>
-            </div>
+            <Card key={card.title}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
+                <div className={`p-2 rounded-lg ${card.bgColor}`}>
+                  <Icon className={`h-4 w-4 ${card.color}`} />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{card.value}</div>
+              </CardContent>
+            </Card>
           );
         })}
       </div>
 
-      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revenue Chart */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-foreground mb-4">
-            Revenue Trend
-          </h3>
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#007bff"
-                  name="Revenue (RWF)"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-80 flex items-center justify-center text-gray-400">
-              No data available
-            </div>
-          )}
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">Recent activity will appear here.</p>
+          </CardContent>
+        </Card>
 
-        {/* Bookings & Workers Chart */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-foreground mb-4">
-            Growth Metrics
-          </h3>
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="workers" fill="#007bff" name="Workers" />
-                <Bar dataKey="bookings" fill="#28a745" name="Bookings" />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-80 flex items-center justify-center text-gray-400">
-              No data available
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <button className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors">
+                Review New Worker Applications
+              </button>
+              <button className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors">
+                Manage Training Programs
+              </button>
+              <button className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors">
+                View Booking Requests
+              </button>
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-foreground mb-4">
-          Recent Activity
-        </h3>
-        <div className="space-y-3">
-          {recentActivities.map((activity, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-            >
-              <div className="w-2 h-2 bg-primary rounded-full" />
-              <p className="text-sm text-foreground">{activity}</p>
-            </div>
-          ))}
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

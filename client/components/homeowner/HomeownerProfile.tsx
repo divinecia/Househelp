@@ -1,581 +1,423 @@
 import { useState, useEffect } from "react";
-import { User, Save, X, Loader } from "lucide-react";
-import { getUser } from "@/lib/auth";
-import type { HomeownerData } from "@/lib/auth";
-import {
-  getResidenceTypes,
-  getWorkerInfoOptions,
-  getGenders,
-  getPaymentMethods,
-  updateHomeowner,
-  apiGet,
-} from "@/lib/api-client";
-import { toast } from "sonner";
+import { User, Mail, Home, Users, Edit2, Save, X } from "lucide-react";
+
+interface HomeownerProfile {
+  fullName: string;
+  contactNumber: string;
+  email: string;
+  age?: string;
+  homeAddress: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  typeOfResidence?: string;
+  numberOfFamilyMembers?: string;
+  homeComposition?: {
+    adults: boolean;
+    children: boolean;
+    elderly: boolean;
+    pets: boolean;
+  };
+  preferredGender?: string;
+  languagePreference?: string;
+  wagesOffered?: string;
+  specialRequirements?: string;
+}
 
 export default function HomeownerProfile() {
-  const user = getUser("homeowner") as unknown as HomeownerData & { id?: string };
-  const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [residenceTypes, setResidenceTypes] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
-  const [workerInfos, setWorkerInfos] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
-  const [gendersList, setGendersList] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
-  const [paymentModes, setPaymentModes] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
-  const [loadingOptions, setLoadingOptions] = useState(false);
-
-  const [profileData, setProfileData] = useState({
-    age: "32",
-    homeAddress: "KG 123 St, Kigali",
-    typeOfResidence: "apartment",
-    numberOfFamilyMembers: "4",
-    homeComposition: "2 Adults, 2 Children",
-    workerInfo: "Full-time",
-    specificDuties: "Cleaning, Cooking, Childcare",
-    workingHoursAndSchedule: "08:00 - 17:00, Mon-Fri",
-    numberOfWorkersNeeded: "2",
-    preferredGender: "Female",
-    languagePreference: "English, Kinyarwanda",
-    wagesOffered: "50,000 - 100,000 RWF",
-    reasonForHiring: "Household management assistance",
-    specialRequirements: "Must have experience with children",
-    startDateRequired: "2024-02-01",
-    criminalRecord: "Yes, cleared",
-    preferredPaymentMode: "Bank Transfer",
-    bankDetails: "Sample Bank, Account: ****5678",
-    religious: "Christian",
-    smokingDrinkingRestrictions: "No smoking",
-    specificSkillsNeeded: "Childcare, Cooking, Organization",
-  });
-
-  const [tempData, setTempData] = useState(profileData);
+  const [profile, setProfile] = useState<HomeownerProfile | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editedProfile, setEditedProfile] = useState<HomeownerProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const loadData = async () => {
-      if (!user?.id) return;
+    fetchProfile();
+  }, []);
 
-      setIsLoading(true);
-      try {
-        const [residences, workerInfoOpts, genders, payments, homeownerData] =
-          await Promise.all([
-            getResidenceTypes(),
-            getWorkerInfoOptions(),
-            getGenders(),
-            getPaymentMethods(),
-            apiGet(`/homeowners/${user.id}`),
-          ]);
+  const fetchProfile = async () => {
+    try {
+      // TODO: Replace with actual API call
+      const mockProfile: HomeownerProfile = {
+        fullName: "John Doe",
+        contactNumber: "+250 788 111 222",
+        email: "john.doe@example.com",
+        age: "35",
+        homeAddress: "KN 123 St, Kimihurura",
+        city: "Kigali",
+        state: "Kigali City",
+        postalCode: "00100",
+        typeOfResidence: "Apartment",
+        numberOfFamilyMembers: "4",
+        homeComposition: {
+          adults: true,
+          children: true,
+          elderly: false,
+          pets: true
+        },
+        preferredGender: "Any",
+        languagePreference: "English, Kinyarwanda",
+        wagesOffered: "RWF 150,000/month",
+        specialRequirements: "Experience with pets"
+      };
 
-          setResidenceTypes(Array.isArray(residences.data) ? residences.data : []);
-          setWorkerInfos(Array.isArray(workerInfoOpts.data) ? workerInfoOpts.data : []);
-        if (genders.success && Array.isArray(genders.data)) setGendersList(genders.data);
-        if (payments.success && Array.isArray(payments.data)) setPaymentModes(payments.data);
-
-        // Load homeowner profile from database
-        if (homeownerData.success && homeownerData.data) {
-          const dbData = homeownerData.data;
-          const newProfileData = {
-            age: (dbData as any).age || "32",
-            homeAddress: (dbData as any).home_address || "KG 123 St, Kigali",
-            typeOfResidence: (dbData as any).type_of_residence || "apartment",
-            numberOfFamilyMembers: (dbData as any).number_of_family_members || "4",
-            homeComposition: (dbData as any).home_composition || "2 Adults, 2 Children",
-            workerInfo: (dbData as any).worker_info || "Full-time",
-            specificDuties: (dbData as any).specific_duties || "Cleaning, Cooking, Childcare",
-            workingHoursAndSchedule:
-              (dbData as any).working_hours_and_schedule || "08:00 - 17:00, Mon-Fri",
-            numberOfWorkersNeeded: (dbData as any).number_of_workers_needed || "2",
-            preferredGender: (dbData as any).preferred_gender || "Female",
-            languagePreference: (dbData as any).language_preference || "English, Kinyarwanda",
-            wagesOffered: (dbData as any).wages_offered || "50,000 - 100,000 RWF",
-            reasonForHiring: (dbData as any).reason_for_hiring || "Household management assistance",
-            specialRequirements: (dbData as any).special_requirements || "Must have experience with children",
-            startDateRequired: (dbData as any).start_date_required || "2024-02-01",
-            criminalRecord: (dbData as any).criminal_record_required || "Yes, cleared",
-            preferredPaymentMode: (dbData as any).payment_mode || "Bank Transfer",
-            bankDetails: (dbData as any).bank_details || "ABC Bank, Account: ****5678",
-            religious: (dbData as any).religious_preferences || "Christian",
-            smokingDrinkingRestrictions:
-              (dbData as any).smoking_drinking_restrictions || "No smoking",
-            specificSkillsNeeded: (dbData as any).specific_skills_needed || "Childcare, Cooking, Organization",
-          };
-          setProfileData(newProfileData);
-          setTempData(newProfileData);
-        }
-      } catch (error) {
-        console.error("Failed to load profile data:", error);
-        toast.error("Failed to load profile data");
-      } finally {
-        setIsLoading(false);
-        setLoadingOptions(false);
-      }
-    };
-    loadData();
-  }, [user?.id]);
-
-  const handleEdit = () => {
-    setIsEditing(true);
-    setTempData(profileData);
+      setProfile(mockProfile);
+      setEditedProfile(mockProfile);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSave = async () => {
-    if (!user?.id) {
-      toast.error("User not found");
-      return;
-    }
+    if (!editedProfile) return;
 
-    setIsSaving(true);
+    setSaving(true);
     try {
-      const updateData = {
-        age: tempData.age,
-        home_address: tempData.homeAddress,
-        type_of_residence: tempData.typeOfResidence,
-        number_of_family_members: tempData.numberOfFamilyMembers,
-        home_composition: tempData.homeComposition,
-        worker_info: tempData.workerInfo,
-        specific_duties: tempData.specificDuties,
-        working_hours_and_schedule: tempData.workingHoursAndSchedule,
-        number_of_workers_needed: tempData.numberOfWorkersNeeded,
-        preferred_gender: tempData.preferredGender,
-        language_preference: tempData.languagePreference,
-        wages_offered: tempData.wagesOffered,
-        reason_for_hiring: tempData.reasonForHiring,
-        special_requirements: tempData.specialRequirements,
-        start_date_required: tempData.startDateRequired,
-        criminal_record_required: tempData.criminalRecord,
-        payment_mode: tempData.preferredPaymentMode,
-        bank_details: tempData.bankDetails,
-        religious_preferences: tempData.religious,
-        smoking_drinking_restrictions: tempData.smokingDrinkingRestrictions,
-        specific_skills_needed: tempData.specificSkillsNeeded,
-      };
-
-      const response = await updateHomeowner(user.id, updateData);
-      if (response.success) {
-        setProfileData(tempData);
-        setIsEditing(false);
-        toast.success("Profile updated successfully!");
-      } else {
-        toast.error(response.error || "Failed to update profile");
-      }
+      // TODO: Make API call to update profile
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      setProfile(editedProfile);
+      setEditMode(false);
     } catch (error) {
-      console.error("Error saving profile:", error);
-      toast.error("Error saving profile");
+      console.error('Error updating profile:', error);
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
   };
 
   const handleCancel = () => {
-    setTempData(profileData);
-    setIsEditing(false);
+    setEditedProfile(profile);
+    setEditMode(false);
   };
 
-  const handleChange = (field: string, value: string) => {
-    setTempData((prev) => ({ ...prev, [field]: value }));
+  const handleChange = (field: keyof HomeownerProfile, value: any) => {
+    if (editedProfile) {
+      setEditedProfile({ ...editedProfile, [field]: value });
+    }
   };
+
+  const handleCompositionChange = (field: keyof NonNullable<HomeownerProfile['homeComposition']>, value: boolean) => {
+    if (editedProfile?.homeComposition) {
+      setEditedProfile({
+        ...editedProfile,
+        homeComposition: {
+          ...editedProfile.homeComposition,
+          [field]: value
+        }
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (!profile || !editedProfile) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        <p>Profile not found</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Profile Picture Section */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <div className="flex items-center gap-6">
-          <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center border-4 border-primary">
-            <User size={60} className="text-primary" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">
-              {user?.fullName || "Homeowner"}
-            </h2>
-            <p className="text-muted-foreground">Homeowner Profile</p>
-            {!isEditing && (
-              <button
-                onClick={handleEdit}
-                disabled={isLoading}
-                className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
-              >
-                Edit Profile
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Profile Information */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-foreground mb-6">
-          Profile Information
-        </h3>
-
-        {isEditing ? (
-          <form className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Age
-                </label>
-                <input
-                  type="number"
-                  name="age"
-                  value={tempData.age}
-                  onChange={(e) => handleChange("age", e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Home Address
-                </label>
-                <input
-                  type="text"
-                  name="homeAddress"
-                  value={tempData.homeAddress}
-                  onChange={(e) => handleChange("homeAddress", e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Type of Residence
-                </label>
-                <select
-                  name="typeOfResidence"
-                  value={tempData.typeOfResidence}
-                  onChange={(e) =>
-                    handleChange("typeOfResidence", e.target.value)
-                  }
-                  disabled={loadingOptions}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
-                >
-                  <option value="">
-                    {loadingOptions ? "Loading..." : "Select Residence Type"}
-                  </option>
-                  {residenceTypes.map((type) => (
-                    <option key={type.id} value={type.name.toLowerCase()}>
-                      {type.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Number of Family Members
-                </label>
-                <input
-                  type="number"
-                  name="numberOfFamilyMembers"
-                  value={tempData.numberOfFamilyMembers}
-                  onChange={(e) =>
-                    handleChange("numberOfFamilyMembers", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Home Composition
-                </label>
-                <input
-                  type="text"
-                  name="homeComposition"
-                  value={tempData.homeComposition}
-                  onChange={(e) =>
-                    handleChange("homeComposition", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Worker Info
-                </label>
-                <select
-                  name="workerInfo"
-                  value={tempData.workerInfo}
-                  onChange={(e) => handleChange("workerInfo", e.target.value)}
-                  disabled={loadingOptions}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
-                >
-                  <option value="">
-                    {loadingOptions ? "Loading..." : "Select Worker Info"}
-                  </option>
-                  {workerInfos.map((info) => (
-                    <option key={info.id} value={info.name}>
-                      {info.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Specific Duties
-                </label>
-                <textarea
-                  name="specificDuties"
-                  value={tempData.specificDuties}
-                  onChange={(e) =>
-                    handleChange("specificDuties", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  rows={3}
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Working Hours and Schedule
-                </label>
-                <input
-                  type="text"
-                  name="workingHoursAndSchedule"
-                  value={tempData.workingHoursAndSchedule}
-                  onChange={(e) =>
-                    handleChange("workingHoursAndSchedule", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Number of Workers Needed
-                </label>
-                <input
-                  type="number"
-                  name="numberOfWorkersNeeded"
-                  value={tempData.numberOfWorkersNeeded}
-                  onChange={(e) =>
-                    handleChange("numberOfWorkersNeeded", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Preferred Gender
-                </label>
-                <select
-                  name="preferredGender"
-                  value={tempData.preferredGender}
-                  onChange={(e) =>
-                    handleChange("preferredGender", e.target.value)
-                  }
-                  disabled={loadingOptions}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
-                >
-                  <option value="">
-                    {loadingOptions ? "Loading..." : "Select Gender"}
-                  </option>
-                  <option value="No preference">No preference</option>
-                  {gendersList.map((gender) => (
-                    <option key={gender.id} value={gender.name}>
-                      {gender.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Language Preference
-                </label>
-                <input
-                  type="text"
-                  name="languagePreference"
-                  value={tempData.languagePreference}
-                  onChange={(e) =>
-                    handleChange("languagePreference", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Wages Offered
-                </label>
-                <input
-                  type="text"
-                  name="wagesOffered"
-                  value={tempData.wagesOffered}
-                  onChange={(e) => handleChange("wagesOffered", e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Reason for Hiring
-                </label>
-                <input
-                  type="text"
-                  name="reasonForHiring"
-                  value={tempData.reasonForHiring}
-                  onChange={(e) =>
-                    handleChange("reasonForHiring", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Special Requirements
-                </label>
-                <textarea
-                  name="specialRequirements"
-                  value={tempData.specialRequirements}
-                  onChange={(e) =>
-                    handleChange("specialRequirements", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  rows={2}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Start Date Required
-                </label>
-                <input
-                  type="date"
-                  name="startDateRequired"
-                  value={tempData.startDateRequired}
-                  onChange={(e) =>
-                    handleChange("startDateRequired", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Criminal Record
-                </label>
-                <input
-                  type="text"
-                  name="criminalRecord"
-                  value={tempData.criminalRecord}
-                  onChange={(e) =>
-                    handleChange("criminalRecord", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Preferred Payment Mode
-                </label>
-                <select
-                  name="preferredPaymentMode"
-                  value={tempData.preferredPaymentMode}
-                  onChange={(e) =>
-                    handleChange("preferredPaymentMode", e.target.value)
-                  }
-                  disabled={loadingOptions}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
-                >
-                  <option value="">
-                    {loadingOptions ? "Loading..." : "Select Payment Mode"}
-                  </option>
-                  {paymentModes.map((mode) => (
-                    <option key={mode.id} value={mode.name}>
-                      {mode.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Bank Details
-                </label>
-                <input
-                  type="text"
-                  name="bankDetails"
-                  value={tempData.bankDetails}
-                  onChange={(e) => handleChange("bankDetails", e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Religious Preferences
-                </label>
-                <input
-                  type="text"
-                  name="religious"
-                  value={tempData.religious}
-                  onChange={(e) => handleChange("religious", e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Smoking/Drinking Restrictions
-                </label>
-                <input
-                  type="text"
-                  name="smokingDrinkingRestrictions"
-                  value={tempData.smokingDrinkingRestrictions}
-                  onChange={(e) =>
-                    handleChange("smokingDrinkingRestrictions", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Specific Skills Needed
-                </label>
-                <textarea
-                  name="specificSkillsNeeded"
-                  value={tempData.specificSkillsNeeded}
-                  onChange={(e) =>
-                    handleChange("specificSkillsNeeded", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  rows={2}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-6 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={isSaving}
-                className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-              >
-                {isSaving ? <Loader size={18} className="animate-spin" /> : <Save size={18} />}
-                {isSaving ? "Saving..." : "Save Changes"}
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={isSaving}
-                className="flex-1 px-4 py-2 border border-gray-300 text-foreground rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-              >
-                <X size={18} />
-                Cancel
-              </button>
-            </div>
-          </form>
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-900">My Profile</h2>
+        {!editMode ? (
+          <button
+            onClick={() => setEditMode(true)}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            <Edit2 size={16} className="mr-2" />
+            Edit Profile
+          </button>
         ) : (
-          <div className="space-y-4">
-            {Object.entries(profileData).map(([key, value]) => (
-              <div
-                key={key}
-                className="border-b border-gray-200 pb-4 last:border-0"
-              >
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                  {key
-                    .replace(/([A-Z])/g, " $1")
-                    .replace(/^./, (str) => str.toUpperCase())
-                    .trim()}
-                </p>
-                <p className="text-foreground font-medium">{value}</p>
-              </div>
-            ))}
+          <div className="flex gap-2">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400"
+            >
+              <Save size={16} className="mr-2" />
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+            <button
+              onClick={handleCancel}
+              disabled={saving}
+              className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
+            >
+              <X size={16} className="mr-2" />
+              Cancel
+            </button>
           </div>
         )}
+      </div>
+
+      {/* Profile Sections */}
+      <div className="space-y-6">
+        {/* Personal Information */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <User size={20} className="mr-2" />
+            Personal Information
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.fullName}
+                  onChange={(e) => handleChange('fullName', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.fullName}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.age || ''}
+                  onChange={(e) => handleChange('age', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.age || 'N/A'}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Information */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <Mail size={20} className="mr-2" />
+            Contact Information
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <p className="text-gray-900">{profile.email}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              {editMode ? (
+                <input
+                  type="tel"
+                  value={editedProfile.contactNumber}
+                  onChange={(e) => handleChange('contactNumber', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.contactNumber}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Home Information */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <Home size={20} className="mr-2" />
+            Home Information
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Home Address</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.homeAddress}
+                  onChange={(e) => handleChange('homeAddress', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.homeAddress}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.city || ''}
+                  onChange={(e) => handleChange('city', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.city || 'N/A'}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.state || ''}
+                  onChange={(e) => handleChange('state', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.state || 'N/A'}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Type of Residence</label>
+              {editMode ? (
+                <select
+                  value={editedProfile.typeOfResidence || ''}
+                  onChange={(e) => handleChange('typeOfResidence', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select...</option>
+                  <option value="House">House</option>
+                  <option value="Apartment">Apartment</option>
+                  <option value="Villa">Villa</option>
+                  <option value="Other">Other</option>
+                </select>
+              ) : (
+                <p className="text-gray-900">{profile.typeOfResidence || 'N/A'}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.postalCode || ''}
+                  onChange={(e) => handleChange('postalCode', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.postalCode || 'N/A'}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Family Composition */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <Users size={20} className="mr-2" />
+            Family Composition
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Number of Family Members</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.numberOfFamilyMembers || ''}
+                  onChange={(e) => handleChange('numberOfFamilyMembers', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.numberOfFamilyMembers || 'N/A'}</p>
+              )}
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Home Includes:</label>
+              {editMode ? (
+                <div className="flex flex-wrap gap-4">
+                  {['adults', 'children', 'elderly', 'pets'].map((key) => (
+                    <label key={key} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={editedProfile.homeComposition?.[key as keyof typeof editedProfile.homeComposition] || false}
+                        onChange={(e) => handleCompositionChange(key as any, e.target.checked)}
+                        className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700 capitalize">{key}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {profile.homeComposition && Object.entries(profile.homeComposition).map(([key, value]) => (
+                    value && (
+                      <span key={key} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full capitalize">
+                        {key}
+                      </span>
+                    )
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Preferences */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Worker Preferences</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Gender</label>
+              {editMode ? (
+                <select
+                  value={editedProfile.preferredGender || ''}
+                  onChange={(e) => handleChange('preferredGender', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select...</option>
+                  <option value="Any">Any</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              ) : (
+                <p className="text-gray-900">{profile.preferredGender || 'N/A'}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Language Preference</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.languagePreference || ''}
+                  onChange={(e) => handleChange('languagePreference', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.languagePreference || 'N/A'}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Wages Offered</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.wagesOffered || ''}
+                  onChange={(e) => handleChange('wagesOffered', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.wagesOffered || 'N/A'}</p>
+              )}
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Special Requirements</label>
+              {editMode ? (
+                <textarea
+                  value={editedProfile.specialRequirements || ''}
+                  onChange={(e) => handleChange('specialRequirements', e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.specialRequirements || 'N/A'}</p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

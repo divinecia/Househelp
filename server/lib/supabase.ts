@@ -1,27 +1,17 @@
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "../../shared/types";
 
-// Validate environment variables
-const validateEnvVars = () => {
-  const requiredVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'];
-  const missingVars = requiredVars.filter(varName => !process.env[varName]);
-  
-  if (missingVars.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missingVars.join(', ')}. ` +
-      `Please configure these variables before starting the server.`
-    );
-  }
-};
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
-// Validate before creating client
-validateEnvVars();
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Missing Supabase environment variables");
+}
 
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_ANON_KEY!;
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
-
-// Create service role client for admin operations (if service role key is available)
-export const supabaseService = process.env.SUPABASE_SERVICE_ROLE_KEY 
-  ? createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY)
-  : supabase; // Fallback to anon key if service role not available
+// Server-side client with anon key for development
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});

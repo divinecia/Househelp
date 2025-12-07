@@ -13,10 +13,27 @@ import {
   getSmokingDrinkingOptions,
 } from "@/lib/api-client";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 export default function HomeownerRegister() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<Partial<HomeownerData>>({
+    fullName: "",
+    email: "",
+    password: "",
+    contactNumber: "",
+    homeAddress: "",
+    typeOfResidence: "",
+    numberOfFamilyMembers: "",
+    workerInfo: "",
+    numberOfWorkersNeeded: "",
+    specificDuties: "",
+    workingHoursAndSchedule: "",
+    wagesOffered: "",
+    reasonForHiring: "",
+    criminalRecord: "",
+    paymentMode: "",
+    startDateRequired: "",
     homeComposition: {
       adults: false,
       children: false,
@@ -49,6 +66,7 @@ export default function HomeownerRegister() {
     Array<{ id: string; name: string }>
   >([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // State for form submission management
 
   const handleChange = (
@@ -156,6 +174,8 @@ export default function HomeownerRegister() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
+    
+    // Personal Information
     if (!formData.fullName) newErrors.fullName = "Full name is required";
     if (!formData.contactNumber)
       newErrors.contactNumber = "Contact number is required";
@@ -164,8 +184,27 @@ export default function HomeownerRegister() {
       newErrors.password = "Password must be at least 6 characters";
     if (!formData.homeAddress)
       newErrors.homeAddress = "Home address is required";
+    if (!formData.typeOfResidence) newErrors.typeOfResidence = "Residence type is required";
+    if (!formData.numberOfFamilyMembers || Number(formData.numberOfFamilyMembers) < 1)
+      newErrors.numberOfFamilyMembers = "Number of family members is required";
+    
+    // Worker Requirements
+    if (!formData.workerInfo) newErrors.workerInfo = "Worker type is required";
+    if (!formData.numberOfWorkersNeeded || Number(formData.numberOfWorkersNeeded) < 1)
+      newErrors.numberOfWorkersNeeded = "Number of workers needed is required";
+    if (!formData.specificDuties) newErrors.specificDuties = "Specific duties are required";
+    if (!formData.workingHoursAndSchedule) newErrors.workingHoursAndSchedule = "Working hours and schedule are required";
+    if (selectedDays.length === 0) newErrors.selectedDays = "At least one working day must be selected";
+    if (!formData.wagesOffered) newErrors.wagesOffered = "Wages offered are required";
+    if (!formData.startDateRequired) newErrors.startDateRequired = "Start date is required";
+    if (!formData.reasonForHiring) newErrors.reasonForHiring = "Reason for hiring is required";
+    if (!formData.criminalRecord) newErrors.criminalRecord = "Criminal record preference is required";
+    if (!formData.paymentMode) newErrors.paymentMode = "Payment mode is required";
+    
+    // Terms and Conditions
     if (!formData.termsAccepted)
       newErrors.termsAccepted = "You must accept the terms and conditions";
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -176,6 +215,8 @@ export default function HomeownerRegister() {
       toast.error("Please fix the errors above");
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       const dataToSubmit = {
@@ -219,20 +260,18 @@ export default function HomeownerRegister() {
         termsAccepted: formData.termsAccepted || false,
       };
 
-      // Call API to register (replaces insecure localStorage registration)
-      const user = await registerUser("homeowner", dataToSubmit);
+      await registerUser("homeowner", dataToSubmit);
 
-      if (user) {
-        toast.success("Registration successful! Redirecting to login...");
-        setTimeout(() => {
-          navigate("/homeowner/login");
-        }, 1000);
-      }
+      toast.success("Registration successful! Redirecting to login...");
+      setTimeout(() => {
+        navigate("/homeowner/login");
+      }, 1500);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Registration failed";
+      const errorMessage = error instanceof Error ? error.message : "Registration failed";
       toast.error(errorMessage);
       console.error("Registration failed:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1040,10 +1079,17 @@ export default function HomeownerRegister() {
             <div className="flex gap-4">
             <button
               type="submit"
-              disabled={false}
-              className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+              disabled={isSubmitting || loadingOptions}
+              className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              {"Complete Registration"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                "Complete Registration"
+              )}
             </button>
               <button
                 type="button"

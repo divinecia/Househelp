@@ -12,13 +12,19 @@ async function getOptions(tableName: string, fallbackData?: Array<{ id: string; 
       .order("name", { ascending: true });
 
     if (error) throw new Error(error.message);
-    
+
     // If no data from database and fallback exists, use fallback
     if ((!data || data.length === 0) && fallbackData) {
       return { success: true, data: fallbackData };
     }
-    
-    return { success: true, data };
+
+    // Convert id to string for consistency
+    const formattedData = (data || []).map((item: any) => ({
+      id: String(item.id),
+      name: item.name
+    }));
+
+    return { success: true, data: formattedData };
   } catch (error: any) {
     // If database error and fallback exists, use fallback
     if (fallbackData) {
@@ -53,13 +59,29 @@ router.get("/marital-statuses", async (_req: Request, res: Response) => {
 
 // Service Types
 router.get("/service-types", async (_req: Request, res: Response) => {
-  const result = await getOptions("service_types");
+  const fallbackServiceTypes = [
+    { id: "1", name: "Housekeeping" },
+    { id: "2", name: "Cooking" },
+    { id: "3", name: "Childcare" },
+    { id: "4", name: "Elderly Care" },
+    { id: "5", name: "Pet Care" },
+    { id: "6", name: "Gardening" },
+    { id: "7", name: "Laundry" }
+  ];
+  const result = await getOptions("service_types", fallbackServiceTypes);
   return res.json(result);
 });
 
 // Insurance Companies
 router.get("/insurance-companies", async (_req: Request, res: Response) => {
-  const result = await getOptions("insurance_companies");
+  const fallbackInsuranceCompanies = [
+    { id: "1", name: "SONARWA" },
+    { id: "2", name: "SORAS" },
+    { id: "3", name: "Radiant Insurance" },
+    { id: "4", name: "Prime Insurance" },
+    { id: "5", name: "Other" }
+  ];
+  const result = await getOptions("insurance_companies", fallbackInsuranceCompanies);
   return res.json(result);
 });
 
@@ -75,25 +97,53 @@ router.get("/payment-methods", async (_req: Request, res: Response) => {
 
 // Report Issue Types
 router.get("/report-types", async (_req: Request, res: Response) => {
-  const result = await getOptions("report_issue_types");
+  const fallbackReportTypes = [
+    { id: "1", name: "Worker Misconduct" },
+    { id: "2", name: "Safety Issue" },
+    { id: "3", name: "Payment Dispute" },
+    { id: "4", name: "Service Quality" },
+    { id: "5", name: "Other" }
+  ];
+  const result = await getOptions("report_types", fallbackReportTypes);
   return res.json(result);
 });
 
 // Training Categories
 router.get("/training-categories", async (_req: Request, res: Response) => {
-  const result = await getOptions("training_categories");
+  const fallbackTrainingCategories = [
+    { id: "1", name: "Housekeeping & Cleaning" },
+    { id: "2", name: "Cooking & Nutrition" },
+    { id: "3", name: "Childcare & Development" },
+    { id: "4", name: "Elderly Care" },
+    { id: "5", name: "First Aid & Safety" },
+    { id: "6", name: "Professional Development" }
+  ];
+  const result = await getOptions("training_categories", fallbackTrainingCategories);
   return res.json(result);
 });
 
 // Wage Units (Per Hour, Per Day, Per Month)
 router.get("/wage-units", async (_req: Request, res: Response) => {
-  const result = await getOptions("wage_units");
+  const fallbackWageUnits = [
+    { id: "1", name: "Per Hour" },
+    { id: "2", name: "Per Day" },
+    { id: "3", name: "Per Week" },
+    { id: "4", name: "Per Month" }
+  ];
+  const result = await getOptions("wage_units", fallbackWageUnits);
   return res.json(result);
 });
 
 // Language Levels (Beginner, Intermediate, Fluent, Native)
 router.get("/language-levels", async (_req: Request, res: Response) => {
-  const result = await getOptions("language_levels");
+  const fallbackLanguageLevels = [
+    { id: "1", name: "Basic" },
+    { id: "2", name: "Intermediate" },
+    { id: "3", name: "Advanced" },
+    { id: "4", name: "Fluent" },
+    { id: "5", name: "Native" }
+  ];
+  const result = await getOptions("language_levels", fallbackLanguageLevels);
   return res.json(result);
 });
 

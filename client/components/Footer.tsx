@@ -20,13 +20,13 @@ export default function Footer({ className }: FooterProps) {
             </div>
             <p className="text-muted-foreground text-sm">Making Your Home Better</p>
             <div className="flex gap-4 pt-2">
-              <a href="#" aria-label="Instagram" className="text-muted-foreground hover:text-primary transition">
+              <a href="#" aria-label="Instagram" className="text-muted-foreground hover:text-primary transition" target="_blank" rel="noopener noreferrer">
                 <Instagram size={20} />
               </a>
-              <a href="#" aria-label="LinkedIn" className="text-muted-foreground hover:text-primary transition">
+              <a href="#" aria-label="LinkedIn" className="text-muted-foreground hover:text-primary transition" target="_blank" rel="noopener noreferrer">
                 <Linkedin size={20} />
               </a>
-              <a href="#" aria-label="Twitter" className="text-muted-foreground hover:text-primary transition">
+              <a href="#" aria-label="Twitter" className="text-muted-foreground hover:text-primary transition" target="_blank" rel="noopener noreferrer">
                 <Twitter size={20} />
               </a>
             </div>

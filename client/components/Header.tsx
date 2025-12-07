@@ -17,16 +17,17 @@ export default function Header({ className }: HeaderProps) {
     <header className={cn("bg-white border-b border-gray-100 sticky top-0 z-50", className)}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
-          <button
+          <a
+            href="#home"
             onClick={(e) => {
               e.preventDefault();
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
-            className="font-bold text-2xl hover:opacity-80 transition"
+            className="font-bold text-2xl hover:opacity-80 transition cursor-pointer"
           >
             <span className="text-foreground">HOUSE</span>
             <span className="text-primary">HELP</span>
-          </button>
+          </a>
           <nav className="hidden md:flex items-center gap-8">
             <a
               href="#home"

@@ -4,146 +4,170 @@ import { supabase } from "../lib/supabase";
 const router = Router();
 
 // Get all trainings
-router.get("/", async (req: Request, res: Response) => {
+router.get("/", async (_req: Request, res: Response) => {
   try {
-    const { category, status, limit = 50, offset = 0 } = req.query;
-    let query = supabase.from("trainings").select("*");
+    const { data: trainings, error } = await supabase
+      .from("trainings")
+      .select("*");
 
-    if (category) {
-      query = query.eq("category", category);
+    if (error) {
+      throw new Error(error.message);
     }
 
-    if (status) {
-      query = query.eq("status", status);
-    }
-
-    const { data, error, count } = await query
-      .order("created_at", { ascending: false })
-      .range(parseInt(offset as string), parseInt(offset as string) + parseInt(limit as string) - 1);
-
-    if (error) throw new Error(error.message);
-
-    return res.json({ success: true, data, total: count });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    return res.json({
+      success: true,
+      data: trainings || []
+    });
+  } catch (error) {
+    console.error("Get trainings error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to get trainings"
+    });
   }
 });
 
-// Get single training
+// Get training by ID
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { data, error } = await supabase.from("trainings").select("*").eq("id", id).single();
 
-    if (error) throw new Error(error.message);
+    const { data: training, error } = await supabase
+      .from("trainings")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-    return res.json({ success: true, data });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!training) {
+      return res.status(404).json({
+        success: false,
+        error: "Training not found"
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: training
+    });
+  } catch (error) {
+    console.error("Get training error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to get training"
+    });
   }
 });
 
-// Create training
+// Create training (admin only)
 router.post("/", async (req: Request, res: Response) => {
   try {
-    const { data, error } = await supabase.from("trainings").insert([req.body]).select().single();
+    const role = (req as any).userProfile?.role;
+    if (role !== "admin") {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
 
-    if (error) throw new Error(error.message);
+    const trainingData = req.body;
 
-    return res.status(201).json({ success: true, data });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    const { data: training, error } = await (supabase as any)
+      .from("trainings")
+      .insert({
+        ...trainingData,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return res.json({
+      success: true,
+      data: training,
+      message: "Training created successfully"
+    });
+  } catch (error) {
+    console.error("Create training error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to create training"
+    });
   }
 });
 
 // Update training
 router.put("/:id", async (req: Request, res: Response) => {
   try {
+    const role = (req as any).userProfile?.role;
+    if (role !== "admin") {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
+
     const { id } = req.params;
-    const { data, error } = await supabase
+    const updateData = req.body;
+
+    const { data: training, error } = await (supabase as any)
       .from("trainings")
-      .update(req.body)
+      .update({
+        ...updateData,
+        updated_at: new Date().toISOString()
+      })
       .eq("id", id)
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
 
-    return res.json({ success: true, data });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    return res.json({
+      success: true,
+      data: training,
+      message: "Training updated successfully"
+    });
+  } catch (error) {
+    console.error("Update training error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update training"
+    });
   }
 });
 
 // Delete training
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
+    const role = (req as any).userProfile?.role;
+    if (role !== "admin") {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
+
     const { id } = req.params;
-    const { error } = await supabase.from("trainings").delete().eq("id", id);
 
-    if (error) throw new Error(error.message);
+    const { error } = await supabase
+      .from("trainings")
+      .delete()
+      .eq("id", id);
 
-    return res.json({ success: true, message: "Training deleted successfully" });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
-  }
-});
+    if (error) {
+      throw new Error(error.message);
+    }
 
-// Enroll worker in training
-router.post("/:id/enroll", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { worker_id } = req.body;
-
-    const { data, error } = await supabase
-      .from("worker_trainings")
-      .insert([{ training_id: id, worker_id, status: "enrolled" }])
-      .select()
-      .single();
-
-    if (error) throw new Error(error.message);
-
-    return res.status(201).json({ success: true, data, message: "Worker enrolled successfully" });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Get worker's trainings
-router.get("/worker/:worker_id", async (req: Request, res: Response) => {
-  try {
-    const { worker_id } = req.params;
-    const { data, error } = await supabase
-      .from("worker_trainings")
-      .select("*, trainings(*)")
-      .eq("worker_id", worker_id);
-
-    if (error) throw new Error(error.message);
-
-    return res.json({ success: true, data });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Update training progress
-router.put("/progress/:enrollment_id", async (req: Request, res: Response) => {
-  try {
-    const { enrollment_id } = req.params;
-    const { progress_percentage, status } = req.body;
-
-    const { data, error } = await supabase
-      .from("worker_trainings")
-      .update({ progress_percentage, status })
-      .eq("id", enrollment_id)
-      .select()
-      .single();
-
-    if (error) throw new Error(error.message);
-
-    return res.json({ success: true, data });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    return res.json({
+      success: true,
+      message: "Training deleted successfully"
+    });
+  } catch (error) {
+    console.error("Delete training error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete training"
+    });
   }
 });
 

@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { getUserInfo, isAuthenticated } from "./jwt-auth";
+import { getCurrentUser } from "./supabase-auth";
+import { supabase } from "./supabase";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -15,18 +17,32 @@ export function ProtectedRoute({
   requiredRole,
   fallbackPath = "/",
 }: ProtectedRouteProps) {
-  const authenticated = isAuthenticated();
-  const userInfo = getUserInfo();
+  const [status, setStatus] = useState<"loading" | "allowed" | "denied">("loading");
 
-  // Check if user is authenticated
-  if (!authenticated) {
-    return <Navigate to={fallbackPath} replace />;
-  }
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        if (active) setStatus("denied");
+        return;
+      }
 
-  // Check if user has required role
-  if (requiredRole && userInfo?.role !== requiredRole) {
-    return <Navigate to={fallbackPath} replace />;
-  }
+      const { profile } = await getCurrentUser();
+      if (requiredRole && profile?.role !== requiredRole) {
+        if (active) setStatus("denied");
+        return;
+      }
 
+      if (active) setStatus("allowed");
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [requiredRole]);
+
+  if (status === "loading") return null;
+  if (status === "denied") return <Navigate to={fallbackPath} replace />;
   return <>{children}</>;
 }

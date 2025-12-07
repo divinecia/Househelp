@@ -6,6 +6,8 @@
 // JWT functions are no longer used - authentication is handled by Supabase
 // import { getAccessToken, refreshAccessToken } from "./jwt-auth";
 
+import { supabase } from "./supabase";
+
 // Use relative path for API calls (works in both dev and production)
 // In dev: /api → http://localhost:5173/api
 // In prod: /api → https://your-domain/api
@@ -59,8 +61,15 @@ async function apiRequest<T>(
 
   // Add authorization token if available and not skipped
   if (!skipAuth) {
-    // Supabase handles authentication automatically via cookies
-    // No need for manual token management
+    try {
+      const { data } = await supabase.auth.getSession();
+      const accessToken = data.session?.access_token;
+      if (accessToken) {
+        headers["Authorization"] = `Bearer ${accessToken}`;
+      }
+    } catch (err) {
+      console.warn("Failed to get Supabase session", err);
+    }
   }
 
   const url = `${API_BASE_URL}${endpoint}`;
@@ -84,9 +93,20 @@ async function apiRequest<T>(
     if (!response.ok) {
       // Handle 401 - token expired or invalid
       if (response.status === 401 && !skipAuth && !_hasRetried) {
-        // Redirect to login if token is invalid
+        // Redirect to login based on user role
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          try {
+            const userInfo = sessionStorage.getItem("user_info");
+            if (userInfo) {
+              const user = JSON.parse(userInfo);
+              const role = user.role;
+              window.location.href = `/${role}/login`;
+            } else {
+              window.location.href = "/";
+            }
+          } catch {
+            window.location.href = "/";
+          }
         }
         return {
           success: false,

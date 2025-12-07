@@ -1,321 +1,239 @@
 import { useState, useEffect } from "react";
-import { Trash2, Edit2, Plus, Loader } from "lucide-react";
-import { toast } from "sonner";
-import {
-  apiGet,
-  apiPost,
-  getTrainingCategories,
-} from "../../lib/api-client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Search, BookOpen, Clock, CheckCircle } from "lucide-react";
 
-interface Training {
+interface TrainingProgram {
   id: string;
   title: string;
-  category: string;
+  description: string;
+  duration: string;
+  status: "active" | "draft" | "completed";
+  enrolledWorkers: number;
+  createdAt: string;
+}
+
+interface TrainingSession {
+  id: string;
+  programId: string;
+  programTitle: string;
+  date: string;
+  time: string;
   instructor: string;
-  start_date?: string;
-  end_date?: string;
-  status: "active" | "inactive" | "completed";
-  description?: string;
+  status: "scheduled" | "in-progress" | "completed";
+  attendees: number;
 }
 
 export default function AdminTraining() {
-  const [trainings, setTrainings] = useState<Training[]>([]);
-  const [showForm, setShowForm] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [categories, setCategories] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
-  const [formData, setFormData] = useState({
-    title: "",
-    category: "",
-    instructor: "",
-    startDate: "",
-    description: "",
-    duration: 1,
-  });
+  const [programs, setPrograms] = useState<TrainingProgram[]>([]);
+  const [sessions, setSessions] = useState<TrainingSession[]>([]);
+  const [activeTab, setActiveTab] = useState<"programs" | "sessions">("programs");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchTrainings();
-    loadCategories();
+    fetchTrainingData();
   }, []);
 
-  const loadCategories = async () => {
-    setIsLoadingCategories(true);
+  const fetchTrainingData = async () => {
     try {
-      const result = await getTrainingCategories();
-        if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-          setCategories(result.data);
-          setFormData((prev) => ({ ...prev, category: Array.isArray(result.data) && result.data.length > 0 ? result.data[0].name : "beginner" }));
-        } else {
-          console.error("Failed to load training categories or no data available");
-          setCategories([]);
-        }
-    } catch (error) {
-      console.error("Failed to load training categories:", error);
-    } finally {
-      setIsLoadingCategories(false);
-    }
-  };
-
-  const fetchTrainings = async () => {
-    setIsLoading(true);
-    try {
-      const result = await apiGet("/trainings");
-      if (result.success && Array.isArray(result.data)) {
-        setTrainings(result.data);
-      } else {
-        toast.error(result.error || "Failed to fetch trainings");
-        setTrainings([]);
-      }
-    } catch (error) {
-      toast.error("Failed to fetch trainings");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleAddTraining = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.title || !formData.instructor) {
-      toast.error("Please fill in required fields");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const result = await apiPost("/trainings", {
-        title: formData.title,
-        category: formData.category,
-        instructor: formData.instructor,
-        start_date: formData.startDate,
-        description: formData.description,
-        status: "active",
-      });
-
-      if (result.success) {
-        toast.success("Training added successfully!");
-        setFormData({
-          title: "",
-          category: "beginner",
-          instructor: "",
-          startDate: "",
-          description: "",
-          duration: 1,
-        });
-        setShowForm(false);
-        await fetchTrainings();
-      } else {
-        toast.error(result.error || "Failed to add training");
-      }
-    } catch (error) {
-      toast.error("Error adding training");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDeleteTraining = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this training?")) return;
-
-    try {
-      const response = await fetch(`/api/trainings/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("auth_token") || ""}`,
+      // TODO: Replace with actual API calls
+      setPrograms([
+        {
+          id: "1",
+          title: "Household Cleaning Basics",
+          description: "Learn fundamental cleaning techniques and safety protocols",
+          duration: "2 weeks",
+          status: "active",
+          enrolledWorkers: 25,
+          createdAt: "2024-01-01",
         },
-      });
+        {
+          id: "2",
+          title: "Childcare Essentials",
+          description: "Comprehensive training for childcare providers",
+          duration: "4 weeks",
+          status: "draft",
+          enrolledWorkers: 0,
+          createdAt: "2024-01-15",
+        },
+      ]);
 
-      const result = await response.json();
-
-      if (result.success) {
-        toast.success("Training deleted successfully");
-        setTrainings(trainings.filter((t) => t.id !== id));
-      } else {
-        toast.error(result.error || "Failed to delete training");
-      }
+      setSessions([
+        {
+          id: "1",
+          programId: "1",
+          programTitle: "Household Cleaning Basics",
+          date: "2024-01-20",
+          time: "09:00 AM",
+          instructor: "Sarah Johnson",
+          status: "scheduled",
+          attendees: 15,
+        },
+        {
+          id: "2",
+          programId: "1",
+          programTitle: "Household Cleaning Basics",
+          date: "2024-01-22",
+          time: "02:00 PM",
+          instructor: "Mike Chen",
+          status: "completed",
+          attendees: 20,
+        },
+      ]);
     } catch (error) {
-      toast.error("Error deleting training");
-      console.error(error);
+      console.error("Failed to fetch training data:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "active":
+      case "scheduled":
+        return <Badge className="bg-blue-100 text-blue-800">{status}</Badge>;
+      case "draft":
+        return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>;
+      case "completed":
+        return <Badge className="bg-green-100 text-green-800">{status}</Badge>;
+      case "in-progress":
+        return <Badge className="bg-yellow-100 text-yellow-800">{status}</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const filteredPrograms = programs.filter(program =>
+    program.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    program.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredSessions = sessions.filter(session =>
+    session.programTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    session.instructor.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
-      {/* Add Training Button */}
-      <button
-        onClick={() => setShowForm(!showForm)}
-        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-      >
-        <Plus size={18} />
-        Add New Training
-      </button>
-
-      {/* Form */}
-      {showForm && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-foreground mb-4">
-            Add New Training
-          </h3>
-          <form
-            onSubmit={handleAddTraining}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
-            <input
-              type="text"
-              placeholder="Training Title"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              required
-            />
-            <select
-              value={formData.category}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
-              disabled={isLoadingCategories}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
-            >
-              <option value="">
-                {isLoadingCategories ? "Loading..." : "Select Category"}
-              </option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.name}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-            <input
-              type="text"
-              placeholder="Instructor Name"
-              value={formData.instructor}
-              onChange={(e) =>
-                setFormData({ ...formData, instructor: e.target.value })
-              }
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              required
-            />
-            <input
-              type="number"
-              placeholder="Duration (hours)"
-              value={formData.duration}
-              onChange={(e) =>
-                setFormData({ ...formData, duration: parseInt(e.target.value) })
-              }
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              min="1"
-            />
-            <button
-              type="submit"
-              className="md:col-span-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              Add Training
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* Training Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          {isLoading ? (
-            <div className="p-6 flex items-center justify-center gap-2 text-muted-foreground">
-              <Loader size={20} className="animate-spin" />
-              <span>Loading trainings...</span>
+      <Card>
+        <CardHeader>
+          <CardTitle>Training Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex gap-2">
+              <Button
+                variant={activeTab === "programs" ? "default" : "outline"}
+                onClick={() => setActiveTab("programs")}
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                Programs
+              </Button>
+              <Button
+                variant={activeTab === "sessions" ? "default" : "outline"}
+                onClick={() => setActiveTab("sessions")}
+              >
+                <Clock className="h-4 w-4 mr-2" />
+                Sessions
+              </Button>
             </div>
-          ) : trainings.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground">
-              No trainings found
+            <div className="relative w-96">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                type="text"
+                placeholder={`Search ${activeTab}...`}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
-          ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                    Title
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                    Instructor
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                    Start Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {trainings.map((training) => (
-                  <tr
-                    key={training.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 text-sm text-foreground font-medium">
-                      {training.title}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium capitalize">
-                        {training.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {training.instructor}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {training.start_date
-                        ? new Date(training.start_date).toLocaleDateString()
-                        : "-"}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          training.status === "active"
-                            ? "bg-green-100 text-green-700"
-                            : training.status === "inactive"
-                              ? "bg-gray-100 text-gray-700"
-                              : "bg-yellow-100 text-yellow-700"
-                        }`}
-                      >
-                        {training.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm">
+          </div>
+
+          {loading ? (
+            <p className="text-center py-8">Loading training data...</p>
+          ) : activeTab === "programs" ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Enrolled</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredPrograms.map((program) => (
+                  <TableRow key={program.id}>
+                    <TableCell className="font-medium">{program.title}</TableCell>
+                    <TableCell>{program.description}</TableCell>
+                    <TableCell>{program.duration}</TableCell>
+                    <TableCell>{getStatusBadge(program.status)}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{program.enrolledWorkers}</Badge>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex gap-2">
-                        <button
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteTraining(training.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <Button size="sm" variant="outline">
+                          Edit
+                        </Button>
+                        <Button size="sm">
+                          <BookOpen className="h-4 w-4 mr-1" />
+                          View Details
+                        </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Program</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Instructor</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Attendees</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredSessions.map((session) => (
+                  <TableRow key={session.id}>
+                    <TableCell className="font-medium">{session.programTitle}</TableCell>
+                    <TableCell>{session.date}</TableCell>
+                    <TableCell>{session.time}</TableCell>
+                    <TableCell>{session.instructor}</TableCell>
+                    <TableCell>{getStatusBadge(session.status)}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{session.attendees}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline">
+                          Edit
+                        </Button>
+                        <Button size="sm">
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Manage
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

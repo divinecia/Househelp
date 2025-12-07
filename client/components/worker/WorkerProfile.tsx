@@ -1,390 +1,454 @@
 import { useState, useEffect } from "react";
-import { User, Save, X, Loader } from "lucide-react";
-import { getUser } from "@/lib/auth";
-import type { WorkerData } from "@/lib/auth";
-import {
-  getMaritalStatuses,
-  updateWorker,
-  apiGet,
-} from "@/lib/api-client";
-import { toast } from "sonner";
+import { User, Mail, Phone, Briefcase, Award, Edit2, Save, X } from "lucide-react";
+
+interface WorkerProfile {
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  dateOfBirth: string;
+  gender: string;
+  maritalStatus: string;
+  nationalId: string;
+  typeOfWork: string;
+  workExperience: string;
+  expectedWages: string;
+  workingHoursAndDays: string;
+  educationQualification: string;
+  languageProficiency: string;
+  healthCondition: string;
+  emergencyName: string;
+  emergencyContact: string;
+  bankAccountNumber: string;
+  accountHolder: string;
+}
 
 export default function WorkerProfile() {
-  const user = getUser("worker") as unknown as WorkerData & { id?: string };
-  const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [maritalStatuses, setMaritalStatuses] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
-  const [profileData, setProfileData] = useState({
-    maritalStatus: "single",
-    typeOfWork: "Cleaning",
-    workExperience: "5",
-    expectedWages: "50000 per hour",
-    workingHoursAndDays: "08:00 - 17:00, Mon-Fri",
-    educationQualification: "High School",
-    trainingCertificate: "Advanced Cleaning",
-    languageProficiency: "English (Fluent), Kinyarwanda (Native)",
-    healthCondition: "No allergies",
-    emergencyName: "John Doe",
-    emergencyContact: "+250 123 456 789",
-    bankAccountNumber: "****5678",
-    accountHolder: "Jane Smith",
-  });
-
-  const [tempData, setTempData] = useState(profileData);
+  const [profile, setProfile] = useState<WorkerProfile | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editedProfile, setEditedProfile] = useState<WorkerProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const loadData = async () => {
-      if (!user?.id) return;
+    fetchProfile();
+  }, []);
 
-      setIsLoading(true);
-      try {
-        // Load marital statuses
-        const statusesResult = await getMaritalStatuses();
-        if (statusesResult.success && statusesResult.data) {
-          if (statusesResult.success && Array.isArray(statusesResult.data)) {
-            setMaritalStatuses(statusesResult.data);
-          }
-        }
+  const fetchProfile = async () => {
+    try {
+      // TODO: Replace with actual API call
+      const mockProfile: WorkerProfile = {
+        fullName: "Alice Mukamana",
+        email: "alice.mukamana@example.com",
+        phoneNumber: "+250 788 123 456",
+        dateOfBirth: "1995-03-15",
+        gender: "Female",
+        maritalStatus: "Single",
+        nationalId: "1199580012345678",
+        typeOfWork: "House Cleaning, Laundry",
+        workExperience: "5 years",
+        expectedWages: "RWF 150,000/month",
+        workingHoursAndDays: "Monday-Friday, 8AM-5PM",
+        educationQualification: "Secondary Education",
+        languageProficiency: "Kinyarwanda, English, French",
+        healthCondition: "Good",
+        emergencyName: "Jean Mukamana",
+        emergencyContact: "+250 788 654 321",
+        bankAccountNumber: "1234567890",
+        accountHolder: "Alice Mukamana"
+      };
 
-        // Load worker profile from database
-        const workerRes = await apiGet(`/workers/${user.id}`);
-        if (workerRes.success && workerRes.data) {
-          const dbData = workerRes.data;
-          setProfileData({
-            maritalStatus: (dbData as any).marital_status || "single",
-            typeOfWork: (dbData as any).type_of_work || "Cleaning",
-            workExperience: (dbData as any).work_experience || "5",
-            expectedWages: (dbData as any).expected_wages || "50000 per hour",
-            workingHoursAndDays: (dbData as any).working_hours_and_days || "08:00 - 17:00, Mon-Fri",
-            educationQualification: (dbData as any).education_qualification || "High School",
-            trainingCertificate: (dbData as any).training_certificate_url || "Advanced Cleaning",
-            languageProficiency: (dbData as any).language_proficiency || "English (Fluent), Kinyarwanda (Native)",
-            healthCondition: (dbData as any).health_condition || "No allergies",
-            emergencyName: (dbData as any).emergency_contact_name || "John Doe",
-            emergencyContact: (dbData as any).emergency_contact_phone || "+250 123 456 789",
-            bankAccountNumber: (dbData as any).bank_account_number || "****5678",
-            accountHolder: (dbData as any).account_holder_name || "Jane Smith",
-          });
-          setTempData(profileData);
-        }
-      } catch (error) {
-        console.error("Failed to load worker profile:", error);
-        toast.error("Failed to load profile data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadData();
-  }, [user?.id]);
-
-  const handleEdit = () => {
-    setIsEditing(true);
-    setTempData(profileData);
+      setProfile(mockProfile);
+      setEditedProfile(mockProfile);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSave = async () => {
-    if (!user?.id) {
-      toast.error("User not found");
-      return;
-    }
+    if (!editedProfile) return;
 
-    setIsSaving(true);
+    setSaving(true);
     try {
-      const updateData = {
-        marital_status: tempData.maritalStatus,
-        type_of_work: tempData.typeOfWork,
-        work_experience: tempData.workExperience,
-        expected_wages: tempData.expectedWages,
-        working_hours_and_days: tempData.workingHoursAndDays,
-        education_qualification: tempData.educationQualification,
-        training_certificate_url: tempData.trainingCertificate,
-        language_proficiency: tempData.languageProficiency,
-        health_condition: tempData.healthCondition,
-        emergency_contact_name: tempData.emergencyName,
-        emergency_contact_phone: tempData.emergencyContact,
-        bank_account_number: tempData.bankAccountNumber,
-        account_holder_name: tempData.accountHolder,
-      };
-
-      const response = await updateWorker(user.id, updateData);
-      if (response.success) {
-        setProfileData(tempData);
-        setIsEditing(false);
-        toast.success("Profile updated successfully!");
-      } else {
-        toast.error(response.error || "Failed to update profile");
-      }
+      // TODO: Make API call to update profile
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      setProfile(editedProfile);
+      setEditMode(false);
     } catch (error) {
-      console.error("Error saving profile:", error);
-      toast.error("Error saving profile");
+      console.error('Error updating profile:', error);
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
   };
 
   const handleCancel = () => {
-    setTempData(profileData);
-    setIsEditing(false);
+    setEditedProfile(profile);
+    setEditMode(false);
   };
 
-  const handleChange = (field: string, value: string) => {
-    setTempData((prev) => ({ ...prev, [field]: value }));
+  const handleChange = (field: keyof WorkerProfile, value: string) => {
+    if (editedProfile) {
+      setEditedProfile({ ...editedProfile, [field]: value });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (!profile || !editedProfile) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        <p>Profile not found</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Profile Picture Section */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <div className="flex items-center gap-6">
-          <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center border-4 border-primary">
-            <User size={60} className="text-primary" />
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-900">My Profile</h2>
+        {!editMode ? (
+          <button
+            onClick={() => setEditMode(true)}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            <Edit2 size={16} className="mr-2" />
+            Edit Profile
+          </button>
+        ) : (
+          <div className="flex gap-2">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400"
+            >
+              <Save size={16} className="mr-2" />
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+            <button
+              onClick={handleCancel}
+              disabled={saving}
+              className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400"
+            >
+              <X size={16} className="mr-2" />
+              Cancel
+            </button>
           </div>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">
-              {user?.fullName || "Worker"}
-            </h2>
-            <p className="text-muted-foreground">Worker Profile</p>
-            {!isEditing && (
-              <button
-                onClick={handleEdit}
-                disabled={isLoading}
-                className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
-              >
-                Edit Profile
-              </button>
-            )}
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* Profile Information */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-foreground mb-6">
-          Professional Information
-        </h3>
-
-        <div className="space-y-6">
-          {isEditing ? (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Marital Status
-                  </label>
-                  <select
-                    value={tempData.maritalStatus}
-                    onChange={(e) =>
-                      handleChange("maritalStatus", e.target.value)
-                    }
-                    disabled={isLoading}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-100"
-                  >
-                    <option value="">
-                      {isLoading ? "Loading..." : "Select Status"}
-                    </option>
-                    {maritalStatuses.map((status) => (
-                      <option key={status.id} value={status.name.toLowerCase()}>
-                        {status.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Type of Work
-                  </label>
-                  <input
-                    type="text"
-                    value={tempData.typeOfWork}
-                    onChange={(e) => handleChange("typeOfWork", e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Work Experience (years)
-                  </label>
-                  <input
-                    type="text"
-                    value={tempData.workExperience}
-                    onChange={(e) =>
-                      handleChange("workExperience", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Expected Wages
-                  </label>
-                  <input
-                    type="text"
-                    value={tempData.expectedWages}
-                    onChange={(e) =>
-                      handleChange("expectedWages", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Working Hours and Days
-                  </label>
-                  <input
-                    type="text"
-                    value={tempData.workingHoursAndDays}
-                    onChange={(e) =>
-                      handleChange("workingHoursAndDays", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Education Qualification
-                  </label>
-                  <input
-                    type="text"
-                    value={tempData.educationQualification}
-                    onChange={(e) =>
-                      handleChange("educationQualification", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Training Certificate
-                  </label>
-                  <input
-                    type="text"
-                    value={tempData.trainingCertificate}
-                    onChange={(e) =>
-                      handleChange("trainingCertificate", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Language Proficiency
-                  </label>
-                  <input
-                    type="text"
-                    value={tempData.languageProficiency}
-                    onChange={(e) =>
-                      handleChange("languageProficiency", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Health Condition / Insurance
-                  </label>
-                  <input
-                    type="text"
-                    value={tempData.healthCondition}
-                    onChange={(e) =>
-                      handleChange("healthCondition", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Emergency Contact Name
-                  </label>
-                  <input
-                    type="text"
-                    value={tempData.emergencyName}
-                    onChange={(e) =>
-                      handleChange("emergencyName", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Emergency Contact Number
-                  </label>
-                  <input
-                    type="text"
-                    value={tempData.emergencyContact}
-                    onChange={(e) =>
-                      handleChange("emergencyContact", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Bank Account Number
-                  </label>
-                  <input
-                    type="text"
-                    value={tempData.bankAccountNumber}
-                    onChange={(e) =>
-                      handleChange("bankAccountNumber", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Account Holder Name
-                  </label>
-                  <input
-                    type="text"
-                    value={tempData.accountHolder}
-                    onChange={(e) =>
-                      handleChange("accountHolder", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-6 border-t border-gray-200">
-                <button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-                >
-                  {isSaving ? <Loader size={18} className="animate-spin" /> : <Save size={18} />}
-                  {isSaving ? "Saving..." : "Save Changes"}
-                </button>
-                <button
-                  onClick={handleCancel}
-                  disabled={isSaving}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-foreground rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-                >
-                  <X size={18} />
-                  Cancel
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="space-y-4">
-              {Object.entries(profileData).map(([key, value]) => (
-                <div
-                  key={key}
-                  className="border-b border-gray-200 pb-4 last:border-0"
-                >
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                    {key.replace(/([A-Z])/g, " $1").trim()}
-                  </p>
-                  <p className="text-foreground font-medium">{value}</p>
-                </div>
-              ))}
+      {/* Profile Sections */}
+      <div className="space-y-6">
+        {/* Personal Information */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <User size={20} className="mr-2" />
+            Personal Information
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.fullName}
+                  onChange={(e) => handleChange('fullName', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.fullName}</p>
+              )}
             </div>
-          )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+              {editMode ? (
+                <input
+                  type="date"
+                  value={editedProfile.dateOfBirth}
+                  onChange={(e) => handleChange('dateOfBirth', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.dateOfBirth}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+              {editMode ? (
+                <select
+                  value={editedProfile.gender}
+                  onChange={(e) => handleChange('gender', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option>Male</option>
+                  <option>Female</option>
+                  <option>Other</option>
+                </select>
+              ) : (
+                <p className="text-gray-900">{profile.gender}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
+              {editMode ? (
+                <select
+                  value={editedProfile.maritalStatus}
+                  onChange={(e) => handleChange('maritalStatus', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option>Single</option>
+                  <option>Married</option>
+                  <option>Divorced</option>
+                  <option>Widowed</option>
+                </select>
+              ) : (
+                <p className="text-gray-900">{profile.maritalStatus}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">National ID</label>
+              <p className="text-gray-900">{profile.nationalId}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Information */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <Mail size={20} className="mr-2" />
+            Contact Information
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <p className="text-gray-900">{profile.email}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              {editMode ? (
+                <input
+                  type="tel"
+                  value={editedProfile.phoneNumber}
+                  onChange={(e) => handleChange('phoneNumber', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.phoneNumber}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Work Information */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <Briefcase size={20} className="mr-2" />
+            Work Information
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Type of Work</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.typeOfWork}
+                  onChange={(e) => handleChange('typeOfWork', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.typeOfWork}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Work Experience</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.workExperience}
+                  onChange={(e) => handleChange('workExperience', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.workExperience}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Expected Wages</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.expectedWages}
+                  onChange={(e) => handleChange('expectedWages', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.expectedWages}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Working Hours & Days</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.workingHoursAndDays}
+                  onChange={(e) => handleChange('workingHoursAndDays', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.workingHoursAndDays}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Education & Skills */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <Award size={20} className="mr-2" />
+            Education & Skills
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Education Qualification</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.educationQualification}
+                  onChange={(e) => handleChange('educationQualification', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.educationQualification}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Language Proficiency</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.languageProficiency}
+                  onChange={(e) => handleChange('languageProficiency', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.languageProficiency}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Health Condition</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.healthCondition}
+                  onChange={(e) => handleChange('healthCondition', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.healthCondition}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Emergency Contact */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <Phone size={20} className="mr-2" />
+            Emergency Contact
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact Name</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.emergencyName}
+                  onChange={(e) => handleChange('emergencyName', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.emergencyName}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact Number</label>
+              {editMode ? (
+                <input
+                  type="tel"
+                  value={editedProfile.emergencyContact}
+                  onChange={(e) => handleChange('emergencyContact', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.emergencyContact}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Bank Details */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <DollarSign size={20} className="mr-2" />
+            Bank Details
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Bank Account Number</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.bankAccountNumber}
+                  onChange={(e) => handleChange('bankAccountNumber', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.bankAccountNumber}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Account Holder</label>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editedProfile.accountHolder}
+                  onChange={(e) => handleChange('accountHolder', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              ) : (
+                <p className="text-gray-900">{profile.accountHolder}</p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function DollarSign({ size, className }: { size: number; className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <line x1="12" y1="1" x2="12" y2="23"></line>
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+    </svg>
   );
 }

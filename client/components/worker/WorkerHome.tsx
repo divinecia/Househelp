@@ -1,235 +1,238 @@
-import { useEffect, useState } from "react";
-import { CheckCircle, Clock, AlertCircle } from "lucide-react";
-import { apiGet } from "../../lib/api-client";
+import { useState, useEffect } from "react";
+import { Clock, DollarSign, CheckCircle, AlertCircle, MapPin, Calendar } from "lucide-react";
+
+interface QuickStat {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+  color: string;
+}
 
 interface Job {
   id: string;
-  title?: string;
-  service_type?: string;
-  homeowner?: string;
-  homeowner_id?: string;
-  status: "pending" | "confirmed" | "in_progress" | "completed" | "cancelled";
-  scheduledDate?: string;
-  booking_date?: string;
-  budget?: number;
-  amount?: number;
-  payment_status?: string;
+  service: string;
+  homeowner: string;
+  date: string;
+  time: string;
+  location: string;
+  status: 'pending' | 'in-progress' | 'completed';
+  amount: number;
 }
 
 export default function WorkerHome() {
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [quickStats, setQuickStats] = useState<QuickStat[]>([]);
+  const [upcomingJobs, setUpcomingJobs] = useState<Job[]>([]);
+  const [recentJobs, setRecentJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [, setHomeownersMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-
-        // Fetch bookings (jobs)
-        const bookingsRes = await apiGet("/bookings");
-        const bookings = Array.isArray(bookingsRes.data)
-          ? bookingsRes.data
-          : [];
-
-        // Fetch homeowners to map IDs to names
-        const homeownersRes = await apiGet("/homeowners");
-        const homeowners = Array.isArray(homeownersRes.data)
-          ? homeownersRes.data
-          : [];
-
-        const homeownerMap: Record<string, string> = {};
-        homeowners.forEach((homeowner: any) => {
-          homeownerMap[homeowner.id] = homeowner.full_name || "Unknown";
-        });
-        setHomeownersMap(homeownerMap);
-
-        // Map bookings to jobs format
-        const jobsList: Job[] = bookings.map((booking: any) => ({
-          id: booking.id,
-          title: booking.service_type || "Service",
-          service_type: booking.service_type,
-          homeowner: homeownerMap[booking.homeowner_id] || "Unknown",
-          homeowner_id: booking.homeowner_id,
-          status: mapBookingStatus(booking.status),
-          scheduledDate: booking.booking_date,
-          booking_date: booking.booking_date,
-          budget: booking.amount ? parseFloat(booking.amount) : 0,
-          amount: booking.amount,
-          payment_status: booking.payment_status,
-        }));
-
-        setJobs(jobsList);
-      } catch (error) {
-        console.error("Error fetching worker home data:", error);
-        setJobs([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
-  const mapBookingStatus = (status: string): Job["status"] => {
-    const statusMap: Record<string, Job["status"]> = {
-      pending: "pending",
-      confirmed: "confirmed",
-      in_progress: "in_progress",
-      completed: "completed",
-      cancelled: "cancelled",
-    };
-    return statusMap[status] || "pending";
-  };
+  const fetchData = async () => {
+    try {
+      // TODO: Replace with actual API calls
+      const mockQuickStats: QuickStat[] = [
+        {
+          title: "Jobs Completed",
+          value: "42",
+          icon: <CheckCircle size={24} />,
+          color: "bg-green-500"
+        },
+        {
+          title: "This Month",
+          value: "RWF 125,000",
+          icon: <DollarSign size={24} />,
+          color: "bg-blue-500"
+        },
+        {
+          title: "Pending Jobs",
+          value: "3",
+          icon: <Clock size={24} />,
+          color: "bg-yellow-500"
+        },
+        {
+          title: "Rating",
+          value: "4.8",
+          icon: <AlertCircle size={24} />,
+          color: "bg-purple-500"
+        }
+      ];
 
-  const getStatusColor = (status: Job["status"]) => {
-    switch (status) {
-      case "confirmed":
-        return "bg-blue-100 text-blue-700";
-      case "in_progress":
-        return "bg-orange-100 text-orange-700";
-      case "completed":
-        return "bg-green-100 text-green-700";
-      case "pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "cancelled":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
+      const mockUpcomingJobs: Job[] = [
+        {
+          id: '1',
+          service: 'House Cleaning',
+          homeowner: 'John Doe',
+          date: '2025-12-07',
+          time: '09:00',
+          location: 'Kigali, Kimihurura',
+          status: 'pending',
+          amount: 25000
+        },
+        {
+          id: '2',
+          service: 'Garden Maintenance',
+          homeowner: 'Jane Smith',
+          date: '2025-12-08',
+          time: '14:00',
+          location: 'Kigali, Remera',
+          status: 'pending',
+          amount: 30000
+        }
+      ];
+
+      const mockRecentJobs: Job[] = [
+        {
+          id: '3',
+          service: 'Laundry Service',
+          homeowner: 'Marie Claire',
+          date: '2025-12-05',
+          time: '10:00',
+          location: 'Kigali, Nyarutarama',
+          status: 'completed',
+          amount: 15000
+        },
+        {
+          id: '4',
+          service: 'House Cleaning',
+          homeowner: 'Peter Johnson',
+          date: '2025-12-04',
+          time: '08:00',
+          location: 'Kigali, Kacyiru',
+          status: 'completed',
+          amount: 25000
+        }
+      ];
+
+      setQuickStats(mockQuickStats);
+      setUpcomingJobs(mockUpcomingJobs);
+      setRecentJobs(mockRecentJobs);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getStatusIcon = (status: Job["status"]) => {
+  const getStatusColor = (status: Job['status']) => {
     switch (status) {
-      case "completed":
-        return <CheckCircle className="w-5 h-5" />;
-      case "in_progress":
-        return <Clock className="w-5 h-5" />;
-      case "pending":
-        return <AlertCircle className="w-5 h-5" />;
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'in-progress':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'pending':
+        return 'bg-blue-100 text-blue-800';
       default:
-        return null;
+        return 'bg-gray-100 text-gray-800';
     }
   };
-
-  const assignedJobsCount = jobs.filter((j) => j.status === "confirmed").length;
-  const inProgressCount = jobs.filter((j) => j.status === "in_progress").length;
-  const totalEarnings = jobs
-    .filter((j) => j.status === "completed")
-    .reduce((sum, j) => sum + (j.budget ? j.budget * 0.85 : 0), 0);
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm animate-pulse h-20"
-            />
-          ))}
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-          <p className="text-sm text-muted-foreground mb-1">Assigned Jobs</p>
-          <p className="text-2xl font-bold text-foreground">
-            {assignedJobsCount}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-          <p className="text-sm text-muted-foreground mb-1">In Progress</p>
-          <p className="text-2xl font-bold text-orange-600">
-            {inProgressCount}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-          <p className="text-sm text-muted-foreground mb-1">Total Earnings</p>
-          <p className="text-2xl font-bold text-green-600">
-            {totalEarnings.toLocaleString()} RWF
-          </p>
-        </div>
-      </div>
-
-      {/* Jobs List */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-foreground">My Jobs</h2>
-        {jobs.length === 0 ? (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm text-center text-muted-foreground">
-            <p>No jobs assigned yet</p>
-          </div>
-        ) : (
-          jobs.map((job) => (
-            <div
-              key={job.id}
-              className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">
-                    {job.title || job.service_type}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    For: {job.homeowner}
-                  </p>
-                </div>
-                <div
-                  className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(job.status)}`}
-                >
-                  {getStatusIcon(job.status)}
-                  <span className="capitalize">
-                    {job.status.replace("_", " ")}
-                  </span>
-                </div>
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {quickStats.map((stat, index) => (
+          <div key={index} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
               </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 py-4 border-t border-b border-gray-200">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">
-                    Scheduled Date
-                  </p>
-                  <p className="font-medium text-foreground">
-                    {job.scheduledDate
-                      ? new Date(job.scheduledDate).toLocaleDateString()
-                      : "-"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Amount</p>
-                  <p className="font-medium text-foreground">
-                    {(job.budget || 0).toLocaleString()} RWF
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">
-                    Your Earnings
-                  </p>
-                  <p className="font-medium text-green-600">
-                    {((job.budget || 0) * 0.85).toLocaleString()} RWF
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-4">
-                <button className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
-                  View Details
-                </button>
-                {job.status === "completed" &&
-                  job.payment_status === "unpaid" && (
-                    <button className="flex-1 px-4 py-2 border border-green-300 text-green-700 rounded-lg hover:bg-green-50 transition-colors text-sm font-medium">
-                      Request Payment
-                    </button>
-                  )}
+              <div className={`${stat.color} p-3 rounded-full text-white`}>
+                {stat.icon}
               </div>
             </div>
-          ))
-        )}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Upcoming Jobs */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Jobs</h3>
+
+          {upcomingJobs.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <Calendar size={48} className="mx-auto mb-4 text-gray-300" />
+              <p>No upcoming jobs</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {upcomingJobs.map((job) => (
+                <div key={job.id} className="p-4 bg-gray-50 rounded-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 className="font-medium text-gray-900">{job.service}</h4>
+                      <p className="text-sm text-gray-600">{job.homeowner}</p>
+                    </div>
+                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(job.status)}`}>
+                      {job.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-500 mt-2">
+                    <Calendar size={14} className="mr-1" />
+                    {job.date} at {job.time}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-500 mt-1">
+                    <MapPin size={14} className="mr-1" />
+                    {job.location}
+                  </div>
+                  <div className="mt-2 font-medium text-gray-900">
+                    RWF {job.amount.toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Recent Jobs */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Jobs</h3>
+
+          {recentJobs.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <CheckCircle size={48} className="mx-auto mb-4 text-gray-300" />
+              <p>No recent jobs</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recentJobs.map((job) => (
+                <div key={job.id} className="p-4 bg-gray-50 rounded-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 className="font-medium text-gray-900">{job.service}</h4>
+                      <p className="text-sm text-gray-600">{job.homeowner}</p>
+                    </div>
+                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(job.status)}`}>
+                      {job.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-500 mt-2">
+                    <Calendar size={14} className="mr-1" />
+                    {job.date} at {job.time}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-500 mt-1">
+                    <MapPin size={14} className="mr-1" />
+                    {job.location}
+                  </div>
+                  <div className="mt-2 font-medium text-gray-900">
+                    RWF {job.amount.toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

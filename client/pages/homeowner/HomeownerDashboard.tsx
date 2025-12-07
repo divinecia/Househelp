@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getUser, logoutUser, isAuthenticated } from "@/lib/auth";
+import { getUser, logoutUser, isAuthenticatedAsync } from "@/lib/auth";
 import type { HomeownerData } from "@/lib/auth";
 import { Home, Briefcase, Calendar, User, MoreVertical, LogOut, Star } from "lucide-react";
 import HomeownerHome from "@/components/homeowner/HomeownerHome";
@@ -21,7 +21,7 @@ export default function HomeownerDashboard() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const isAuth = await isAuthenticated("homeowner");
+      const isAuth = await isAuthenticatedAsync("homeowner");
       if (!isAuth) {
         navigate("/homeowner/login");
         return;
@@ -29,8 +29,16 @@ export default function HomeownerDashboard() {
 
       try {
         const userData = await getUser("homeowner");
-        if (userData) {
-          setUser(userData as HomeownerData);
+        if (userData && userData.profile) {
+          const homeownerData: HomeownerData = {
+            fullName: userData.profile.full_name,
+            contactNumber: '',
+            email: userData.user?.email || '',
+            password: '',
+            homeAddress: '',
+            termsAccepted: true
+          };
+          setUser(homeownerData);
         } else {
           navigate("/homeowner/login");
         }
@@ -59,7 +67,7 @@ export default function HomeownerDashboard() {
       case "profile":
         return <HomeownerProfile />;
       case "more":
-        return <HomeownerMore onLogout={handleLogout} />;
+        return <HomeownerMore />;
       default:
         return <HomeownerHome />;
     }

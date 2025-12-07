@@ -136,7 +136,7 @@ export default function ServicesSection({ className }: ServicesSectionProps) {
 
         if (response.success && response.data && Array.isArray(response.data)) {
           const fetchedServices: Service[] = response.data.map(
-            (service: any) => {
+            (service: { id: string; name: string; workers?: number; description?: string }) => {
               const serviceNameLower = service.name.toLowerCase();
               let icon = serviceIconMap.cleaning;
 
@@ -161,7 +161,7 @@ export default function ServicesSection({ className }: ServicesSectionProps) {
                 id: service.id,
                 name: service.name,
                 icon,
-                workers: service.workers || 0, // Use actual count from database
+                workers: service.workers || 0,
                 description: service.description,
               };
             },
@@ -171,7 +171,7 @@ export default function ServicesSection({ className }: ServicesSectionProps) {
         }
       } catch (error) {
         console.error("Failed to fetch services:", error);
-        // Use default services on error
+        // Keep default services on error, no need to change state
       } finally {
         setLoading(false);
       }

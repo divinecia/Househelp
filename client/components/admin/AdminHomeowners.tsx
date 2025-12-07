@@ -1,127 +1,138 @@
 import { useState, useEffect } from "react";
-import { Eye, Loader } from "lucide-react";
-import { getHomeowners, getBookings } from "@/lib/api-client";
-import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Search } from "lucide-react";
 
 interface Homeowner {
   id: string;
-  full_name: string;
+  fullName: string;
   email: string;
-  home_address: string;
-  status: "active" | "inactive" | "suspended";
-  created_at: string;
-  totalBookings: number;
+  phoneNumber: string;
+  address: string;
+  status: "active" | "inactive";
+  createdAt: string;
+  bookingsCount: number;
 }
 
 export default function AdminHomeowners() {
   const [homeowners, setHomeowners] = useState<Homeowner[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchHomeowners();
   }, []);
 
   const fetchHomeowners = async () => {
-    setIsLoading(true);
     try {
-      // Fetch homeowners
-      const homeownerRes = await getHomeowners();
-      if (homeownerRes.success && Array.isArray(homeownerRes.data)) {
-        // Fetch bookings to count per homeowner
-        const bookingsRes = await getBookings();
-        const allBookings = Array.isArray(bookingsRes.data) ? bookingsRes.data : [];
-
-        // Enrich homeowner data with booking count
-        const enrichedHomeowners = homeownerRes.data.map((homeowner) => {
-          const bookingCount = allBookings.filter(
-            (booking: any) => booking.homeowner_id === homeowner.id
-          ).length;
-          return {
-            ...homeowner,
-            totalBookings: bookingCount,
-          };
-        });
-
-        setHomeowners(enrichedHomeowners);
-      } else {
-        toast.error("Failed to fetch homeowners");
-      }
+      // TODO: Replace with actual API call
+      setHomeowners([
+        {
+          id: "1",
+          fullName: "Alice Johnson",
+          email: "alice@example.com",
+          phoneNumber: "+250123456789",
+          address: "Kigali, Rwanda",
+          status: "active",
+          createdAt: "2024-01-10",
+          bookingsCount: 5,
+        },
+        {
+          id: "2",
+          fullName: "Bob Williams",
+          email: "bob@example.com",
+          phoneNumber: "+250987654321",
+          address: "Kigali, Rwanda",
+          status: "active",
+          createdAt: "2024-01-15",
+          bookingsCount: 3,
+        },
+      ]);
     } catch (error) {
-      toast.error("Error fetching homeowners");
-      console.error(error);
+      console.error("Failed to fetch homeowners:", error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }
+  };
+
+  const filteredHomeowners = homeowners.filter(homeowner =>
+    homeowner.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    homeowner.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    homeowner.address.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "active":
+        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+      case "inactive":
+        return <Badge className="bg-gray-100 text-gray-800">Inactive</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          {isLoading ? (
-            <div className="p-6 flex items-center justify-center gap-2 text-muted-foreground">
-              <Loader size={20} className="animate-spin" />
-              <span>Loading homeowners...</span>
+      <Card>
+        <CardHeader>
+          <CardTitle>Homeowner Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-between items-center mb-6">
+            <div className="relative w-96">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                type="text"
+                placeholder="Search homeowners..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
-          ) : homeowners.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground">No homeowners found</div>
+          </div>
+
+          {loading ? (
+            <p className="text-center py-8">Loading homeowners...</p>
           ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Name</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Email</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Address</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Status</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Bookings</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Joined</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {homeowners.map((homeowner) => (
-                  <tr key={homeowner.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-foreground font-medium">
-                      {homeowner.full_name}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">{homeowner.email}</td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {homeowner.home_address || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          homeowner.status === "active"
-                            ? "bg-green-100 text-green-700"
-                            : homeowner.status === "inactive"
-                              ? "bg-gray-100 text-gray-700"
-                              : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {homeowner.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-foreground font-medium">
-                      {homeowner.totalBookings}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {new Date(homeowner.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <button
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="View"
-                      >
-                        <Eye size={16} />
-                      </button>
-                    </td>
-                  </tr>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Address</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Bookings</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredHomeowners.map((homeowner) => (
+                  <TableRow key={homeowner.id}>
+                    <TableCell className="font-medium">{homeowner.fullName}</TableCell>
+                    <TableCell>{homeowner.email}</TableCell>
+                    <TableCell>{homeowner.phoneNumber}</TableCell>
+                    <TableCell>{homeowner.address}</TableCell>
+                    <TableCell>{getStatusBadge(homeowner.status)}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{homeowner.bookingsCount}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button size="sm" variant="outline">
+                        View Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

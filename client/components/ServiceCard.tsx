@@ -5,7 +5,7 @@ interface ServiceCardProps {
   icon: LucideIcon;
   title: string;
   description?: string;
-  bgColor: "worker" | "household" | "admin";
+  bgColor: keyof typeof bgColors;
   onClick?: () => void;
   className?: string;
 }
