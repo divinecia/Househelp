@@ -16,10 +16,11 @@ export default function AdminRegister() {
     password: "",
     contactNumber: "",
     gender: "",
-    termsAccepted: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [genders, setGenders] = useState<Array<{ id: string; name: string }>>([]);
+  const [genders, setGenders] = useState<Array<{ id: string; name: string }>>(
+    [],
+  );
   const [isLoadingGenders, setIsLoadingGenders] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,15 +29,29 @@ export default function AdminRegister() {
       setIsLoadingGenders(true);
       try {
         const result = await getGenders();
-        if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+        if (
+          result.success &&
+          Array.isArray(result.data) &&
+          result.data.length > 0
+        ) {
           setGenders(result.data);
         } else {
-          console.error("Failed to load genders from database");
-          toast.error("Failed to load gender options. Please refresh the page.");
+          console.error("Failed to load genders from database", result);
+          // Provide default gender options if API fails
+          setGenders([
+            { id: "1", name: "Male" },
+            { id: "2", name: "Female" },
+            { id: "3", name: "Other" },
+          ]);
         }
       } catch (error) {
         console.error("Failed to load genders:", error);
-        toast.error("Failed to load gender options. Please refresh the page.");
+        // Provide default gender options if API fails
+        setGenders([
+          { id: "1", name: "Male" },
+          { id: "2", name: "Female" },
+          { id: "3", name: "Other" },
+        ]);
       } finally {
         setIsLoadingGenders(false);
       }
@@ -63,29 +78,38 @@ export default function AdminRegister() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     // Personal Information
     if (!formData.fullName) newErrors.fullName = "Full name is required";
     if (!formData.contactNumber)
       newErrors.contactNumber = "Contact number is required";
     if (!formData.gender) newErrors.gender = "Gender is required";
     if (!formData.email) newErrors.email = "Email is required";
-    if (!formData.password || formData.password.length < 6)
-      newErrors.password = "Password must be at least 6 characters";
-    
-    // Terms and Conditions
-    if (!formData.termsAccepted)
-      newErrors.termsAccepted = "You must accept the terms and conditions";
-    
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    } else if (!/[A-Z]/.test(formData.password)) {
+      newErrors.password =
+        "Password must contain at least one uppercase letter";
+    } else if (!/[0-9]/.test(formData.password)) {
+      newErrors.password = "Password must contain at least one number";
+    } else if (!/[^A-Za-z0-9]/.test(formData.password)) {
+      newErrors.password =
+        "Password must contain at least one special character";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
-      toast.error("Please fix the errors above");
+      toast.error("Please fix the validation errors above");
       return;
     }
 
@@ -96,10 +120,15 @@ export default function AdminRegister() {
         email: formData.email!,
         password: formData.password!,
         fullName: formData.fullName!,
-        contactNumber: formData.contactNumber || '',
-        gender: formData.gender || '',
-        termsAccepted: formData.termsAccepted || false,
+        contactNumber: formData.contactNumber || "",
+        gender: formData.gender || "",
       };
+
+      console.log("Submitting registration data:", {
+        email: dataToSubmit.email,
+        has_password: !!dataToSubmit.password,
+        fullName: dataToSubmit.fullName,
+      });
 
       await registerUser("admin", dataToSubmit);
 
@@ -109,9 +138,12 @@ export default function AdminRegister() {
         navigate("/admin/login");
       }, 1500);
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Registration failed";
-      toast.error(errorMsg);
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : "Registration failed. Please try again.";
       console.error("Registration failed:", error);
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -126,9 +158,6 @@ export default function AdminRegister() {
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
               Admin Registration
             </h1>
-            <p className="text-muted-foreground">
-              Create your admin account to manage the platform
-            </p>
           </div>
 
           <form
@@ -228,13 +257,17 @@ export default function AdminRegister() {
               )}
             </div>
 
-            <div className="mb-8">
+            <div className="mb-6">
               <label
                 htmlFor="password"
                 className="block text-sm font-medium text-foreground mb-2"
               >
                 Password *
               </label>
+              <p className="text-xs text-muted-foreground mb-2">
+                Must be at least 8 characters with one uppercase, one number and
+                one special character
+              </p>
               <input
                 type="password"
                 id="password"
@@ -246,27 +279,6 @@ export default function AdminRegister() {
               {errors.password && (
                 <p className="text-destructive text-sm mt-1">
                   {errors.password}
-                </p>
-              )}
-            </div>
-
-            {/* Terms and Conditions */}
-            <div className="mb-8">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="termsAccepted"
-                  checked={formData.termsAccepted || false}
-                  onChange={handleChange}
-                  className="mt-1 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                />
-                <span className="text-sm text-foreground">
-                  I agree to the terms and conditions *
-                </span>
-              </label>
-              {errors.termsAccepted && (
-                <p className="text-destructive text-sm mt-2">
-                  {errors.termsAccepted}
                 </p>
               )}
             </div>
@@ -290,7 +302,7 @@ export default function AdminRegister() {
               <button
                 type="submit"
                 disabled={isSubmitting || isLoadingGenders}
-                className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-6 py-1 bg-primary text-white font-semibold text-sm rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 h-9"
               >
                 {isSubmitting ? (
                   <>
@@ -304,7 +316,7 @@ export default function AdminRegister() {
               <button
                 type="button"
                 onClick={() => navigate("/")}
-                className="flex-1 px-6 py-3 border border-gray-300 text-foreground font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 px-6 py-1 border border-gray-300 text-foreground font-semibold text-sm rounded-lg hover:bg-gray-50 transition-colors h-9"
               >
                 Back to Home
               </button>

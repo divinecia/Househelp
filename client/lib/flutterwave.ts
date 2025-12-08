@@ -15,7 +15,7 @@ export interface PaymentPayload {
   tx_ref: string;
   description: string;
   redirect_url?: string;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
 }
 
 export interface PaymentResponse {
@@ -29,7 +29,7 @@ export interface PaymentResponse {
 }
 
 export const initializeFlutterwavePayment = async (
-  payload: PaymentPayload
+  payload: PaymentPayload,
 ): Promise<PaymentResponse> => {
   try {
     const response = await axios.post(
@@ -43,14 +43,18 @@ export const initializeFlutterwavePayment = async (
           Authorization: `Bearer ${SECRET_KEY}`,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     return response.data;
-  } catch (error: any) {
-    console.error("Flutterwave initialization error:", error.response?.data || error.message);
+  } catch (error: unknown) {
+    const axiosError = error as { response?: { data?: { message?: string } }; message?: string };
+    console.error(
+      "Flutterwave initialization error:",
+      axiosError.response?.data || axiosError.message,
+    );
     throw new Error(
-      error.response?.data?.message || "Payment initialization failed"
+      axiosError.response?.data?.message || "Payment initialization failed",
     );
   }
 };
@@ -63,19 +67,25 @@ export const verifyFlutterwavePayment = async (transactionId: string) => {
         headers: {
           Authorization: `Bearer ${SECRET_KEY}`,
         },
-      }
+      },
     );
 
     return response.data;
-  } catch (error: any) {
-    console.error("Flutterwave verification error:", error.response?.data || error.message);
+  } catch (error: unknown) {
+    const axiosError = error as { response?: { data?: { message?: string } }; message?: string };
+    console.error(
+      "Flutterwave verification error:",
+      axiosError.response?.data || axiosError.message,
+    );
     throw new Error(
-      error.response?.data?.message || "Payment verification failed"
+      axiosError.response?.data?.message || "Payment verification failed",
     );
   }
 };
 
-export const getFlutterwavePaymentLink = async (payload: PaymentPayload): Promise<string> => {
+export const getFlutterwavePaymentLink = async (
+  payload: PaymentPayload,
+): Promise<string> => {
   try {
     const response = await axios.post(
       `${FLUTTERWAVE_API_BASE}/payments`,
@@ -88,7 +98,7 @@ export const getFlutterwavePaymentLink = async (payload: PaymentPayload): Promis
           Authorization: `Bearer ${SECRET_KEY}`,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (response.data.status === "success") {
@@ -96,10 +106,14 @@ export const getFlutterwavePaymentLink = async (payload: PaymentPayload): Promis
     }
 
     throw new Error(response.data.message || "Failed to get payment link");
-  } catch (error: any) {
-    console.error("Flutterwave payment link error:", error.response?.data || error.message);
+  } catch (error: unknown) {
+    const axiosError = error as { response?: { data?: { message?: string } }; message?: string };
+    console.error(
+      "Flutterwave payment link error:",
+      axiosError.response?.data || axiosError.message,
+    );
     throw new Error(
-      error.response?.data?.message || "Failed to create payment link"
+      axiosError.response?.data?.message || "Failed to create payment link",
     );
   }
 };
@@ -109,7 +123,7 @@ export const createInvoice = async (
   customer_email: string,
   amount: number,
   currency: string = "RWF",
-  description: string = "Service Payment"
+  description: string = "Service Payment",
 ) => {
   try {
     const response = await axios.post(
@@ -132,22 +146,26 @@ export const createInvoice = async (
           email: customer_email,
         },
         currency,
-        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0],
       },
       {
         headers: {
           Authorization: `Bearer ${SECRET_KEY}`,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     return response.data;
-  } catch (error: any) {
-    console.error("Flutterwave invoice creation error:", error.response?.data || error.message);
-    throw new Error(
-      error.response?.data?.message || "Invoice creation failed"
+  } catch (error: unknown) {
+    const axiosError = error as { response?: { data?: { message?: string } }; message?: string };
+    console.error(
+      "Flutterwave invoice creation error:",
+      axiosError.response?.data || axiosError.message,
     );
+    throw new Error(axiosError.response?.data?.message || "Invoice creation failed");
   }
 };
 
@@ -159,14 +177,18 @@ export const getPaymentStatus = async (transactionId: string) => {
         headers: {
           Authorization: `Bearer ${SECRET_KEY}`,
         },
-      }
+      },
     );
 
     return response.data.data;
-  } catch (error: any) {
-    console.error("Flutterwave status check error:", error.response?.data || error.message);
+  } catch (error: unknown) {
+    const axiosError = error as { response?: { data?: { message?: string } }; message?: string };
+    console.error(
+      "Flutterwave status check error:",
+      axiosError.response?.data || axiosError.message,
+    );
     throw new Error(
-      error.response?.data?.message || "Failed to get payment status"
+      axiosError.response?.data?.message || "Failed to get payment status",
     );
   }
 };

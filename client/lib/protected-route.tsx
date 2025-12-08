@@ -17,23 +17,70 @@ export function ProtectedRoute({
   requiredRole,
   fallbackPath = "/",
 }: ProtectedRouteProps) {
-  const [status, setStatus] = useState<"loading" | "allowed" | "denied">("loading");
+  const [status, setStatus] = useState<"loading" | "allowed" | "denied">(
+    "loading",
+  );
 
   useEffect(() => {
     let active = true;
     (async () => {
+      console.log(
+        "ProtectedRoute - checking auth, requiredRole:",
+        requiredRole,
+      );
+
+      // First check for mock auth token
+      const mockToken = sessionStorage.getItem("auth_token");
+      console.log("ProtectedRoute - checking mock token:", !!mockToken);
+
+      if (mockToken) {
+        // Check role from user_info
+        const userInfo = sessionStorage.getItem("user_info");
+        console.log("ProtectedRoute - user_info:", userInfo);
+
+        if (userInfo) {
+          try {
+            const parsed = JSON.parse(userInfo);
+            console.log("ProtectedRoute - parsed user_info role:", parsed.role);
+
+            if (requiredRole && parsed.role !== requiredRole) {
+              console.log("ProtectedRoute - role mismatch:", {
+                required: requiredRole,
+                actual: parsed.role,
+              });
+              if (active) setStatus("denied");
+              return;
+            }
+
+            console.log("ProtectedRoute - allowing access");
+            if (active) setStatus("allowed");
+            return;
+          } catch (err) {
+            console.error("ProtectedRoute - error parsing user_info:", err);
+          }
+        }
+      }
+
+      // Fall back to Supabase session
+      console.log("ProtectedRoute - checking Supabase session");
       const { data } = await supabase.auth.getSession();
       if (!data.session) {
+        console.log("ProtectedRoute - no Supabase session, denying access");
         if (active) setStatus("denied");
         return;
       }
 
       const { profile } = await getCurrentUser();
       if (requiredRole && profile?.role !== requiredRole) {
+        console.log("ProtectedRoute - Supabase role mismatch:", {
+          required: requiredRole,
+          actual: profile?.role,
+        });
         if (active) setStatus("denied");
         return;
       }
 
+      console.log("ProtectedRoute - Supabase auth allowed");
       if (active) setStatus("allowed");
     })();
 

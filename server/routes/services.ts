@@ -16,13 +16,13 @@ router.get("/", async (_req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      data: services || []
+      data: services || [],
     });
   } catch (error) {
     console.error("Get services error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get services"
+      error: error instanceof Error ? error.message : "Failed to get services",
     });
   }
 });
@@ -45,19 +45,19 @@ router.get("/:id", async (req: Request, res: Response) => {
     if (!service) {
       return res.status(404).json({
         success: false,
-        error: "Service not found"
+        error: "Service not found",
       });
     }
 
     return res.json({
       success: true,
-      data: service
+      data: service,
     });
   } catch (error) {
     console.error("Get service error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get service"
+      error: error instanceof Error ? error.message : "Failed to get service",
     });
   }
 });
@@ -65,19 +65,19 @@ router.get("/:id", async (req: Request, res: Response) => {
 // Create service (admin only)
 router.post("/", async (req: Request, res: Response) => {
   try {
-    const role = (req as any).userProfile?.role;
+    const role = (req as unknown as { userProfile: Record<string, unknown> }).userProfile?.role;
     if (role !== "admin") {
       return res.status(403).json({ success: false, error: "Forbidden" });
     }
 
     const serviceData = req.body;
 
-    const { data: service, error } = await (supabase as any)
+    const { data: service, error } = await supabase
       .from("services")
       .insert({
         ...serviceData,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .select()
       .single();
@@ -89,13 +89,14 @@ router.post("/", async (req: Request, res: Response) => {
     return res.json({
       success: true,
       data: service,
-      message: "Service created successfully"
+      message: "Service created successfully",
     });
   } catch (error) {
     console.error("Create service error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to create service"
+      error:
+        error instanceof Error ? error.message : "Failed to create service",
     });
   }
 });
@@ -103,7 +104,7 @@ router.post("/", async (req: Request, res: Response) => {
 // Update service
 router.put("/:id", async (req: Request, res: Response) => {
   try {
-    const role = (req as any).userProfile?.role;
+    const role = (req as unknown as { userProfile: Record<string, unknown> }).userProfile?.role;
     if (role !== "admin") {
       return res.status(403).json({ success: false, error: "Forbidden" });
     }
@@ -111,12 +112,12 @@ router.put("/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
     const updateData = req.body;
 
-    const { data: service, error } = await (supabase as any)
+    const { data: service, error } = await supabase
       .from("services")
       .update({
         ...updateData,
-        updated_at: new Date().toISOString()
-      })
+        updated_at: new Date().toISOString(),
+      } as never)
       .eq("id", id)
       .select()
       .single();
@@ -128,13 +129,14 @@ router.put("/:id", async (req: Request, res: Response) => {
     return res.json({
       success: true,
       data: service,
-      message: "Service updated successfully"
+      message: "Service updated successfully",
     });
   } catch (error) {
     console.error("Update service error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update service"
+      error:
+        error instanceof Error ? error.message : "Failed to update service",
     });
   }
 });
@@ -142,17 +144,14 @@ router.put("/:id", async (req: Request, res: Response) => {
 // Delete service
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
-    const role = (req as any).userProfile?.role;
+    const role = (req as unknown as { userProfile: Record<string, unknown> }).userProfile?.role;
     if (role !== "admin") {
       return res.status(403).json({ success: false, error: "Forbidden" });
     }
 
     const { id } = req.params;
 
-    const { error } = await supabase
-      .from("services")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("services").delete().eq("id", id);
 
     if (error) {
       throw new Error(error.message);
@@ -160,13 +159,14 @@ router.delete("/:id", async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      message: "Service deleted successfully"
+      message: "Service deleted successfully",
     });
   } catch (error) {
     console.error("Delete service error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete service"
+      error:
+        error instanceof Error ? error.message : "Failed to delete service",
     });
   }
 });

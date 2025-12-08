@@ -77,9 +77,9 @@ export const clearAuthData = () => {
 export const isAuthenticated = (): boolean => {
   const token = getAccessToken();
   if (!token) return false;
-  
+
   // Basic token validation (check if it's a JWT format)
-  const tokenParts = token.split('.');
+  const tokenParts = token.split(".");
   return tokenParts.length === 3; // JWT should have 3 parts
 };
 
@@ -93,8 +93,8 @@ export const refreshToken = async (): Promise<TokenData | null> => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${refreshToken}`
-      }
+        Authorization: `Bearer ${refreshToken}`,
+      },
     });
 
     if (response.ok) {
@@ -102,15 +102,15 @@ export const refreshToken = async (): Promise<TokenData | null> => {
       if (result.data?.access_token) {
         const newTokens: TokenData = {
           accessToken: result.data.access_token,
-          refreshToken: result.data.refresh_token || refreshToken
+          refreshToken: result.data.refresh_token || refreshToken,
         };
-        
+
         // Update stored tokens
         const userInfo = getUserInfo();
         if (userInfo) {
           storeTokens(newTokens, userInfo);
         }
-        
+
         return newTokens;
       }
     }
@@ -127,9 +127,9 @@ export const validateToken = async (token: string): Promise<boolean> => {
     const response = await fetch("/api/auth/verify", {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      }
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
     });
     return response.ok;
   } catch (error) {

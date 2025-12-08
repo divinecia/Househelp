@@ -1,10 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getPayments } from "@/lib/api-client";
 import { toast } from "sonner";
-import { CreditCard, CheckCircle, Clock, AlertCircle, Download } from "lucide-react";
+import {
+  CreditCard,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  Download,
+} from "lucide-react";
 
 interface Payment {
   id: string;
@@ -25,21 +31,12 @@ export default function HomeownerPayments() {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
 
-  useEffect(() => {
-    fetchPayments();
-  }, []);
-
-  useEffect(() => {
-    filterPayments(selectedStatus);
-  }, [selectedStatus, payments]);
-
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getPayments();
       if (response.success && Array.isArray(response.data)) {
         setPayments(response.data);
-        filterPayments(selectedStatus);
       } else {
         toast.error("Failed to load payments");
       }
@@ -49,15 +46,23 @@ export default function HomeownerPayments() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const filterPayments = (status: string) => {
+  const filterPayments = useCallback((status: string) => {
     if (status === "all") {
       setFilteredPayments(payments);
     } else {
       setFilteredPayments(payments.filter((p) => p.status === status));
     }
-  };
+  }, [payments]);
+
+  useEffect(() => {
+    fetchPayments();
+  }, [fetchPayments]);
+
+  useEffect(() => {
+    filterPayments(selectedStatus);
+  }, [filterPayments, selectedStatus]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -143,7 +148,9 @@ export default function HomeownerPayments() {
             <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Pending Payment</p>
+                  <p className="text-sm text-muted-foreground">
+                    Pending Payment
+                  </p>
                   <p className="text-2xl font-bold text-foreground mt-2">
                     {totals.pending.toLocaleString()} RWF
                   </p>
@@ -155,7 +162,9 @@ export default function HomeownerPayments() {
             <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Transactions</p>
+                  <p className="text-sm text-muted-foreground">
+                    Total Transactions
+                  </p>
                   <p className="text-2xl font-bold text-foreground mt-2">
                     {payments.length}
                   </p>
@@ -173,9 +182,7 @@ export default function HomeownerPayments() {
             >
               Make Payment
             </button>
-            <button
-              className="px-6 py-2 border border-gray-300 text-foreground font-semibold rounded-lg hover:bg-gray-50 flex items-center gap-2"
-            >
+            <button className="px-6 py-2 border border-gray-300 text-foreground font-semibold rounded-lg hover:bg-gray-50 flex items-center gap-2">
               <Download className="w-4 h-4" />
               Export
             </button>
@@ -335,7 +342,9 @@ export default function HomeownerPayments() {
               {selectedPayment.description && (
                 <div>
                   <p className="text-sm text-muted-foreground">Description</p>
-                  <p className="text-foreground">{selectedPayment.description}</p>
+                  <p className="text-foreground">
+                    {selectedPayment.description}
+                  </p>
                 </div>
               )}
 

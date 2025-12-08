@@ -39,7 +39,7 @@ export const sanitizeEmail = (email: string): string => {
  * Sanitize phone number to remove non-numeric characters (except + and -)
  */
 export const sanitizePhoneNumber = (phone: string): string => {
-  return phone.replace(/[^\d+\-]/g, "");
+  return phone.replace(/[^\d+-]/g, "");
 };
 
 /**
@@ -61,7 +61,7 @@ export const sanitizeURL = (url: string): string => {
 /**
  * Sanitize object keys to prevent prototype pollution
  */
-export const sanitizeObject = <T extends Record<string, any>>(obj: T): T => {
+export const sanitizeObject = <T extends Record<string, unknown>>(obj: T): T => {
   const dangerous = ["__proto__", "constructor", "prototype"];
   const sanitized = { ...obj };
 

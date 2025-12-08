@@ -3,7 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Search, Calendar, Clock, DollarSign, User } from "lucide-react";
 
 interface Booking {
@@ -72,7 +79,9 @@ export default function AdminBooking() {
       case "pending":
         return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
       case "in-progress":
-        return <Badge className="bg-purple-100 text-purple-800">In Progress</Badge>;
+        return (
+          <Badge className="bg-purple-100 text-purple-800">In Progress</Badge>
+        );
       case "completed":
         return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
       case "cancelled":
@@ -95,11 +104,12 @@ export default function AdminBooking() {
     }
   };
 
-  const filteredBookings = bookings.filter(booking =>
-    (booking.homeownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     booking.workerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     booking.serviceType.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (statusFilter === "all" || booking.status === statusFilter)
+  const filteredBookings = bookings.filter(
+    (booking) =>
+      (booking.homeownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.workerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.serviceType.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (statusFilter === "all" || booking.status === statusFilter),
   );
 
   const statusOptions = [
@@ -135,7 +145,7 @@ export default function AdminBooking() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               >
-                {statusOptions.map(option => (
+                {statusOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -164,7 +174,9 @@ export default function AdminBooking() {
               <TableBody>
                 {filteredBookings.map((booking) => (
                   <TableRow key={booking.id}>
-                    <TableCell className="font-medium">{booking.homeownerName}</TableCell>
+                    <TableCell className="font-medium">
+                      {booking.homeownerName}
+                    </TableCell>
                     <TableCell>{booking.workerName}</TableCell>
                     <TableCell>{booking.serviceType}</TableCell>
                     <TableCell>
@@ -186,7 +198,9 @@ export default function AdminBooking() {
                         {booking.totalAmount.toLocaleString()} RWF
                       </div>
                     </TableCell>
-                    <TableCell>{getPaymentStatusBadge(booking.paymentStatus)}</TableCell>
+                    <TableCell>
+                      {getPaymentStatusBadge(booking.paymentStatus)}
+                    </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline">

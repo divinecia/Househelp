@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { Calendar, MapPin, DollarSign, Clock, User, Search, Filter } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  DollarSign,
+  Clock,
+  User,
+  Search,
+  Filter,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface Worker {
@@ -20,17 +28,17 @@ interface Booking {
   date: string;
   time: string;
   duration: string;
-  status: 'pending' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled';
+  status: "pending" | "confirmed" | "in-progress" | "completed" | "cancelled";
   amount: number;
   location: string;
 }
 
 export default function HomeownerBooking() {
-  const [activeTab, setActiveTab] = useState<'book' | 'my-bookings'>('book');
+  const [activeTab, setActiveTab] = useState<"book" | "my-bookings">("book");
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedService, setSelectedService] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedService, setSelectedService] = useState<string>("all");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,89 +50,93 @@ export default function HomeownerBooking() {
       // TODO: Replace with actual API calls
       const mockWorkers: Worker[] = [
         {
-          id: '1',
-          name: 'Alice Mukamana',
+          id: "1",
+          name: "Alice Mukamana",
           rating: 4.8,
-          experience: '5 years',
+          experience: "5 years",
           hourlyRate: 5000,
-          services: ['House Cleaning', 'Laundry', 'Cooking'],
-          availability: 'Available',
+          services: ["House Cleaning", "Laundry", "Cooking"],
+          availability: "Available",
         },
         {
-          id: '2',
-          name: 'Jean Baptiste',
+          id: "2",
+          name: "Jean Baptiste",
           rating: 4.6,
-          experience: '3 years',
+          experience: "3 years",
           hourlyRate: 4500,
-          services: ['Garden Maintenance', 'House Cleaning'],
-          availability: 'Available',
+          services: ["Garden Maintenance", "House Cleaning"],
+          availability: "Available",
         },
         {
-          id: '3',
-          name: 'Marie Claire',
+          id: "3",
+          name: "Marie Claire",
           rating: 4.9,
-          experience: '7 years',
+          experience: "7 years",
           hourlyRate: 6000,
-          services: ['Childcare', 'Cooking', 'House Cleaning'],
-          availability: 'Busy until Dec 10',
+          services: ["Childcare", "Cooking", "House Cleaning"],
+          availability: "Busy until Dec 10",
         },
       ];
 
       const mockBookings: Booking[] = [
         {
-          id: '1',
-          worker: 'Alice Mukamana',
-          service: 'House Cleaning',
-          date: '2025-12-07',
-          time: '09:00',
-          duration: '4 hours',
-          status: 'confirmed',
+          id: "1",
+          worker: "Alice Mukamana",
+          service: "House Cleaning",
+          date: "2025-12-07",
+          time: "09:00",
+          duration: "4 hours",
+          status: "confirmed",
           amount: 20000,
-          location: 'Kigali, Kimihurura',
+          location: "Kigali, Kimihurura",
         },
         {
-          id: '2',
-          worker: 'Jean Baptiste',
-          service: 'Garden Maintenance',
-          date: '2025-12-08',
-          time: '14:00',
-          duration: '3 hours',
-          status: 'pending',
+          id: "2",
+          worker: "Jean Baptiste",
+          service: "Garden Maintenance",
+          date: "2025-12-08",
+          time: "14:00",
+          duration: "3 hours",
+          status: "pending",
           amount: 13500,
-          location: 'Kigali, Remera',
+          location: "Kigali, Remera",
         },
       ];
 
       setWorkers(mockWorkers);
       setBookings(mockBookings);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusColor = (status: Booking['status']) => {
+  const getStatusColor = (status: Booking["status"]) => {
     switch (status) {
-      case 'confirmed':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'in-progress':
-        return 'bg-blue-100 text-blue-800';
-      case 'completed':
-        return 'bg-gray-100 text-gray-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
+      case "confirmed":
+        return "bg-green-100 text-green-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "in-progress":
+        return "bg-blue-100 text-blue-800";
+      case "completed":
+        return "bg-gray-100 text-gray-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const filteredWorkers = workers.filter((worker) => {
-    const matchesSearch = worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      worker.services.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesService = selectedService === 'all' || worker.services.includes(selectedService);
+    const matchesSearch =
+      worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      worker.services.some((s) =>
+        s.toLowerCase().includes(searchTerm.toLowerCase()),
+      );
+    const matchesService =
+      selectedService === "all" || worker.services.includes(selectedService);
     return matchesSearch && matchesService;
   });
 
@@ -147,21 +159,21 @@ export default function HomeownerBooking() {
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           <button
-            onClick={() => setActiveTab('book')}
+            onClick={() => setActiveTab("book")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'book'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              activeTab === "book"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
           >
             Book a Worker
           </button>
           <button
-            onClick={() => setActiveTab('my-bookings')}
+            onClick={() => setActiveTab("my-bookings")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'my-bookings'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              activeTab === "my-bookings"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
           >
             My Bookings
@@ -173,13 +185,16 @@ export default function HomeownerBooking() {
       </div>
 
       {/* Book a Worker Tab */}
-      {activeTab === 'book' && (
+      {activeTab === "book" && (
         <div className="space-y-6">
           {/* Search and Filter */}
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="relative">
-                <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Search
+                  size={20}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                />
                 <input
                   type="text"
                   placeholder="Search workers or services..."
@@ -189,7 +204,10 @@ export default function HomeownerBooking() {
                 />
               </div>
               <div className="relative">
-                <Filter size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Filter
+                  size={20}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                />
                 <select
                   value={selectedService}
                   onChange={(e) => setSelectedService(e.target.value)}
@@ -216,13 +234,18 @@ export default function HomeownerBooking() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredWorkers.map((worker) => (
-                <div key={worker.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div
+                  key={worker.id}
+                  className="bg-white p-6 rounded-lg shadow-sm border border-gray-200"
+                >
                   <div className="flex items-center mb-4">
                     <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
                       <User size={32} className="text-gray-400" />
                     </div>
                     <div className="ml-4">
-                      <h3 className="font-semibold text-gray-900">{worker.name}</h3>
+                      <h3 className="font-semibold text-gray-900">
+                        {worker.name}
+                      </h3>
                       <div className="flex items-center text-sm text-gray-600">
                         <span className="text-yellow-400"></span>
                         <span className="ml-1">{worker.rating}</span>
@@ -242,7 +265,9 @@ export default function HomeownerBooking() {
                   </div>
 
                   <div className="mb-4">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Services:</p>
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                      Services:
+                    </p>
                     <div className="flex flex-wrap gap-2">
                       {worker.services.map((service, index) => (
                         <span
@@ -256,11 +281,13 @@ export default function HomeownerBooking() {
                   </div>
 
                   <div className="mb-4">
-                    <span className={`px-3 py-1 text-xs rounded-full ${
-                      worker.availability === 'Available'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
+                    <span
+                      className={`px-3 py-1 text-xs rounded-full ${
+                        worker.availability === "Available"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
                       {worker.availability}
                     </span>
                   </div>
@@ -279,14 +306,14 @@ export default function HomeownerBooking() {
       )}
 
       {/* My Bookings Tab */}
-      {activeTab === 'my-bookings' && (
+      {activeTab === "my-bookings" && (
         <div className="space-y-4">
           {bookings.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <Calendar size={64} className="mx-auto mb-4 text-gray-300" />
               <p className="text-lg">No bookings yet</p>
               <button
-                onClick={() => setActiveTab('book')}
+                onClick={() => setActiveTab("book")}
                 className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
                 Book Your First Worker
@@ -294,19 +321,28 @@ export default function HomeownerBooking() {
             </div>
           ) : (
             bookings.map((booking) => (
-              <div key={booking.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <div
+                key={booking.id}
+                className="bg-white p-6 rounded-lg shadow-sm border border-gray-200"
+              >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">{booking.service}</h3>
-                      <span className={`px-3 py-1 text-xs rounded-full ${getStatusColor(booking.status)}`}>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {booking.service}
+                      </h3>
+                      <span
+                        className={`px-3 py-1 text-xs rounded-full ${getStatusColor(booking.status)}`}
+                      >
                         {booking.status}
                       </span>
                     </div>
                     <p className="text-sm text-gray-600">{booking.worker}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-gray-900">RWF {booking.amount.toLocaleString()}</p>
+                    <p className="text-lg font-bold text-gray-900">
+                      RWF {booking.amount.toLocaleString()}
+                    </p>
                     <p className="text-sm text-gray-600">{booking.duration}</p>
                   </div>
                 </div>
@@ -326,7 +362,7 @@ export default function HomeownerBooking() {
                   <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm font-medium">
                     View Details
                   </button>
-                  {booking.status === 'pending' && (
+                  {booking.status === "pending" && (
                     <>
                       <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">
                         Confirm
@@ -336,7 +372,7 @@ export default function HomeownerBooking() {
                       </button>
                     </>
                   )}
-                  {booking.status === 'completed' && (
+                  {booking.status === "completed" && (
                     <button className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 text-sm font-medium">
                       Rate Worker
                     </button>

@@ -31,14 +31,19 @@ export const workerRegistrationSchema = z.object({
   fullName: nameSchema,
   dateOfBirth: z.string().min(1, "Date of birth is required"),
   gender: z.enum(["male", "female", "other"]).optional(),
-  maritalStatus: z.enum(["single", "married", "divorced", "widowed"]).optional(),
+  maritalStatus: z
+    .enum(["single", "married", "divorced", "widowed"])
+    .optional(),
   email: emailSchema,
   phoneNumber: phoneSchema,
   password: passwordSchema,
   nationalId: z
     .string()
     .min(1, "National ID is required")
-    .regex(/^\d{16}$/, "National ID must be exactly 16 digits in Rwanda format"),
+    .regex(
+      /^\d{16}$/,
+      "National ID must be exactly 16 digits in Rwanda format",
+    ),
   typeOfWork: z.string().optional(),
   workExperience: z.string().optional(),
   expectedWages: z.string().optional(),
@@ -54,7 +59,9 @@ export const workerRegistrationSchema = z.object({
   emergencyContact: phoneSchema.optional(),
   bankAccountNumber: z.string().optional(),
   accountHolder: z.string().optional(),
-  termsAccepted: z.boolean().refine((val) => val === true, "You must accept the terms and conditions"),
+  termsAccepted: z
+    .boolean()
+    .refine((val) => val === true, "You must accept the terms and conditions"),
 });
 
 export type WorkerRegistrationInput = z.infer<typeof workerRegistrationSchema>;
@@ -69,7 +76,9 @@ export const homeownerRegistrationSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   homeAddress: z.string().min(1, "Home address is required"),
-  typeOfResidence: z.enum(["studio", "apartment", "villa", "mansion"]).optional(),
+  typeOfResidence: z
+    .enum(["studio", "apartment", "villa", "mansion"])
+    .optional(),
   numberOfFamilyMembers: z.string().optional(),
   homeComposition: z
     .object({
@@ -96,14 +105,23 @@ export const homeownerRegistrationSchema = z.object({
   bankDetails: z.string().optional(),
   religious: z.string().optional(),
   smokingDrinkingRestrictions: z
-    .enum(["no_smoking_no_drinking", "smoking_allowed", "drinking_allowed", "both_allowed"])
+    .enum([
+      "no_smoking_no_drinking",
+      "smoking_allowed",
+      "drinking_allowed",
+      "both_allowed",
+    ])
     .optional(),
   specificSkillsNeeded: z.string().optional(),
   selectedDays: z.string().optional(),
-  termsAccepted: z.boolean().refine((val) => val === true, "You must accept the terms and conditions"),
+  termsAccepted: z
+    .boolean()
+    .refine((val) => val === true, "You must accept the terms and conditions"),
 });
 
-export type HomeownerRegistrationInput = z.infer<typeof homeownerRegistrationSchema>;
+export type HomeownerRegistrationInput = z.infer<
+  typeof homeownerRegistrationSchema
+>;
 
 /**
  * Admin Registration Schema
@@ -131,9 +149,9 @@ export type LoginInput = z.infer<typeof loginSchema>;
 /**
  * Validate form data and return errors
  */
-export const validateFormData = <T extends Record<string, any>>(
+export const validateFormData = <T extends Record<string, unknown>>(
   schema: z.ZodSchema,
-  data: T
+  data: T,
 ): Record<string, string> => {
   const result = schema.safeParse(data);
 

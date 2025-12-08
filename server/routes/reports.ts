@@ -4,14 +4,12 @@ import type { Database } from "../../shared/types";
 
 const router = Router();
 
-type ReportUpdate = Database['public']['Tables']['reports']['Update'];
+type ReportUpdate = Database["public"]["Tables"]["reports"]["Update"];
 
 // Get all reports
 router.get("/", async (_req: Request, res: Response) => {
   try {
-    const { data: reports, error } = await supabase
-      .from("reports")
-      .select("*");
+    const { data: reports, error } = await supabase.from("reports").select("*");
 
     if (error) {
       throw new Error(error.message);
@@ -19,13 +17,13 @@ router.get("/", async (_req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      data: reports || []
+      data: reports || [],
     });
   } catch (error) {
     console.error("Get reports error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get reports"
+      error: error instanceof Error ? error.message : "Failed to get reports",
     });
   }
 });
@@ -48,19 +46,19 @@ router.get("/:id", async (req: Request, res: Response) => {
     if (!report) {
       return res.status(404).json({
         success: false,
-        error: "Report not found"
+        error: "Report not found",
       });
     }
 
     return res.json({
       success: true,
-      data: report
+      data: report,
     });
   } catch (error) {
     console.error("Get report error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get report"
+      error: error instanceof Error ? error.message : "Failed to get report",
     });
   }
 });
@@ -75,7 +73,7 @@ router.post("/", async (req: Request, res: Response) => {
       .insert({
         ...reportData,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .select()
       .single();
@@ -87,13 +85,13 @@ router.post("/", async (req: Request, res: Response) => {
     return res.json({
       success: true,
       data: report,
-      message: "Report created successfully"
+      message: "Report created successfully",
     });
   } catch (error) {
     console.error("Create report error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to create report"
+      error: error instanceof Error ? error.message : "Failed to create report",
     });
   }
 });
@@ -109,12 +107,12 @@ router.put("/:id", async (req: Request, res: Response) => {
       description: updateData.description,
       type: updateData.type,
       status: updateData.status,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
 
-    const { data: report, error } = await (supabase as any)
+    const { data: report, error } = await supabase
       .from("reports")
-      .update(updatePayload)
+      .update(updatePayload as never)
       .eq("id", id)
       .select()
       .single();
@@ -126,13 +124,13 @@ router.put("/:id", async (req: Request, res: Response) => {
     return res.json({
       success: true,
       data: report,
-      message: "Report updated successfully"
+      message: "Report updated successfully",
     });
   } catch (error) {
     console.error("Update report error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update report"
+      error: error instanceof Error ? error.message : "Failed to update report",
     });
   }
 });
@@ -142,10 +140,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const { error } = await supabase
-      .from("reports")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("reports").delete().eq("id", id);
 
     if (error) {
       throw new Error(error.message);
@@ -153,13 +148,13 @@ router.delete("/:id", async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      message: "Report deleted successfully"
+      message: "Report deleted successfully",
     });
   } catch (error) {
     console.error("Delete report error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete report"
+      error: error instanceof Error ? error.message : "Failed to delete report",
     });
   }
 });

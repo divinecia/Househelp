@@ -31,8 +31,12 @@ export default function HomeownerLogin() {
     }
 
     try {
-      const user = await loginUser("homeowner", formData.email, formData.password);
-      
+      const user = await loginUser(
+        "homeowner",
+        formData.email,
+        formData.password,
+      );
+
       if (user) {
         toast.success("Login successful!");
         navigate("/homeowner/dashboard");
@@ -62,7 +66,10 @@ export default function HomeownerLogin() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm"
+          >
             {error && (
               <div className="mb-6 p-4 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm">
                 {error}
@@ -70,7 +77,10 @@ export default function HomeownerLogin() {
             )}
 
             <div className="mb-6">
-              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Email Address
               </label>
               <input
@@ -85,7 +95,10 @@ export default function HomeownerLogin() {
             </div>
 
             <div className="mb-8">
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Password
               </label>
               <input

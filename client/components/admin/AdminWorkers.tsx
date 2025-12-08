@@ -3,7 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Search, UserCheck, UserX } from "lucide-react";
 
 interface Worker {
@@ -55,20 +62,26 @@ export default function AdminWorkers() {
     }
   };
 
-  const handleStatusUpdate = async (workerId: string, status: "approved" | "rejected") => {
+  const handleStatusUpdate = async (
+    workerId: string,
+    status: "approved" | "rejected",
+  ) => {
     try {
       // TODO: Replace with actual API call
-      setWorkers(workers.map(worker => 
-        worker.id === workerId ? { ...worker, status } : worker
-      ));
+      setWorkers(
+        workers.map((worker) =>
+          worker.id === workerId ? { ...worker, status } : worker,
+        ),
+      );
     } catch (error) {
       console.error("Failed to update worker status:", error);
     }
   };
 
-  const filteredWorkers = workers.filter(worker =>
-    worker.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    worker.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredWorkers = workers.filter(
+    (worker) =>
+      worker.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      worker.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getStatusBadge = (status: string) => {
@@ -121,14 +134,20 @@ export default function AdminWorkers() {
               <TableBody>
                 {filteredWorkers.map((worker) => (
                   <TableRow key={worker.id}>
-                    <TableCell className="font-medium">{worker.fullName}</TableCell>
+                    <TableCell className="font-medium">
+                      {worker.fullName}
+                    </TableCell>
                     <TableCell>{worker.email}</TableCell>
                     <TableCell>{worker.phoneNumber}</TableCell>
                     <TableCell>{getStatusBadge(worker.status)}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {worker.skills.map((skill, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
+                          <Badge
+                            key={index}
+                            variant="secondary"
+                            className="text-xs"
+                          >
                             {skill}
                           </Badge>
                         ))}
@@ -139,7 +158,9 @@ export default function AdminWorkers() {
                         <div className="flex gap-2">
                           <Button
                             size="sm"
-                            onClick={() => handleStatusUpdate(worker.id, "approved")}
+                            onClick={() =>
+                              handleStatusUpdate(worker.id, "approved")
+                            }
                             className="bg-green-600 hover:bg-green-700"
                           >
                             <UserCheck className="h-4 w-4 mr-1" />
@@ -148,7 +169,9 @@ export default function AdminWorkers() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleStatusUpdate(worker.id, "rejected")}
+                            onClick={() =>
+                              handleStatusUpdate(worker.id, "rejected")
+                            }
                             className="border-red-300 text-red-600 hover:bg-red-50"
                           >
                             <UserX className="h-4 w-4 mr-1" />

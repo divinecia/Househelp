@@ -8,8 +8,8 @@ type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
 export const registerUserSupabase = async (
   role: UserRole,
-  data: WorkerData | HomeownerData | AdminData
-): Promise<{ user: any; profile: UserProfile }> => {
+  data: WorkerData | HomeownerData | AdminData,
+): Promise<{ user: unknown; profile: UserProfile }> => {
   try {
     const email = data.email || "";
     const password = data.password || "";
@@ -27,7 +27,7 @@ export const registerUserSupabase = async (
       throw new Error("Registration failed: User not created");
     }
 
-    const { data: profile, error: profileError } = await (supabase as any)
+    const { data: profile, error: profileError } = await supabase
       .from("user_profiles")
       .insert([
         {
@@ -35,7 +35,7 @@ export const registerUserSupabase = async (
           full_name: data.fullName || "",
           role,
         },
-      ])
+      ] as never)
       .select()
       .single();
 
@@ -55,13 +55,14 @@ export const registerUserSupabase = async (
 
 export const loginUserSupabase = async (
   email: string,
-  password: string
-): Promise<{ user: any; profile: UserProfile }> => {
+  password: string,
+): Promise<{ user: unknown; profile: UserProfile }> => {
   try {
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data: authData, error: authError } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
     if (authError) {
       throw new Error(authError.message);
@@ -71,14 +72,14 @@ export const loginUserSupabase = async (
       throw new Error("Login failed: User not found");
     }
 
-    const { data: profile, error: profileError } = await (supabase as any)
+    const { data: profile, error: profileError } = await supabase
       .from("user_profiles")
       .select("*")
       .eq("user_id", authData.user.id)
-      .single() as { data: UserProfile; error: any };
+      .single() as { data: UserProfile; error: unknown };
 
     if (profileError) {
-      throw new Error(profileError.message);
+      throw new Error(profileError instanceof Error ? profileError.message : "Profile query error");
     }
 
     return {
@@ -92,7 +93,7 @@ export const loginUserSupabase = async (
 };
 
 export const getCurrentUser = async (): Promise<{
-  user: any;
+  user: unknown;
   profile: UserProfile | null;
 }> => {
   try {
@@ -101,14 +102,15 @@ export const getCurrentUser = async (): Promise<{
       return { user: null, profile: null };
     }
 
-    const { data: profile, error: profileError } = await (supabase as any)
+    const { data: profile, error: profileError } = await supabase
       .from("user_profiles")
       .select("*")
       .eq("user_id", sessionData.session.user.id)
-      .single() as { data: UserProfile; error: any };
+      .single() as { data: UserProfile; error: unknown };
 
     if (profileError) {
-      console.error("Error fetching profile:", profileError.message);
+      const errorMsg = profileError instanceof Error ? profileError.message : "Profile query error";
+      console.error("Error fetching profile:", errorMsg);
       return { user: sessionData.session.user, profile: null };
     }
 
@@ -136,12 +138,12 @@ export const logoutUserSupabase = async (): Promise<void> => {
 
 export const updateUserProfile = async (
   userId: string,
-  profileData: Partial<Database["public"]["Tables"]["user_profiles"]["Update"]>
+  profileData: Partial<Database["public"]["Tables"]["user_profiles"]["Update"]>,
 ): Promise<UserProfile | null> => {
   try {
-    const { data, error } = await (supabase
-      .from("user_profiles") as any)
-      .update(profileData)
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .update(profileData as never)
       .eq("id", userId)
       .select()
       .single();
@@ -159,7 +161,7 @@ export const updateUserProfile = async (
 
 export const subscribeToUserNotifications = (
   userId: string,
-  callback: (notification: any) => void
+  callback: (notification: unknown) => void,
 ) => {
   const subscription = supabase
     .channel(`notifications:${userId}`)
@@ -173,7 +175,7 @@ export const subscribeToUserNotifications = (
       },
       (payload) => {
         callback(payload.new);
-      }
+      },
     )
     .subscribe();
 

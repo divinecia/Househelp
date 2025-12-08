@@ -22,7 +22,13 @@ import AdminTraining from "@/components/admin/AdminTraining";
 import AdminBooking from "@/components/admin/AdminBooking";
 import AdminReports from "@/components/admin/AdminReports";
 
-type AdminSection = "overview" | "workers" | "homeowners" | "training" | "booking" | "reports";
+type AdminSection =
+  | "overview"
+  | "workers"
+  | "homeowners"
+  | "training"
+  | "booking"
+  | "reports";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -32,22 +38,31 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      console.log("Checking admin authentication...");
       const isAuth = await isAuthenticatedAsync("admin");
+      console.log("Is authenticated:", isAuth);
+
       if (!isAuth) {
+        console.log("Not authenticated, redirecting to login");
         navigate("/admin/login");
         return;
       }
 
       try {
         const userData = await getUser("admin");
+        console.log("User data retrieved:", {
+          hasUser: !!userData,
+          hasProfile: !!userData?.profile,
+        });
+
         if (userData && userData.profile) {
           const adminData: AdminData = {
             fullName: userData.profile.full_name,
-            contactNumber: '',
-            gender: '',
-            email: userData.user?.email || '',
-            password: '',
-            termsAccepted: true
+            contactNumber: "",
+            gender: "",
+            email: (userData.user as { email?: string })?.email || "",
+            password: "",
+            termsAccepted: true,
           };
           setUser(adminData);
         } else {
@@ -132,7 +147,9 @@ export default function AdminDashboard() {
                   }`}
                 >
                   <Icon size={20} />
-                  {sidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
+                  {sidebarOpen && (
+                    <span className="text-sm font-medium">{item.label}</span>
+                  )}
                 </button>
               );
             })}
@@ -144,7 +161,9 @@ export default function AdminDashboard() {
               className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-destructive hover:bg-red-50 transition-colors"
             >
               <LogOut size={20} />
-              {sidebarOpen && <span className="text-sm font-medium">Logout</span>}
+              {sidebarOpen && (
+                <span className="text-sm font-medium">Logout</span>
+              )}
             </button>
           </div>
         </aside>

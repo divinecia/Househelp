@@ -15,7 +15,7 @@ export interface Payment {
   transaction_ref: string;
   payment_method: string;
   description: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -25,7 +25,7 @@ export const createPayment = async (
   amount: number,
   currency: string,
   description: string,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>,
 ): Promise<Payment> => {
   try {
     const transactionRef = `TXN-${userId}-${Date.now()}`;
@@ -41,9 +41,9 @@ export const createPayment = async (
       metadata: metadata || {},
     };
 
-    const { data: payment, error } = await (supabase
-      .from("payments") as any)
-      .insert([insertData])
+    const { data: payment, error } = await supabase
+      .from("payments")
+      .insert([insertData] as never)
       .select()
       .single();
 
@@ -66,7 +66,7 @@ export const processFlutterwavePayment = async (
   lastName: string,
   phoneNumber: string,
   description: string,
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>,
 ) => {
   try {
     const payment = await createPayment(
@@ -74,7 +74,7 @@ export const processFlutterwavePayment = async (
       amount,
       "RWF",
       description,
-      metadata
+      metadata,
     );
 
     const paymentPayload: PaymentPayload = {
@@ -94,7 +94,8 @@ export const processFlutterwavePayment = async (
       },
     };
 
-    const flutterwaveResponse = await initializeFlutterwavePayment(paymentPayload);
+    const flutterwaveResponse =
+      await initializeFlutterwavePayment(paymentPayload);
 
     if (flutterwaveResponse.status === "success") {
       return {
@@ -104,16 +105,21 @@ export const processFlutterwavePayment = async (
       };
     }
 
-    throw new Error(flutterwaveResponse.message || "Payment initialization failed");
+    throw new Error(
+      flutterwaveResponse.message || "Payment initialization failed",
+    );
   } catch (error) {
     console.error("Error processing Flutterwave payment:", error);
     throw error;
   }
 };
 
-export const verifyPayment = async (transactionId: string): Promise<Payment> => {
+export const verifyPayment = async (
+  transactionId: string,
+): Promise<Payment> => {
   try {
-    const flutterwaveVerification = await verifyFlutterwavePayment(transactionId);
+    const flutterwaveVerification =
+      await verifyFlutterwavePayment(transactionId);
 
     if (!flutterwaveVerification.data) {
       throw new Error("Transaction verification failed");
@@ -125,7 +131,7 @@ export const verifyPayment = async (transactionId: string): Promise<Payment> => 
       .from("payments")
       .select("*")
       .eq("transaction_ref", txRef)
-      .single() as { data: Payment; error: any };
+      .single() as { data: Payment; error: unknown };
 
     if (paymentError) {
       throw new Error("Payment record not found");
@@ -134,9 +140,9 @@ export const verifyPayment = async (transactionId: string): Promise<Payment> => 
     const isSuccessful = flutterwaveVerification.data.status === "successful";
     const newStatus = isSuccessful ? "success" : "failed";
 
-    const { data: updatedPayment, error: updateError } = await (supabase
-      .from("payments") as any)
-      .update({ status: newStatus })
+    const { data: updatedPayment, error: updateError } = await supabase
+      .from("payments")
+      .update({ status: newStatus } as never)
       .eq("id", payment.id)
       .select()
       .single();
@@ -151,7 +157,7 @@ export const verifyPayment = async (transactionId: string): Promise<Payment> => 
         payment.amount,
         payment.currency,
         "success",
-        txRef
+        txRef,
       );
     } else {
       await broadcastPaymentNotification(
@@ -159,7 +165,7 @@ export const verifyPayment = async (transactionId: string): Promise<Payment> => 
         payment.amount,
         payment.currency,
         "failed",
-        txRef
+        txRef,
       );
     }
 
@@ -173,7 +179,7 @@ export const verifyPayment = async (transactionId: string): Promise<Payment> => 
 export const getPaymentHistory = async (
   userId: string,
   limit: number = 50,
-  offset: number = 0
+  offset: number = 0,
 ): Promise<Payment[]> => {
   try {
     const { data: payments, error } = await supabase
@@ -200,10 +206,10 @@ export const getPaymentStats = async (userId: string) => {
       .from("payments")
       .select("amount, status")
       .eq("user_id", userId)
-      .eq("status", "success") as { data: Payment[]; error: any };
+      .eq("status", "success") as { data: Payment[]; error: unknown };
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error instanceof Error ? error.message : "Query error");
     }
 
     const totalPaid = payments?.reduce((sum, p) => sum + p.amount, 0) || 0;
@@ -212,7 +218,8 @@ export const getPaymentStats = async (userId: string) => {
     return {
       totalPaid,
       transactionCount,
-      averageTransaction: transactionCount > 0 ? totalPaid / transactionCount : 0,
+      averageTransaction:
+        transactionCount > 0 ? totalPaid / transactionCount : 0,
     };
   } catch (error) {
     console.error("Error fetching payment stats:", error);
@@ -226,9 +233,9 @@ export const getPaymentStats = async (userId: string) => {
 
 export const cancelPayment = async (paymentId: string): Promise<Payment> => {
   try {
-    const { data: payment, error } = await (supabase
-      .from("payments") as any)
-      .update({ status: "cancelled" })
+    const { data: payment, error } = await supabase
+      .from("payments")
+      .update({ status: "cancelled" } as never)
       .eq("id", paymentId)
       .select()
       .single();

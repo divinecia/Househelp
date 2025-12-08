@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
-import { User, Mail, Phone, Briefcase, Award, Edit2, Save, X } from "lucide-react";
+import {
+  User,
+  Mail,
+  Phone,
+  Briefcase,
+  Award,
+  Edit2,
+  Save,
+  X,
+} from "lucide-react";
 
 interface WorkerProfile {
   fullName: string;
@@ -25,7 +34,9 @@ interface WorkerProfile {
 export default function WorkerProfile() {
   const [profile, setProfile] = useState<WorkerProfile | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const [editedProfile, setEditedProfile] = useState<WorkerProfile | null>(null);
+  const [editedProfile, setEditedProfile] = useState<WorkerProfile | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -54,13 +65,13 @@ export default function WorkerProfile() {
         emergencyName: "Jean Mukamana",
         emergencyContact: "+250 788 654 321",
         bankAccountNumber: "1234567890",
-        accountHolder: "Alice Mukamana"
+        accountHolder: "Alice Mukamana",
       };
 
       setProfile(mockProfile);
       setEditedProfile(mockProfile);
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error("Error fetching profile:", error);
     } finally {
       setLoading(false);
     }
@@ -72,11 +83,11 @@ export default function WorkerProfile() {
     setSaving(true);
     try {
       // TODO: Make API call to update profile
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
       setProfile(editedProfile);
       setEditMode(false);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error updating profile:", error);
     } finally {
       setSaving(false);
     }
@@ -130,7 +141,7 @@ export default function WorkerProfile() {
               className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400"
             >
               <Save size={16} className="mr-2" />
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? "Saving..." : "Save"}
             </button>
             <button
               onClick={handleCancel}
@@ -154,12 +165,14 @@ export default function WorkerProfile() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name
+              </label>
               {editMode ? (
                 <input
                   type="text"
                   value={editedProfile.fullName}
-                  onChange={(e) => handleChange('fullName', e.target.value)}
+                  onChange={(e) => handleChange("fullName", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -167,12 +180,14 @@ export default function WorkerProfile() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date of Birth
+              </label>
               {editMode ? (
                 <input
                   type="date"
                   value={editedProfile.dateOfBirth}
-                  onChange={(e) => handleChange('dateOfBirth', e.target.value)}
+                  onChange={(e) => handleChange("dateOfBirth", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -180,11 +195,13 @@ export default function WorkerProfile() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Gender
+              </label>
               {editMode ? (
                 <select
                   value={editedProfile.gender}
-                  onChange={(e) => handleChange('gender', e.target.value)}
+                  onChange={(e) => handleChange("gender", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option>Male</option>
@@ -196,11 +213,15 @@ export default function WorkerProfile() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Marital Status
+              </label>
               {editMode ? (
                 <select
                   value={editedProfile.maritalStatus}
-                  onChange={(e) => handleChange('maritalStatus', e.target.value)}
+                  onChange={(e) =>
+                    handleChange("maritalStatus", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option>Single</option>
@@ -213,7 +234,9 @@ export default function WorkerProfile() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">National ID</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                National ID
+              </label>
               <p className="text-gray-900">{profile.nationalId}</p>
             </div>
           </div>
@@ -227,16 +250,20 @@ export default function WorkerProfile() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
               <p className="text-gray-900">{profile.email}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number
+              </label>
               {editMode ? (
                 <input
                   type="tel"
                   value={editedProfile.phoneNumber}
-                  onChange={(e) => handleChange('phoneNumber', e.target.value)}
+                  onChange={(e) => handleChange("phoneNumber", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -254,12 +281,14 @@ export default function WorkerProfile() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Type of Work</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Type of Work
+              </label>
               {editMode ? (
                 <input
                   type="text"
                   value={editedProfile.typeOfWork}
-                  onChange={(e) => handleChange('typeOfWork', e.target.value)}
+                  onChange={(e) => handleChange("typeOfWork", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -267,12 +296,16 @@ export default function WorkerProfile() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Work Experience</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Work Experience
+              </label>
               {editMode ? (
                 <input
                   type="text"
                   value={editedProfile.workExperience}
-                  onChange={(e) => handleChange('workExperience', e.target.value)}
+                  onChange={(e) =>
+                    handleChange("workExperience", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -280,12 +313,16 @@ export default function WorkerProfile() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Expected Wages</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Expected Wages
+              </label>
               {editMode ? (
                 <input
                   type="text"
                   value={editedProfile.expectedWages}
-                  onChange={(e) => handleChange('expectedWages', e.target.value)}
+                  onChange={(e) =>
+                    handleChange("expectedWages", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -293,12 +330,16 @@ export default function WorkerProfile() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Working Hours & Days</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Working Hours & Days
+              </label>
               {editMode ? (
                 <input
                   type="text"
                   value={editedProfile.workingHoursAndDays}
-                  onChange={(e) => handleChange('workingHoursAndDays', e.target.value)}
+                  onChange={(e) =>
+                    handleChange("workingHoursAndDays", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -316,25 +357,35 @@ export default function WorkerProfile() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Education Qualification</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Education Qualification
+              </label>
               {editMode ? (
                 <input
                   type="text"
                   value={editedProfile.educationQualification}
-                  onChange={(e) => handleChange('educationQualification', e.target.value)}
+                  onChange={(e) =>
+                    handleChange("educationQualification", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
-                <p className="text-gray-900">{profile.educationQualification}</p>
+                <p className="text-gray-900">
+                  {profile.educationQualification}
+                </p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Language Proficiency</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Language Proficiency
+              </label>
               {editMode ? (
                 <input
                   type="text"
                   value={editedProfile.languageProficiency}
-                  onChange={(e) => handleChange('languageProficiency', e.target.value)}
+                  onChange={(e) =>
+                    handleChange("languageProficiency", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -342,12 +393,16 @@ export default function WorkerProfile() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Health Condition</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Health Condition
+              </label>
               {editMode ? (
                 <input
                   type="text"
                   value={editedProfile.healthCondition}
-                  onChange={(e) => handleChange('healthCondition', e.target.value)}
+                  onChange={(e) =>
+                    handleChange("healthCondition", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -365,12 +420,16 @@ export default function WorkerProfile() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Emergency Contact Name
+              </label>
               {editMode ? (
                 <input
                   type="text"
                   value={editedProfile.emergencyName}
-                  onChange={(e) => handleChange('emergencyName', e.target.value)}
+                  onChange={(e) =>
+                    handleChange("emergencyName", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -378,12 +437,16 @@ export default function WorkerProfile() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Emergency Contact Number
+              </label>
               {editMode ? (
                 <input
                   type="tel"
                   value={editedProfile.emergencyContact}
-                  onChange={(e) => handleChange('emergencyContact', e.target.value)}
+                  onChange={(e) =>
+                    handleChange("emergencyContact", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -401,12 +464,16 @@ export default function WorkerProfile() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Bank Account Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Bank Account Number
+              </label>
               {editMode ? (
                 <input
                   type="text"
                   value={editedProfile.bankAccountNumber}
-                  onChange={(e) => handleChange('bankAccountNumber', e.target.value)}
+                  onChange={(e) =>
+                    handleChange("bankAccountNumber", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -414,12 +481,16 @@ export default function WorkerProfile() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Account Holder</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Account Holder
+              </label>
               {editMode ? (
                 <input
                   type="text"
                   value={editedProfile.accountHolder}
-                  onChange={(e) => handleChange('accountHolder', e.target.value)}
+                  onChange={(e) =>
+                    handleChange("accountHolder", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (

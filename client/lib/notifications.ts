@@ -8,21 +8,21 @@ export const createNotification = async (
   type: Notification["type"],
   title: string,
   message: string,
-  data?: Record<string, any>
+  data?: Record<string, unknown>,
 ): Promise<Notification> => {
   try {
-    const insertData: Database["public"]["Tables"]["notifications"]["Insert"] = {
+    const insertData = {
       user_id: userId,
       type,
       title,
       message,
-      data: data || {},
+      data: (data || {}) as Database["public"]["Tables"]["notifications"]["Insert"]["data"],
       read: false,
     };
 
-    const { data: notification, error } = await (supabase
-      .from("notifications") as any)
-      .insert([insertData])
+    const { data: notification, error } = await supabase
+      .from("notifications")
+      .insert([insertData as never])
       .select()
       .single();
 
@@ -40,7 +40,7 @@ export const createNotification = async (
 export const getNotifications = async (
   userId: string,
   limit: number = 50,
-  offset: number = 0
+  offset: number = 0,
 ): Promise<Notification[]> => {
   try {
     const { data: notifications, error } = await supabase
@@ -48,26 +48,28 @@ export const getNotifications = async (
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1) as { data: Notification[]; error: any };
+      .range(offset, offset + limit - 1);
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return notifications || [];
+    return (notifications as Notification[]) || [];
   } catch (error) {
     console.error("Error fetching notifications:", error);
     throw error;
   }
 };
 
-export const getUnreadNotificationCount = async (userId: string): Promise<number> => {
+export const getUnreadNotificationCount = async (
+  userId: string,
+): Promise<number> => {
   try {
     const { count, error } = await supabase
       .from("notifications")
       .select("*", { count: "exact" })
       .eq("user_id", userId)
-      .eq("read", false) as { count: number; error: any };
+      .eq("read", false);
 
     if (error) {
       throw new Error(error.message);
@@ -80,11 +82,13 @@ export const getUnreadNotificationCount = async (userId: string): Promise<number
   }
 };
 
-export const markNotificationAsRead = async (notificationId: string): Promise<void> => {
+export const markNotificationAsRead = async (
+  notificationId: string,
+): Promise<void> => {
   try {
-    const { error } = await (supabase
-      .from("notifications") as any)
-      .update({ read: true })
+    const { error } = await supabase
+      .from("notifications")
+      .update({ read: true } as never)
       .eq("id", notificationId);
 
     if (error) {
@@ -96,11 +100,13 @@ export const markNotificationAsRead = async (notificationId: string): Promise<vo
   }
 };
 
-export const markAllNotificationsAsRead = async (userId: string): Promise<void> => {
+export const markAllNotificationsAsRead = async (
+  userId: string,
+): Promise<void> => {
   try {
-    const { error } = await (supabase
-      .from("notifications") as any)
-      .update({ read: true })
+    const { error } = await supabase
+      .from("notifications")
+      .update({ read: true } as never)
       .eq("user_id", userId)
       .eq("read", false);
 
@@ -113,7 +119,9 @@ export const markAllNotificationsAsRead = async (userId: string): Promise<void> 
   }
 };
 
-export const deleteNotification = async (notificationId: string): Promise<void> => {
+export const deleteNotification = async (
+  notificationId: string,
+): Promise<void> => {
   try {
     const { error } = await supabase
       .from("notifications")
@@ -131,7 +139,7 @@ export const deleteNotification = async (notificationId: string): Promise<void> 
 
 export const subscribeToNotifications = (
   userId: string,
-  callback: (notification: Notification) => void
+  callback: (notification: Notification) => void,
 ) => {
   const subscription = supabase
     .channel(`user-notifications:${userId}`)
@@ -143,11 +151,11 @@ export const subscribeToNotifications = (
         table: "notifications",
         filter: `user_id=eq.${userId}`,
       },
-      (payload) => {
+      (payload: { new: unknown }) => {
         if (payload.new) {
           callback(payload.new as Notification);
         }
-      }
+      },
     )
     .subscribe();
 
@@ -161,7 +169,7 @@ export const sendNotificationToUser = async (
   type: Notification["type"],
   title: string,
   message: string,
-  data?: Record<string, any>
+  data?: Record<string, unknown>,
 ): Promise<Notification> => {
   return createNotification(userId, type, title, message, data);
 };
@@ -171,7 +179,7 @@ export const broadcastPaymentNotification = async (
   amount: number,
   currency: string,
   status: "success" | "failed" | "pending",
-  transactionRef: string
+  transactionRef: string,
 ): Promise<Notification> => {
   const messages = {
     success: `Payment of ${amount} ${currency} completed successfully`,
@@ -189,6 +197,6 @@ export const broadcastPaymentNotification = async (
       currency,
       status,
       transactionRef,
-    }
+    } as Record<string, unknown>,
   );
 };

@@ -116,51 +116,77 @@ export default function HomeownerRegister() {
           workerInfoOpts,
           genders,
           criminalRecords,
-          smokingDrinking
+          smokingDrinking,
         ] = await Promise.all([
           getResidenceTypes(),
           getPaymentMethods(),
           getWorkerInfoOptions(),
           getGenders(),
           getCriminalRecordOptions(),
-          getSmokingDrinkingOptions()
+          getSmokingDrinkingOptions(),
         ]);
 
-        if (residences.success && Array.isArray(residences.data) && residences.data.length > 0) {
+        if (
+          residences.success &&
+          Array.isArray(residences.data) &&
+          residences.data.length > 0
+        ) {
           setResidenceTypes(residences.data);
         } else {
           console.error("Failed to load residence types from database");
         }
-        
-        if (paymentMethodsResult.success && Array.isArray(paymentMethodsResult.data) && paymentMethodsResult.data.length > 0) {
+
+        if (
+          paymentMethodsResult.success &&
+          Array.isArray(paymentMethodsResult.data) &&
+          paymentMethodsResult.data.length > 0
+        ) {
           setPaymentModes(paymentMethodsResult.data);
         } else {
           console.error("Failed to load payment methods from database");
         }
 
-        if (workerInfoOpts.success && Array.isArray(workerInfoOpts.data) && workerInfoOpts.data.length > 0) {
+        if (
+          workerInfoOpts.success &&
+          Array.isArray(workerInfoOpts.data) &&
+          workerInfoOpts.data.length > 0
+        ) {
           setWorkerInfos(workerInfoOpts.data);
         } else {
           console.error("Failed to load worker info options from database");
         }
 
-        if (genders.success && Array.isArray(genders.data) && genders.data.length > 0) {
+        if (
+          genders.success &&
+          Array.isArray(genders.data) &&
+          genders.data.length > 0
+        ) {
           setGendersList(genders.data);
         } else {
           console.error("Failed to load genders from database");
           toast.error("Failed to load form options. Please refresh the page.");
         }
 
-        if (criminalRecords.success && Array.isArray(criminalRecords.data) && criminalRecords.data.length > 0) {
+        if (
+          criminalRecords.success &&
+          Array.isArray(criminalRecords.data) &&
+          criminalRecords.data.length > 0
+        ) {
           setCriminalRecordOptions(criminalRecords.data);
         } else {
           console.error("Failed to load criminal record options from database");
         }
 
-        if (smokingDrinking.success && Array.isArray(smokingDrinking.data) && smokingDrinking.data.length > 0) {
+        if (
+          smokingDrinking.success &&
+          Array.isArray(smokingDrinking.data) &&
+          smokingDrinking.data.length > 0
+        ) {
           setSmokingDrinkingOptions(smokingDrinking.data);
         } else {
-          console.error("Failed to load smoking/drinking options from database");
+          console.error(
+            "Failed to load smoking/drinking options from database",
+          );
         }
       } catch (error) {
         console.error("Failed to load options:", error);
@@ -174,7 +200,7 @@ export default function HomeownerRegister() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     // Personal Information
     if (!formData.fullName) newErrors.fullName = "Full name is required";
     if (!formData.contactNumber)
@@ -184,27 +210,43 @@ export default function HomeownerRegister() {
       newErrors.password = "Password must be at least 6 characters";
     if (!formData.homeAddress)
       newErrors.homeAddress = "Home address is required";
-    if (!formData.typeOfResidence) newErrors.typeOfResidence = "Residence type is required";
-    if (!formData.numberOfFamilyMembers || Number(formData.numberOfFamilyMembers) < 1)
+    if (!formData.typeOfResidence)
+      newErrors.typeOfResidence = "Residence type is required";
+    if (
+      !formData.numberOfFamilyMembers ||
+      Number(formData.numberOfFamilyMembers) < 1
+    )
       newErrors.numberOfFamilyMembers = "Number of family members is required";
-    
+
     // Worker Requirements
     if (!formData.workerInfo) newErrors.workerInfo = "Worker type is required";
-    if (!formData.numberOfWorkersNeeded || Number(formData.numberOfWorkersNeeded) < 1)
+    if (
+      !formData.numberOfWorkersNeeded ||
+      Number(formData.numberOfWorkersNeeded) < 1
+    )
       newErrors.numberOfWorkersNeeded = "Number of workers needed is required";
-    if (!formData.specificDuties) newErrors.specificDuties = "Specific duties are required";
-    if (!formData.workingHoursAndSchedule) newErrors.workingHoursAndSchedule = "Working hours and schedule are required";
-    if (selectedDays.length === 0) newErrors.selectedDays = "At least one working day must be selected";
-    if (!formData.wagesOffered) newErrors.wagesOffered = "Wages offered are required";
-    if (!formData.startDateRequired) newErrors.startDateRequired = "Start date is required";
-    if (!formData.reasonForHiring) newErrors.reasonForHiring = "Reason for hiring is required";
-    if (!formData.criminalRecord) newErrors.criminalRecord = "Criminal record preference is required";
-    if (!formData.paymentMode) newErrors.paymentMode = "Payment mode is required";
-    
+    if (!formData.specificDuties)
+      newErrors.specificDuties = "Specific duties are required";
+    if (!formData.workingHoursAndSchedule)
+      newErrors.workingHoursAndSchedule =
+        "Working hours and schedule are required";
+    if (selectedDays.length === 0)
+      newErrors.selectedDays = "At least one working day must be selected";
+    if (!formData.wagesOffered)
+      newErrors.wagesOffered = "Wages offered are required";
+    if (!formData.startDateRequired)
+      newErrors.startDateRequired = "Start date is required";
+    if (!formData.reasonForHiring)
+      newErrors.reasonForHiring = "Reason for hiring is required";
+    if (!formData.criminalRecord)
+      newErrors.criminalRecord = "Criminal record preference is required";
+    if (!formData.paymentMode)
+      newErrors.paymentMode = "Payment mode is required";
+
     // Terms and Conditions
     if (!formData.termsAccepted)
       newErrors.termsAccepted = "You must accept the terms and conditions";
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -225,11 +267,11 @@ export default function HomeownerRegister() {
         fullName: formData.fullName!,
         role: "homeowner" as const,
         age: formData.age,
-        contactNumber: formData.contactNumber || '',
-        homeAddress: formData.homeAddress || '',
-        city: formData.city || '',
-        state: formData.state || '',
-        postalCode: formData.postalCode || '',
+        contactNumber: formData.contactNumber || "",
+        homeAddress: formData.homeAddress || "",
+        city: formData.city || "",
+        state: formData.state || "",
+        postalCode: formData.postalCode || "",
         typeOfResidence: formData.typeOfResidence,
         numberOfFamilyMembers: formData.numberOfFamilyMembers,
         homeComposition: formData.homeComposition,
@@ -267,7 +309,8 @@ export default function HomeownerRegister() {
         navigate("/homeowner/login");
       }, 1500);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Registration failed";
+      const errorMessage =
+        error instanceof Error ? error.message : "Registration failed";
       toast.error(errorMessage);
       console.error("Registration failed:", error);
     } finally {
@@ -1077,24 +1120,24 @@ export default function HomeownerRegister() {
 
             {/* Submit Button */}
             <div className="flex gap-4">
-            <button
-              type="submit"
-              disabled={isSubmitting || loadingOptions}
-              className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                "Complete Registration"
-              )}
-            </button>
+              <button
+                type="submit"
+                disabled={isSubmitting || loadingOptions}
+                className="flex-1 px-6 py-0.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center h-8"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  "Complete Registration"
+                )}
+              </button>
               <button
                 type="button"
                 onClick={() => navigate("/")}
-                className="flex-1 px-6 py-3 border border-gray-300 text-foreground font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 px-6 py-0.5 border border-gray-300 text-foreground font-semibold rounded-lg hover:bg-gray-50 transition-colors h-8"
               >
                 Back to Home
               </button>

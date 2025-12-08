@@ -136,7 +136,12 @@ export default function ServicesSection({ className }: ServicesSectionProps) {
 
         if (response.success && response.data && Array.isArray(response.data)) {
           const fetchedServices: Service[] = response.data.map(
-            (service: { id: string; name: string; workers?: number; description?: string }) => {
+            (service: {
+              id: string;
+              name: string;
+              workers?: number;
+              description?: string;
+            }) => {
               const serviceNameLower = service.name.toLowerCase();
               let icon = serviceIconMap.cleaning;
 

@@ -45,42 +45,42 @@ export default function WorkerRegister() {
   const [gendersList, setGendersList] = useState<
     Array<{ id: string; name: string }>
   >([
-    { id: '1', name: 'Male' },
-    { id: '2', name: 'Female' },
-    { id: '3', name: 'Other' }
+    { id: "1", name: "Male" },
+    { id: "2", name: "Female" },
+    { id: "3", name: "Other" },
   ]);
   const [maritalStatuses, setMaritalStatuses] = useState<
     Array<{ id: string; name: string }>
   >([
-    { id: '1', name: 'Single' },
-    { id: '2', name: 'Married' },
-    { id: '3', name: 'Divorced' },
-    { id: '4', name: 'Widowed' }
+    { id: "1", name: "Single" },
+    { id: "2", name: "Married" },
+    { id: "3", name: "Divorced" },
+    { id: "4", name: "Widowed" },
   ]);
   const [wageUnits, setWageUnits] = useState<
     Array<{ id: string; name: string }>
   >([
-    { id: '1', name: 'per hour' },
-    { id: '2', name: 'per day' },
-    { id: '3', name: 'per week' },
-    { id: '4', name: 'per month' }
+    { id: "1", name: "per hour" },
+    { id: "2", name: "per day" },
+    { id: "3", name: "per week" },
+    { id: "4", name: "per month" },
   ]);
   const [languageLevels, setLanguageLevels] = useState<
     Array<{ id: string; name: string }>
   >([
-    { id: '1', name: 'Beginner' },
-    { id: '2', name: 'Intermediate' },
-    { id: '3', name: 'Advanced' },
-    { id: '4', name: 'Fluent' },
-    { id: '5', name: 'Native' }
+    { id: "1", name: "Beginner" },
+    { id: "2", name: "Intermediate" },
+    { id: "3", name: "Advanced" },
+    { id: "4", name: "Fluent" },
+    { id: "5", name: "Native" },
   ]);
   const [insuranceCompanies, setInsuranceCompanies] = useState<
     Array<{ id: string; name: string }>
   >([
-    { id: '1', name: 'Radiant Insurance' },
-    { id: '2', name: 'MInsurance' },
-    { id: '3', name: 'MMI Insurance' },
-    { id: '4', name: 'Other' }
+    { id: "1", name: "Radiant Insurance" },
+    { id: "2", name: "MInsurance" },
+    { id: "3", name: "MMI Insurance" },
+    { id: "4", name: "Other" },
   ]);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -118,16 +118,16 @@ export default function WorkerRegister() {
         }));
         return;
       }
-      
+
       // Validate file type
       const allowedTypes = [
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'image/jpeg',
-        'image/png'
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "image/jpeg",
+        "image/png",
       ];
-      
+
       if (!allowedTypes.includes(file.type)) {
         setErrors((prev) => ({
           ...prev,
@@ -135,12 +135,12 @@ export default function WorkerRegister() {
         }));
         return;
       }
-      
+
       setFormData((prev) => ({
         ...prev,
         [fieldName]: file.name,
       }));
-      
+
       // Clear any previous errors for this field
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -173,28 +173,48 @@ export default function WorkerRegister() {
             getLanguageLevels(),
             getInsuranceCompanies(),
           ]);
-        if (genders.success && Array.isArray(genders.data) && genders.data.length > 0) {
+        if (
+          genders.success &&
+          Array.isArray(genders.data) &&
+          genders.data.length > 0
+        ) {
           setGendersList(genders.data);
         } else {
           console.error("Failed to load genders from database");
           toast.error("Failed to load form options. Please refresh the page.");
         }
-        if (maritalStatus.success && Array.isArray(maritalStatus.data) && maritalStatus.data.length > 0) {
+        if (
+          maritalStatus.success &&
+          Array.isArray(maritalStatus.data) &&
+          maritalStatus.data.length > 0
+        ) {
           setMaritalStatuses(maritalStatus.data);
         } else {
           console.error("Failed to load marital statuses from database");
         }
-        if (wages.success && Array.isArray(wages.data) && wages.data.length > 0) {
+        if (
+          wages.success &&
+          Array.isArray(wages.data) &&
+          wages.data.length > 0
+        ) {
           setWageUnits(wages.data);
         } else {
           console.error("Failed to load wage units from database");
         }
-        if (levels.success && Array.isArray(levels.data) && levels.data.length > 0) {
+        if (
+          levels.success &&
+          Array.isArray(levels.data) &&
+          levels.data.length > 0
+        ) {
           setLanguageLevels(levels.data);
         } else {
           console.error("Failed to load language levels from database");
         }
-        if (insurance.success && Array.isArray(insurance.data) && insurance.data.length > 0) {
+        if (
+          insurance.success &&
+          Array.isArray(insurance.data) &&
+          insurance.data.length > 0
+        ) {
           setInsuranceCompanies(insurance.data);
         } else {
           console.error("Failed to load insurance companies from database");
@@ -211,7 +231,7 @@ export default function WorkerRegister() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     // Personal Information
     if (!formData.fullName) newErrors.fullName = "Full name is required";
     if (!formData.dateOfBirth) {
@@ -222,7 +242,7 @@ export default function WorkerRegister() {
       const today = new Date();
       const age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
-      
+
       if (age < 18 || (age === 18 && monthDiff < 0)) {
         newErrors.dateOfBirth = "You must be at least 18 years old";
       }
@@ -233,7 +253,8 @@ export default function WorkerRegister() {
     if (!formData.phoneNumber)
       newErrors.phoneNumber = "Phone number is required";
     if (!formData.gender) newErrors.gender = "Gender is required";
-    if (!formData.maritalStatus) newErrors.maritalStatus = "Marital status is required";
+    if (!formData.maritalStatus)
+      newErrors.maritalStatus = "Marital status is required";
     if (!formData.address) newErrors.address = "Address is required";
     if (!formData.nationalId) {
       newErrors.nationalId = "National ID is required";
@@ -248,24 +269,30 @@ export default function WorkerRegister() {
         }
       }
     }
-    
+
     // Work Information
     if (!formData.experience) newErrors.experience = "Experience is required";
-    if (!formData.expectedWages) newErrors.expectedWages = "Expected wages are required";
-    if (!formData.workingHoursAndDays) newErrors.workingHoursAndDays = "Working hours and days are required";
-    
+    if (!formData.expectedWages)
+      newErrors.expectedWages = "Expected wages are required";
+    if (!formData.workingHoursAndDays)
+      newErrors.workingHoursAndDays = "Working hours and days are required";
+
     // Emergency Contact
-    if (!formData.emergencyName) newErrors.emergencyName = "Emergency contact name is required";
-    if (!formData.emergencyContact) newErrors.emergencyContact = "Emergency contact number is required";
-    
+    if (!formData.emergencyName)
+      newErrors.emergencyName = "Emergency contact name is required";
+    if (!formData.emergencyContact)
+      newErrors.emergencyContact = "Emergency contact number is required";
+
     // Bank Information
-    if (!formData.bankAccountNumber) newErrors.bankAccountNumber = "Bank account number is required";
-    if (!formData.accountHolder) newErrors.accountHolder = "Account holder name is required";
-    
+    if (!formData.bankAccountNumber)
+      newErrors.bankAccountNumber = "Bank account number is required";
+    if (!formData.accountHolder)
+      newErrors.accountHolder = "Account holder name is required";
+
     // Terms and Conditions
     if (!formData.termsAccepted)
       newErrors.termsAccepted = "You must accept the terms and conditions";
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -317,7 +344,8 @@ export default function WorkerRegister() {
         navigate("/worker/login");
       }, 1500);
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Registration failed";
+      const errorMsg =
+        error instanceof Error ? error.message : "Registration failed";
       toast.error(errorMsg);
       console.error("Registration failed:", error);
     } finally {
@@ -840,7 +868,7 @@ export default function WorkerRegister() {
                   <button
                     type="button"
                     onClick={addLanguage}
-                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                    className="px-4 py-0.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors h-8"
                   >
                     Add
                   </button>
@@ -1038,7 +1066,7 @@ export default function WorkerRegister() {
               <button
                 type="submit"
                 disabled={isSubmitting || loadingOptions}
-                className="flex-1 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-6 py-0.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 h-8"
               >
                 {isSubmitting ? (
                   <>
@@ -1052,7 +1080,7 @@ export default function WorkerRegister() {
               <button
                 type="button"
                 onClick={() => navigate("/")}
-                className="flex-1 px-6 py-3 border border-gray-300 text-foreground font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 px-6 py-0.5 border border-gray-300 text-foreground font-semibold rounded-lg hover:bg-gray-50 transition-colors h-8"
               >
                 Back to Home
               </button>

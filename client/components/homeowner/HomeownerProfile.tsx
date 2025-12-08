@@ -27,7 +27,9 @@ interface HomeownerProfile {
 export default function HomeownerProfile() {
   const [profile, setProfile] = useState<HomeownerProfile | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const [editedProfile, setEditedProfile] = useState<HomeownerProfile | null>(null);
+  const [editedProfile, setEditedProfile] = useState<HomeownerProfile | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -53,18 +55,18 @@ export default function HomeownerProfile() {
           adults: true,
           children: true,
           elderly: false,
-          pets: true
+          pets: true,
         },
         preferredGender: "Any",
         languagePreference: "English, Kinyarwanda",
         wagesOffered: "RWF 150,000/month",
-        specialRequirements: "Experience with pets"
+        specialRequirements: "Experience with pets",
       };
 
       setProfile(mockProfile);
       setEditedProfile(mockProfile);
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error("Error fetching profile:", error);
     } finally {
       setLoading(false);
     }
@@ -76,11 +78,11 @@ export default function HomeownerProfile() {
     setSaving(true);
     try {
       // TODO: Make API call to update profile
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
       setProfile(editedProfile);
       setEditMode(false);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error updating profile:", error);
     } finally {
       setSaving(false);
     }
@@ -91,20 +93,23 @@ export default function HomeownerProfile() {
     setEditMode(false);
   };
 
-  const handleChange = (field: keyof HomeownerProfile, value: any) => {
+  const handleChange = (field: keyof HomeownerProfile, value: unknown) => {
     if (editedProfile) {
       setEditedProfile({ ...editedProfile, [field]: value });
     }
   };
 
-  const handleCompositionChange = (field: keyof NonNullable<HomeownerProfile['homeComposition']>, value: boolean) => {
+  const handleCompositionChange = (
+    field: keyof NonNullable<HomeownerProfile["homeComposition"]>,
+    value: boolean,
+  ) => {
     if (editedProfile?.homeComposition) {
       setEditedProfile({
         ...editedProfile,
         homeComposition: {
           ...editedProfile.homeComposition,
-          [field]: value
-        }
+          [field]: value,
+        },
       });
     }
   };
@@ -146,7 +151,7 @@ export default function HomeownerProfile() {
               className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400"
             >
               <Save size={16} className="mr-2" />
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? "Saving..." : "Save"}
             </button>
             <button
               onClick={handleCancel}
@@ -170,12 +175,14 @@ export default function HomeownerProfile() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name
+              </label>
               {editMode ? (
                 <input
                   type="text"
                   value={editedProfile.fullName}
-                  onChange={(e) => handleChange('fullName', e.target.value)}
+                  onChange={(e) => handleChange("fullName", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -183,16 +190,18 @@ export default function HomeownerProfile() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Age
+              </label>
               {editMode ? (
                 <input
                   type="text"
-                  value={editedProfile.age || ''}
-                  onChange={(e) => handleChange('age', e.target.value)}
+                  value={editedProfile.age || ""}
+                  onChange={(e) => handleChange("age", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
-                <p className="text-gray-900">{profile.age || 'N/A'}</p>
+                <p className="text-gray-900">{profile.age || "N/A"}</p>
               )}
             </div>
           </div>
@@ -206,16 +215,22 @@ export default function HomeownerProfile() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
               <p className="text-gray-900">{profile.email}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number
+              </label>
               {editMode ? (
                 <input
                   type="tel"
                   value={editedProfile.contactNumber}
-                  onChange={(e) => handleChange('contactNumber', e.target.value)}
+                  onChange={(e) =>
+                    handleChange("contactNumber", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -233,12 +248,14 @@ export default function HomeownerProfile() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Home Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Home Address
+              </label>
               {editMode ? (
                 <input
                   type="text"
                   value={editedProfile.homeAddress}
-                  onChange={(e) => handleChange('homeAddress', e.target.value)}
+                  onChange={(e) => handleChange("homeAddress", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
@@ -246,37 +263,45 @@ export default function HomeownerProfile() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                City
+              </label>
               {editMode ? (
                 <input
                   type="text"
-                  value={editedProfile.city || ''}
-                  onChange={(e) => handleChange('city', e.target.value)}
+                  value={editedProfile.city || ""}
+                  onChange={(e) => handleChange("city", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
-                <p className="text-gray-900">{profile.city || 'N/A'}</p>
+                <p className="text-gray-900">{profile.city || "N/A"}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                State
+              </label>
               {editMode ? (
                 <input
                   type="text"
-                  value={editedProfile.state || ''}
-                  onChange={(e) => handleChange('state', e.target.value)}
+                  value={editedProfile.state || ""}
+                  onChange={(e) => handleChange("state", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
-                <p className="text-gray-900">{profile.state || 'N/A'}</p>
+                <p className="text-gray-900">{profile.state || "N/A"}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Type of Residence</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Type of Residence
+              </label>
               {editMode ? (
                 <select
-                  value={editedProfile.typeOfResidence || ''}
-                  onChange={(e) => handleChange('typeOfResidence', e.target.value)}
+                  value={editedProfile.typeOfResidence || ""}
+                  onChange={(e) =>
+                    handleChange("typeOfResidence", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select...</option>
@@ -286,20 +311,24 @@ export default function HomeownerProfile() {
                   <option value="Other">Other</option>
                 </select>
               ) : (
-                <p className="text-gray-900">{profile.typeOfResidence || 'N/A'}</p>
+                <p className="text-gray-900">
+                  {profile.typeOfResidence || "N/A"}
+                </p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Postal Code
+              </label>
               {editMode ? (
                 <input
                   type="text"
-                  value={editedProfile.postalCode || ''}
-                  onChange={(e) => handleChange('postalCode', e.target.value)}
+                  value={editedProfile.postalCode || ""}
+                  onChange={(e) => handleChange("postalCode", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
-                <p className="text-gray-900">{profile.postalCode || 'N/A'}</p>
+                <p className="text-gray-900">{profile.postalCode || "N/A"}</p>
               )}
             </div>
           </div>
@@ -313,43 +342,67 @@ export default function HomeownerProfile() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Number of Family Members</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Number of Family Members
+              </label>
               {editMode ? (
                 <input
                   type="text"
-                  value={editedProfile.numberOfFamilyMembers || ''}
-                  onChange={(e) => handleChange('numberOfFamilyMembers', e.target.value)}
+                  value={editedProfile.numberOfFamilyMembers || ""}
+                  onChange={(e) =>
+                    handleChange("numberOfFamilyMembers", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
-                <p className="text-gray-900">{profile.numberOfFamilyMembers || 'N/A'}</p>
+                <p className="text-gray-900">
+                  {profile.numberOfFamilyMembers || "N/A"}
+                </p>
               )}
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Home Includes:</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Home Includes:
+              </label>
               {editMode ? (
                 <div className="flex flex-wrap gap-4">
-                  {['adults', 'children', 'elderly', 'pets'].map((key) => (
+                  {["adults", "children", "elderly", "pets"].map((key) => (
                     <label key={key} className="flex items-center">
                       <input
                         type="checkbox"
-                        checked={editedProfile.homeComposition?.[key as keyof typeof editedProfile.homeComposition] || false}
-                        onChange={(e) => handleCompositionChange(key as any, e.target.checked)}
+                        checked={
+                          editedProfile.homeComposition?.[
+                            key as keyof typeof editedProfile.homeComposition
+                          ] || false
+                        }
+                        onChange={(e) =>
+                          handleCompositionChange(
+                            key as keyof NonNullable<HomeownerProfile["homeComposition"]>,
+                            e.target.checked
+                          )
+                        }
                         className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="text-sm text-gray-700 capitalize">{key}</span>
+                      <span className="text-sm text-gray-700 capitalize">
+                        {key}
+                      </span>
                     </label>
                   ))}
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {profile.homeComposition && Object.entries(profile.homeComposition).map(([key, value]) => (
-                    value && (
-                      <span key={key} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full capitalize">
-                        {key}
-                      </span>
-                    )
-                  ))}
+                  {profile.homeComposition &&
+                    Object.entries(profile.homeComposition).map(
+                      ([key, value]) =>
+                        value && (
+                          <span
+                            key={key}
+                            className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full capitalize"
+                          >
+                            {key}
+                          </span>
+                        ),
+                    )}
                 </div>
               )}
             </div>
@@ -358,14 +411,20 @@ export default function HomeownerProfile() {
 
         {/* Preferences */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Worker Preferences</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Worker Preferences
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Gender</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Preferred Gender
+              </label>
               {editMode ? (
                 <select
-                  value={editedProfile.preferredGender || ''}
-                  onChange={(e) => handleChange('preferredGender', e.target.value)}
+                  value={editedProfile.preferredGender || ""}
+                  onChange={(e) =>
+                    handleChange("preferredGender", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select...</option>
@@ -374,46 +433,62 @@ export default function HomeownerProfile() {
                   <option value="Female">Female</option>
                 </select>
               ) : (
-                <p className="text-gray-900">{profile.preferredGender || 'N/A'}</p>
+                <p className="text-gray-900">
+                  {profile.preferredGender || "N/A"}
+                </p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Language Preference</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Language Preference
+              </label>
               {editMode ? (
                 <input
                   type="text"
-                  value={editedProfile.languagePreference || ''}
-                  onChange={(e) => handleChange('languagePreference', e.target.value)}
+                  value={editedProfile.languagePreference || ""}
+                  onChange={(e) =>
+                    handleChange("languagePreference", e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
-                <p className="text-gray-900">{profile.languagePreference || 'N/A'}</p>
+                <p className="text-gray-900">
+                  {profile.languagePreference || "N/A"}
+                </p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Wages Offered</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Wages Offered
+              </label>
               {editMode ? (
                 <input
                   type="text"
-                  value={editedProfile.wagesOffered || ''}
-                  onChange={(e) => handleChange('wagesOffered', e.target.value)}
+                  value={editedProfile.wagesOffered || ""}
+                  onChange={(e) => handleChange("wagesOffered", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
-                <p className="text-gray-900">{profile.wagesOffered || 'N/A'}</p>
+                <p className="text-gray-900">{profile.wagesOffered || "N/A"}</p>
               )}
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Special Requirements</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Special Requirements
+              </label>
               {editMode ? (
                 <textarea
-                  value={editedProfile.specialRequirements || ''}
-                  onChange={(e) => handleChange('specialRequirements', e.target.value)}
+                  value={editedProfile.specialRequirements || ""}
+                  onChange={(e) =>
+                    handleChange("specialRequirements", e.target.value)
+                  }
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               ) : (
-                <p className="text-gray-900">{profile.specialRequirements || 'N/A'}</p>
+                <p className="text-gray-900">
+                  {profile.specialRequirements || "N/A"}
+                </p>
               )}
             </div>
           </div>

@@ -54,7 +54,7 @@ async function apiRequest<T>(
           ? fetchOptions.headers
           : {}) as Record<string, string>);
 
-  let headers: Record<string, string> = {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...extraHeaders,
   };
@@ -80,7 +80,7 @@ async function apiRequest<T>(
       headers,
     });
 
-    let data: any;
+    let data: unknown;
     try {
       data = await response.json();
     } catch {
@@ -114,10 +114,11 @@ async function apiRequest<T>(
         };
       }
 
-      throw new Error(data.error || `HTTP Error: ${response.status}`);
+      const errorData = data as { error?: string };
+      throw new Error(errorData.error || `HTTP Error: ${response.status}`);
     }
 
-    return data;
+    return data as ApiResponse<T>;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error(`API Error [${endpoint}]:`, message);
@@ -146,7 +147,7 @@ export async function apiGet<T>(
  */
 export async function apiPost<T>(
   endpoint: string,
-  body: any,
+  body: unknown,
 ): Promise<ApiResponse<T>> {
   return apiRequest<T>(endpoint, {
     method: "POST",
@@ -159,7 +160,7 @@ export async function apiPost<T>(
  */
 export async function apiPut<T>(
   endpoint: string,
-  body: any,
+  body: unknown,
 ): Promise<ApiResponse<T>> {
   return apiRequest<T>(endpoint, {
     method: "PUT",
@@ -181,7 +182,7 @@ export async function apiDelete<T>(endpoint: string): Promise<ApiResponse<T>> {
  */
 export async function apiPatch<T>(
   endpoint: string,
-  body: any,
+  body: unknown,
 ): Promise<ApiResponse<T>> {
   return apiRequest<T>(endpoint, {
     method: "PATCH",
@@ -254,7 +255,7 @@ export async function resetPassword(password: string, token: string) {
 // WORKERS API
 // ============================================================
 
-export async function getWorkers(filters?: Record<string, any>) {
+export async function getWorkers(filters?: Record<string, string>) {
   const params = new URLSearchParams(filters || {});
   return apiGet(`/workers?${params.toString()}`);
 }
@@ -263,11 +264,11 @@ export async function getWorker(id: string) {
   return apiGet(`/workers/${id}`);
 }
 
-export async function createWorker(data: any) {
+export async function createWorker(data: Record<string, unknown>) {
   return apiPost("/workers", data);
 }
 
-export async function updateWorker(id: string, data: any) {
+export async function updateWorker(id: string, data: Record<string, unknown>) {
   return apiPut(`/workers/${id}`, data);
 }
 
@@ -275,7 +276,7 @@ export async function deleteWorker(id: string) {
   return apiDelete(`/workers/${id}`);
 }
 
-export async function searchWorkers(filters: Record<string, any>) {
+export async function searchWorkers(filters: Record<string, string>) {
   const params = new URLSearchParams(filters || {});
   return apiGet(`/workers?${params.toString()}`);
 }
@@ -284,7 +285,7 @@ export async function searchWorkers(filters: Record<string, any>) {
 // HOMEOWNERS API
 // ============================================================
 
-export async function getHomeowners(filters?: Record<string, any>) {
+export async function getHomeowners(filters?: Record<string, string>) {
   const params = new URLSearchParams(filters || {});
   return apiGet(`/homeowners?${params.toString()}`);
 }
@@ -293,11 +294,11 @@ export async function getHomeowner(id: string) {
   return apiGet(`/homeowners/${id}`);
 }
 
-export async function createHomeowner(data: any) {
+export async function createHomeowner(data: Record<string, unknown>) {
   return apiPost("/homeowners", data);
 }
 
-export async function updateHomeowner(id: string, data: any) {
+export async function updateHomeowner(id: string, data: Record<string, unknown>) {
   return apiPut(`/homeowners/${id}`, data);
 }
 
@@ -309,7 +310,7 @@ export async function deleteHomeowner(id: string) {
 // BOOKINGS API
 // ============================================================
 
-export async function getBookings(filters?: Record<string, any>) {
+export async function getBookings(filters?: Record<string, string>) {
   const params = new URLSearchParams(filters || {});
   return apiGet(`/bookings?${params.toString()}`);
 }
@@ -318,11 +319,11 @@ export async function getBooking(id: string) {
   return apiGet(`/bookings/${id}`);
 }
 
-export async function createBooking(data: any) {
+export async function createBooking(data: Record<string, unknown>) {
   return apiPost("/bookings", data);
 }
 
-export async function updateBooking(id: string, data: any) {
+export async function updateBooking(id: string, data: Record<string, unknown>) {
   return apiPut(`/bookings/${id}`, data);
 }
 
@@ -334,7 +335,7 @@ export async function deleteBooking(id: string) {
 // PAYMENTS API
 // ============================================================
 
-export async function getPayments(filters?: Record<string, any>) {
+export async function getPayments(filters?: Record<string, string>) {
   const params = new URLSearchParams(filters || {});
   return apiGet(`/payments?${params.toString()}`);
 }
@@ -343,7 +344,7 @@ export async function getPayment(id: string) {
   return apiGet(`/payments/${id}`);
 }
 
-export async function createPayment(data: any) {
+export async function createPayment(data: Record<string, unknown>) {
   return apiPost("/payments", data);
 }
 
@@ -368,7 +369,7 @@ export async function verifyPayPackPayment(transactionId: string) {
 // SERVICES API
 // ============================================================
 
-export async function getServices(filters?: Record<string, any>) {
+export async function getServices(filters?: Record<string, string>) {
   const params = new URLSearchParams(filters || {});
   return apiGet(`/services?${params.toString()}`);
 }
@@ -377,11 +378,11 @@ export async function getService(id: string) {
   return apiGet(`/services/${id}`);
 }
 
-export async function createService(data: any) {
+export async function createService(data: Record<string, unknown>) {
   return apiPost("/services", data);
 }
 
-export async function updateService(id: string, data: any) {
+export async function updateService(id: string, data: Record<string, unknown>) {
   return apiPut(`/services/${id}`, data);
 }
 
@@ -393,7 +394,7 @@ export async function deleteService(id: string) {
 // TRAININGS API
 // ============================================================
 
-export async function getTrainings(filters?: Record<string, any>) {
+export async function getTrainings(filters?: Record<string, string>) {
   const params = new URLSearchParams(filters || {});
   return apiGet(`/trainings?${params.toString()}`);
 }
@@ -402,11 +403,11 @@ export async function getTraining(id: string) {
   return apiGet(`/trainings/${id}`);
 }
 
-export async function createTraining(data: any) {
+export async function createTraining(data: Record<string, unknown>) {
   return apiPost("/trainings", data);
 }
 
-export async function updateTraining(id: string, data: any) {
+export async function updateTraining(id: string, data: Record<string, unknown>) {
   return apiPut(`/trainings/${id}`, data);
 }
 
@@ -418,7 +419,7 @@ export async function deleteTraining(id: string) {
 // REPORTS API
 // ============================================================
 
-export async function getReports(filters?: Record<string, any>) {
+export async function getReports(filters?: Record<string, string>) {
   const params = new URLSearchParams(filters || {});
   return apiGet(`/reports?${params.toString()}`);
 }
@@ -427,11 +428,11 @@ export async function getReport(id: string) {
   return apiGet(`/reports/${id}`);
 }
 
-export async function createReport(data: any) {
+export async function createReport(data: Record<string, unknown>) {
   return apiPost("/reports", data);
 }
 
-export async function updateReport(id: string, data: any) {
+export async function updateReport(id: string, data: Record<string, unknown>) {
   return apiPut(`/reports/${id}`, data);
 }
 
@@ -488,9 +489,15 @@ export async function getWorkerInfoOptions() {
 }
 
 export async function getCriminalRecordOptions() {
-  return apiGet<ListResponse<OptionItem>>("/options/criminal-record-options", true);
+  return apiGet<ListResponse<OptionItem>>(
+    "/options/criminal-record-options",
+    true,
+  );
 }
 
 export async function getSmokingDrinkingOptions() {
-  return apiGet<ListResponse<OptionItem>>("/options/smoking-drinking-options", true);
+  return apiGet<ListResponse<OptionItem>>(
+    "/options/smoking-drinking-options",
+    true,
+  );
 }

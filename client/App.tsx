@@ -52,7 +52,10 @@ const AppContent = () => (
           <Route
             path="/worker/dashboard"
             element={
-              <ProtectedRoute requiredRole="worker" fallbackPath="/worker/login">
+              <ProtectedRoute
+                requiredRole="worker"
+                fallbackPath="/worker/login"
+              >
                 <WorkerDashboard />
               </ProtectedRoute>
             }
@@ -68,7 +71,10 @@ const AppContent = () => (
           <Route
             path="/homeowner/dashboard"
             element={
-              <ProtectedRoute requiredRole="homeowner" fallbackPath="/homeowner/login">
+              <ProtectedRoute
+                requiredRole="homeowner"
+                fallbackPath="/homeowner/login"
+              >
                 <HomeownerDashboard />
               </ProtectedRoute>
             }
@@ -76,7 +82,10 @@ const AppContent = () => (
           <Route
             path="/homeowner/booking"
             element={
-              <ProtectedRoute requiredRole="homeowner" fallbackPath="/homeowner/login">
+              <ProtectedRoute
+                requiredRole="homeowner"
+                fallbackPath="/homeowner/login"
+              >
                 <HomeownerBooking />
               </ProtectedRoute>
             }
@@ -84,7 +93,10 @@ const AppContent = () => (
           <Route
             path="/homeowner/bookings"
             element={
-              <ProtectedRoute requiredRole="homeowner" fallbackPath="/homeowner/login">
+              <ProtectedRoute
+                requiredRole="homeowner"
+                fallbackPath="/homeowner/login"
+              >
                 <HomeownerBookings />
               </ProtectedRoute>
             }
@@ -92,7 +104,10 @@ const AppContent = () => (
           <Route
             path="/homeowner/payment"
             element={
-              <ProtectedRoute requiredRole="homeowner" fallbackPath="/homeowner/login">
+              <ProtectedRoute
+                requiredRole="homeowner"
+                fallbackPath="/homeowner/login"
+              >
                 <HomeownerPayment />
               </ProtectedRoute>
             }
@@ -100,7 +115,10 @@ const AppContent = () => (
           <Route
             path="/homeowner/payments"
             element={
-              <ProtectedRoute requiredRole="homeowner" fallbackPath="/homeowner/login">
+              <ProtectedRoute
+                requiredRole="homeowner"
+                fallbackPath="/homeowner/login"
+              >
                 <HomeownerPayments />
               </ProtectedRoute>
             }

@@ -18,11 +18,15 @@ export function createServer() {
   const app = express();
 
   // Add environment validation
-  const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'];
-  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+  const requiredEnvVars = ["SUPABASE_URL", "SUPABASE_ANON_KEY"];
+  const missingVars = requiredEnvVars.filter(
+    (varName) => !process.env[varName],
+  );
 
   if (missingVars.length > 0) {
-    console.error(`Missing required environment variables: ${missingVars.join(', ')}`);
+    console.error(
+      `Missing required environment variables: ${missingVars.join(", ")}`,
+    );
     process.exit(1);
   }
 
@@ -30,7 +34,7 @@ export function createServer() {
   const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // limit each IP to 100 requests per windowMs
-    message: 'Too many requests from this IP, please try again later'
+    message: "Too many requests from this IP, please try again later",
   });
 
   // Middleware
@@ -41,12 +45,16 @@ export function createServer() {
 
   const corsOptions = {
     origin: isDevelopment
-      ? ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5000']
-      : process.env.ALLOWED_ORIGINS?.split(',') || ['https://yourdomain.com'],
+      ? [
+          "http://localhost:5173",
+          "http://localhost:3000",
+          "http://localhost:5000",
+        ]
+      : process.env.ALLOWED_ORIGINS?.split(",") || ["https://yourdomain.com"],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    maxAge: 86400 // 24 hours
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    maxAge: 86400, // 24 hours
   };
 
   app.use(cors(corsOptions));
@@ -57,7 +65,7 @@ export function createServer() {
   app.use(normalizeRequestBody);
 
   // Apply rate limiter to all API routes
-  app.use('/api', apiLimiter);
+  app.use("/api", apiLimiter);
 
   // Health check routes
   app.get("/api/ping", (_req, res) => {
@@ -65,10 +73,16 @@ export function createServer() {
     res.json({ message: ping });
   });
 
+  // Debug logging middleware for API requests
+  app.use("/api", (req, _res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+    next();
+  });
+
   // Routes
   app.use("/api/options", optionsRoutes);
-  app.use("/api/auth", authRoutes);  
-  
+  app.use("/api/auth", authRoutes);
+
   // Protected routes (require Supabase auth token)
   app.use("/api/workers", requireAuth, workersRoutes);
   app.use("/api/homeowners", requireAuth, homeownersRoutes);
@@ -79,14 +93,21 @@ export function createServer() {
   app.use("/api/reports", requireAuth, reportsRoutes);
 
   // Error handling middleware
-  app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    console.error('Server error:', err);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-      message: err.message
-    });
-  });
+  app.use(
+    (
+      err: Error,
+      _req: express.Request,
+      res: express.Response,
+      _next: express.NextFunction,
+    ) => {
+      console.error("Server error:", err);
+      res.status(500).json({
+        success: false,
+        error: "Internal server error",
+        message: err.message,
+      });
+    },
+  );
 
   return app;
 }
@@ -97,5 +118,5 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
 });

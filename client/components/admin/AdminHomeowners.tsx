@@ -3,7 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Search } from "lucide-react";
 
 interface Homeowner {
@@ -58,10 +65,11 @@ export default function AdminHomeowners() {
     }
   };
 
-  const filteredHomeowners = homeowners.filter(homeowner =>
-    homeowner.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    homeowner.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    homeowner.address.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredHomeowners = homeowners.filter(
+    (homeowner) =>
+      homeowner.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      homeowner.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      homeowner.address.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getStatusBadge = (status: string) => {
@@ -113,7 +121,9 @@ export default function AdminHomeowners() {
               <TableBody>
                 {filteredHomeowners.map((homeowner) => (
                   <TableRow key={homeowner.id}>
-                    <TableCell className="font-medium">{homeowner.fullName}</TableCell>
+                    <TableCell className="font-medium">
+                      {homeowner.fullName}
+                    </TableCell>
                     <TableCell>{homeowner.email}</TableCell>
                     <TableCell>{homeowner.phoneNumber}</TableCell>
                     <TableCell>{homeowner.address}</TableCell>

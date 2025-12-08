@@ -11,9 +11,10 @@
     ]
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"vite\" \"tsx watch server/index.ts\" --names \"FRONTEND,BACKEND\" --prefix \"[{name}]\" --kill-others-on-exit",
+    "dev:frontend": "vite",
     "dev:server": "tsx watch server/index.ts",
-    "dev:all": "concurrently \"npm run dev\" \"npm run dev:server\"",
+    "dev:all": "npm run dev",
     "build": "vite build",
     "build:server": "tsc -p server/tsconfig.json",
     "build:all": "npm run build && npm run build:server",

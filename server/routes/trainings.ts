@@ -16,13 +16,13 @@ router.get("/", async (_req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      data: trainings || []
+      data: trainings || [],
     });
   } catch (error) {
     console.error("Get trainings error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get trainings"
+      error: error instanceof Error ? error.message : "Failed to get trainings",
     });
   }
 });
@@ -45,19 +45,19 @@ router.get("/:id", async (req: Request, res: Response) => {
     if (!training) {
       return res.status(404).json({
         success: false,
-        error: "Training not found"
+        error: "Training not found",
       });
     }
 
     return res.json({
       success: true,
-      data: training
+      data: training,
     });
   } catch (error) {
     console.error("Get training error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get training"
+      error: error instanceof Error ? error.message : "Failed to get training",
     });
   }
 });
@@ -65,19 +65,19 @@ router.get("/:id", async (req: Request, res: Response) => {
 // Create training (admin only)
 router.post("/", async (req: Request, res: Response) => {
   try {
-    const role = (req as any).userProfile?.role;
+    const role = (req as unknown as { userProfile: Record<string, unknown> }).userProfile?.role;
     if (role !== "admin") {
       return res.status(403).json({ success: false, error: "Forbidden" });
     }
 
     const trainingData = req.body;
 
-    const { data: training, error } = await (supabase as any)
+    const { data: training, error } = await supabase
       .from("trainings")
       .insert({
         ...trainingData,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .select()
       .single();
@@ -89,13 +89,14 @@ router.post("/", async (req: Request, res: Response) => {
     return res.json({
       success: true,
       data: training,
-      message: "Training created successfully"
+      message: "Training created successfully",
     });
   } catch (error) {
     console.error("Create training error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to create training"
+      error:
+        error instanceof Error ? error.message : "Failed to create training",
     });
   }
 });
@@ -103,7 +104,7 @@ router.post("/", async (req: Request, res: Response) => {
 // Update training
 router.put("/:id", async (req: Request, res: Response) => {
   try {
-    const role = (req as any).userProfile?.role;
+    const role = (req as unknown as { userProfile: Record<string, unknown> }).userProfile?.role;
     if (role !== "admin") {
       return res.status(403).json({ success: false, error: "Forbidden" });
     }
@@ -111,12 +112,12 @@ router.put("/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
     const updateData = req.body;
 
-    const { data: training, error } = await (supabase as any)
+    const { data: training, error } = await supabase
       .from("trainings")
       .update({
         ...updateData,
-        updated_at: new Date().toISOString()
-      })
+        updated_at: new Date().toISOString(),
+      } as never)
       .eq("id", id)
       .select()
       .single();
@@ -128,13 +129,14 @@ router.put("/:id", async (req: Request, res: Response) => {
     return res.json({
       success: true,
       data: training,
-      message: "Training updated successfully"
+      message: "Training updated successfully",
     });
   } catch (error) {
     console.error("Update training error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update training"
+      error:
+        error instanceof Error ? error.message : "Failed to update training",
     });
   }
 });
@@ -142,17 +144,14 @@ router.put("/:id", async (req: Request, res: Response) => {
 // Delete training
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
-    const role = (req as any).userProfile?.role;
+    const role = (req as unknown as { userProfile: Record<string, unknown> }).userProfile?.role;
     if (role !== "admin") {
       return res.status(403).json({ success: false, error: "Forbidden" });
     }
 
     const { id } = req.params;
 
-    const { error } = await supabase
-      .from("trainings")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("trainings").delete().eq("id", id);
 
     if (error) {
       throw new Error(error.message);
@@ -160,13 +159,14 @@ router.delete("/:id", async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      message: "Training deleted successfully"
+      message: "Training deleted successfully",
     });
   } catch (error) {
     console.error("Delete training error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete training"
+      error:
+        error instanceof Error ? error.message : "Failed to delete training",
     });
   }
 });

@@ -3,9 +3,33 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
-import { Search, FileText, TrendingUp, Users, DollarSign, Calendar } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+} from "recharts";
+import {
+  Search,
+  FileText,
+  TrendingUp,
+  Users,
+  DollarSign,
+  Calendar,
+} from "lucide-react";
 
 interface Report {
   id: string;
@@ -81,10 +105,11 @@ export default function AdminReports() {
     }
   };
 
-  const filteredReports = reports.filter(report =>
-    report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    report.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    report.period.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredReports = reports.filter(
+    (report) =>
+      report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      report.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      report.period.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getStatusBadge = (status: string) => {
@@ -109,7 +134,9 @@ export default function AdminReports() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">RWF 33.3M</div>
-            <p className="text-xs text-muted-foreground">+12% from last month</p>
+            <p className="text-xs text-muted-foreground">
+              +12% from last month
+            </p>
           </CardContent>
         </Card>
 
@@ -126,12 +153,16 @@ export default function AdminReports() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Bookings
+            </CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">2,847</div>
-            <p className="text-xs text-muted-foreground">+15% from last month</p>
+            <p className="text-xs text-muted-foreground">
+              +15% from last month
+            </p>
           </CardContent>
         </Card>
 
@@ -159,7 +190,12 @@ export default function AdminReports() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip formatter={(value) => [`RWF ${value.toLocaleString()}`, "Revenue"]} />
+                <Tooltip
+                  formatter={(value) => [
+                    `RWF ${value.toLocaleString()}`,
+                    "Revenue",
+                  ]}
+                />
                 <Bar dataKey="value" fill="#3b82f6" />
               </BarChart>
             </ResponsiveContainer>
@@ -177,7 +213,12 @@ export default function AdminReports() {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip formatter={(value) => [`${value}`, "Users"]} />
-                <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#10b981"
+                  strokeWidth={2}
+                />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>

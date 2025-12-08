@@ -4,7 +4,14 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getUser, logoutUser, isAuthenticatedAsync } from "@/lib/auth";
 import type { WorkerData } from "@/lib/auth";
-import { Home, CheckSquare, User, BookOpen, MoreVertical, LogOut } from "lucide-react";
+import {
+  Home,
+  CheckSquare,
+  User,
+  BookOpen,
+  MoreVertical,
+  LogOut,
+} from "lucide-react";
 import WorkerHome from "@/components/worker/WorkerHome";
 import WorkerTasks from "@/components/worker/WorkerTasks";
 import WorkerProfile from "@/components/worker/WorkerProfile";
@@ -31,27 +38,27 @@ export default function WorkerDashboard() {
       if (userData && userData.profile) {
         const workerData: WorkerData = {
           fullName: userData.profile.full_name,
-          dateOfBirth: '',
-          gender: '',
-          email: userData.user?.email || '',
-          password: '',
-          phoneNumber: '',
-          maritalStatus: '',
-          nationalId: '',
-          criminalRecord: '',
-          typeOfWork: '',
-          workExperience: '',
-          expectedWages: '',
-          workingHoursAndDays: '',
-          educationQualification: '',
-          trainingCertificate: '',
-          languageProficiency: '',
-          healthCondition: '',
-          emergencyName: '',
-          emergencyContact: '',
-          bankAccountNumber: '',
-          accountHolder: '',
-          termsAccepted: true
+          dateOfBirth: "",
+          gender: "",
+          email: (userData.user as { email?: string })?.email || "",
+          password: "",
+          phoneNumber: "",
+          maritalStatus: "",
+          nationalId: "",
+          criminalRecord: "",
+          typeOfWork: "",
+          workExperience: "",
+          expectedWages: "",
+          workingHoursAndDays: "",
+          educationQualification: "",
+          trainingCertificate: "",
+          languageProficiency: "",
+          healthCondition: "",
+          emergencyName: "",
+          emergencyContact: "",
+          bankAccountNumber: "",
+          accountHolder: "",
+          termsAccepted: true,
         };
         setUser(workerData);
       } else {
@@ -91,14 +98,22 @@ export default function WorkerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col pb-24">
       <Header />
-      
+
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <div className="p-4 md:p-8 max-w-6xl mx-auto">
           {/* Header Bar */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground capitalize">
-              {activeSection === "home" ? "My Jobs" : activeSection === "tasks" ? "My Tasks" : activeSection === "profile" ? "My Profile" : activeSection === "training" ? "Training" : "More"}
+              {activeSection === "home"
+                ? "My Jobs"
+                : activeSection === "tasks"
+                  ? "My Tasks"
+                  : activeSection === "profile"
+                    ? "My Profile"
+                    : activeSection === "training"
+                      ? "Training"
+                      : "More"}
             </h1>
             <p className="text-muted-foreground mt-2">
               Welcome back, {user.fullName}!
@@ -114,7 +129,10 @@ export default function WorkerDashboard() {
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
         <div className="flex justify-around items-center h-20 max-w-6xl mx-auto">
           <button
-            onClick={() => { setActiveSection("home"); setShowMore(false); }}
+            onClick={() => {
+              setActiveSection("home");
+              setShowMore(false);
+            }}
             className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
               activeSection === "home"
                 ? "text-primary bg-primary/10"
@@ -126,7 +144,10 @@ export default function WorkerDashboard() {
           </button>
 
           <button
-            onClick={() => { setActiveSection("tasks"); setShowMore(false); }}
+            onClick={() => {
+              setActiveSection("tasks");
+              setShowMore(false);
+            }}
             className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
               activeSection === "tasks"
                 ? "text-primary bg-primary/10"
@@ -138,7 +159,10 @@ export default function WorkerDashboard() {
           </button>
 
           <button
-            onClick={() => { setActiveSection("profile"); setShowMore(false); }}
+            onClick={() => {
+              setActiveSection("profile");
+              setShowMore(false);
+            }}
             className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
               activeSection === "profile"
                 ? "text-primary bg-primary/10"
@@ -150,7 +174,10 @@ export default function WorkerDashboard() {
           </button>
 
           <button
-            onClick={() => { setActiveSection("training"); setShowMore(false); }}
+            onClick={() => {
+              setActiveSection("training");
+              setShowMore(false);
+            }}
             className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
               activeSection === "training"
                 ? "text-primary bg-primary/10"
@@ -177,7 +204,10 @@ export default function WorkerDashboard() {
             {showMore && (
               <div className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
                 <button
-                  onClick={() => { setActiveSection("more"); setShowMore(false); }}
+                  onClick={() => {
+                    setActiveSection("more");
+                    setShowMore(false);
+                  }}
                   className="w-full px-4 py-2 text-left hover:bg-gray-50 text-sm font-medium"
                 >
                   Report Issue

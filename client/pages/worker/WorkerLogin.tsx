@@ -32,7 +32,7 @@ export default function WorkerLogin() {
 
     try {
       const user = await loginUser("worker", formData.email, formData.password);
-      
+
       if (user) {
         toast.success("Login successful!");
         navigate("/worker/dashboard");
@@ -62,7 +62,10 @@ export default function WorkerLogin() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm"
+          >
             {error && (
               <div className="mb-6 p-4 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm">
                 {error}
@@ -70,7 +73,10 @@ export default function WorkerLogin() {
             )}
 
             <div className="mb-6">
-              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Email Address
               </label>
               <input
@@ -85,7 +91,10 @@ export default function WorkerLogin() {
             </div>
 
             <div className="mb-8">
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Password
               </label>
               <input

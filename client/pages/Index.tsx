@@ -17,7 +17,10 @@ export default function Index() {
       <Header />
 
       {/* Home Section */}
-      <main id="home" className="flex-1 py-12 md:py-16 bg-gradient-to-b from-white via-white to-gray-50">
+      <main
+        id="home"
+        className="flex-1 py-12 md:py-16 bg-gradient-to-b from-white via-white to-gray-50"
+      >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Heading Section */}
           <div className="text-center mb-16">
@@ -26,7 +29,8 @@ export default function Index() {
               <span className="text-primary">HELP</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Professional household services platform connecting trusted workers with families
+              Professional household services platform connecting trusted
+              workers with families
             </p>
           </div>
 
@@ -51,7 +55,6 @@ export default function Index() {
               onClick={() => handleRoleSelect("admin")}
             />
           </div>
-
         </div>
       </main>
 

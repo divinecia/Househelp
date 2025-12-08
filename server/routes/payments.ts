@@ -7,7 +7,7 @@ const router = Router();
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const profile = (req as any).userProfile;
+    const profile = (req as unknown as { userProfile: Record<string, unknown> }).userProfile;
     const role = profile?.role;
 
     const { data: payment, error } = await supabase
@@ -23,23 +23,23 @@ router.get("/:id", async (req: Request, res: Response) => {
     if (!payment) {
       return res.status(404).json({
         success: false,
-        error: "Payment not found"
+        error: "Payment not found",
       });
     }
 
-    if (role !== "admin" && (payment as any).user_id !== profile.user_id) {
+    if (role !== "admin" && (payment as Record<string, unknown>).user_id !== profile.user_id) {
       return res.status(403).json({ success: false, error: "Forbidden" });
     }
 
     return res.json({
       success: true,
-      data: payment
+      data: payment,
     });
   } catch (error) {
     console.error("Get payment error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get payment"
+      error: error instanceof Error ? error.message : "Failed to get payment",
     });
   }
 });
@@ -52,7 +52,7 @@ router.post("/verify", async (req: Request, res: Response) => {
     if (!transactionId) {
       return res.status(400).json({
         success: false,
-        error: "Transaction ID is required"
+        error: "Transaction ID is required",
       });
     }
 
@@ -63,15 +63,16 @@ router.post("/verify", async (req: Request, res: Response) => {
         transactionId,
         status: "verified",
         amount: 10000, // Mock amount in cents
-        currency: "RWF"
+        currency: "RWF",
       },
-      message: "Payment verified successfully"
+      message: "Payment verified successfully",
     });
   } catch (error) {
     console.error("Verify payment error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to verify payment"
+      error:
+        error instanceof Error ? error.message : "Failed to verify payment",
     });
   }
 });
@@ -84,7 +85,7 @@ router.post("/paypack/initialize", async (req: Request, res: Response) => {
     if (!amount || !phoneNumber || !bookingId) {
       return res.status(400).json({
         success: false,
-        error: "Amount, phone number, and booking ID are required"
+        error: "Amount, phone number, and booking ID are required",
       });
     }
 
@@ -99,14 +100,17 @@ router.post("/paypack/initialize", async (req: Request, res: Response) => {
         amount,
         phoneNumber,
         bookingId,
-        message: "Payment request sent to your phone"
-      }
+        message: "Payment request sent to your phone",
+      },
     });
   } catch (error) {
     console.error("Initialize Paypack payment error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to initialize Paypack payment"
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to initialize Paypack payment",
     });
   }
 });
@@ -119,7 +123,7 @@ router.post("/paypack/verify", async (req: Request, res: Response) => {
     if (!transactionId) {
       return res.status(400).json({
         success: false,
-        error: "Transaction ID is required"
+        error: "Transaction ID is required",
       });
     }
 
@@ -131,15 +135,18 @@ router.post("/paypack/verify", async (req: Request, res: Response) => {
         status: "completed",
         amount: 10000, // Mock amount
         currency: "RWF",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
-      message: "Paypack payment verified successfully"
+      message: "Paypack payment verified successfully",
     });
   } catch (error) {
     console.error("Verify Paypack payment error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to verify Paypack payment"
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to verify Paypack payment",
     });
   }
 });

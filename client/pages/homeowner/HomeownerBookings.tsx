@@ -1,10 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getBookings, updateBooking } from "@/lib/api-client";
 import { toast } from "sonner";
-import { Calendar, Clock, User, AlertCircle, CheckCircle, XCircle, Edit2 } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  User,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Edit2,
+} from "lucide-react";
 
 interface Booking {
   id: string;
@@ -30,21 +38,12 @@ export default function HomeownerBookings() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
-  useEffect(() => {
-    filterBookings(selectedStatus);
-  }, [selectedStatus, bookings]);
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getBookings();
       if (response.success && Array.isArray(response.data)) {
         setBookings(response.data);
-        filterBookings(selectedStatus);
       } else {
         toast.error("Failed to load bookings");
       }
@@ -54,15 +53,23 @@ export default function HomeownerBookings() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const filterBookings = (status: string) => {
+  const filterBookings = useCallback((status: string) => {
     if (status === "all") {
       setFilteredBookings(bookings);
     } else {
       setFilteredBookings(bookings.filter((b) => b.status === status));
     }
-  };
+  }, [bookings]);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
+
+  useEffect(() => {
+    filterBookings(selectedStatus);
+  }, [filterBookings, selectedStatus]);
 
   const handleCancelBooking = async () => {
     if (!selectedBooking) return;
@@ -171,21 +178,27 @@ export default function HomeownerBookings() {
 
           {/* Status Filter */}
           <div className="mb-6 flex gap-2 flex-wrap">
-            {["all", "pending", "confirmed", "in_progress", "completed", "cancelled"].map(
-              (status) => (
-                <button
-                  key={status}
-                  onClick={() => setSelectedStatus(status)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    selectedStatus === status
-                      ? "bg-primary text-white"
-                      : "bg-gray-100 text-foreground hover:bg-gray-200"
-                  }`}
-                >
-                  {status.charAt(0).toUpperCase() + status.slice(1).replace("_", " ")}
-                </button>
-              )
-            )}
+            {[
+              "all",
+              "pending",
+              "confirmed",
+              "in_progress",
+              "completed",
+              "cancelled",
+            ].map((status) => (
+              <button
+                key={status}
+                onClick={() => setSelectedStatus(status)}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  selectedStatus === status
+                    ? "bg-primary text-white"
+                    : "bg-gray-100 text-foreground hover:bg-gray-200"
+                }`}
+              >
+                {status.charAt(0).toUpperCase() +
+                  status.slice(1).replace("_", " ")}
+              </button>
+            ))}
           </div>
 
           {/* Bookings List */}
@@ -218,7 +231,9 @@ export default function HomeownerBookings() {
                         <h3 className="text-lg font-semibold text-foreground">
                           {booking.service_type}
                         </h3>
-                        <p className={`text-sm font-medium ${statusBadgeColor(booking.status)}`}>
+                        <p
+                          className={`text-sm font-medium ${statusBadgeColor(booking.status)}`}
+                        >
                           {booking.status.toUpperCase().replace("_", " ")}
                         </p>
                       </div>
@@ -230,7 +245,9 @@ export default function HomeownerBookings() {
                         </div>
                       )}
                       <p className="text-sm text-muted-foreground">
-                        {booking.payment_status === "unpaid" ? "Unpaid" : "Paid"}
+                        {booking.payment_status === "unpaid"
+                          ? "Unpaid"
+                          : "Paid"}
                       </p>
                     </div>
                   </div>
@@ -259,7 +276,9 @@ export default function HomeownerBookings() {
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <p className="text-xs text-muted-foreground">Worker ID</p>
+                        <p className="text-xs text-muted-foreground">
+                          Worker ID
+                        </p>
                         <p className="text-sm font-medium text-foreground">
                           {booking.worker_id.substring(0, 8)}...
                         </p>
@@ -269,20 +288,22 @@ export default function HomeownerBookings() {
 
                   <div className="mb-4 pb-4 border-t border-current border-opacity-20">
                     <p className="text-sm text-foreground mt-4">
-                      <span className="font-semibold">Description:</span> {booking.description}
+                      <span className="font-semibold">Description:</span>{" "}
+                      {booking.description}
                     </p>
                   </div>
 
                   {/* Actions */}
                   <div className="flex gap-3">
-                    {booking.status === "completed" && booking.payment_status === "unpaid" && (
-                      <button
-                        onClick={() => navigate("/homeowner/payments")}
-                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        Pay Now
-                      </button>
-                    )}
+                    {booking.status === "completed" &&
+                      booking.payment_status === "unpaid" && (
+                        <button
+                          onClick={() => navigate("/homeowner/payments")}
+                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Pay Now
+                        </button>
+                      )}
 
                     {booking.status === "pending" && (
                       <button

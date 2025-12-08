@@ -3,7 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Search, BookOpen, Clock, CheckCircle } from "lucide-react";
 
 interface TrainingProgram {
@@ -30,7 +37,9 @@ interface TrainingSession {
 export default function AdminTraining() {
   const [programs, setPrograms] = useState<TrainingProgram[]>([]);
   const [sessions, setSessions] = useState<TrainingSession[]>([]);
-  const [activeTab, setActiveTab] = useState<"programs" | "sessions">("programs");
+  const [activeTab, setActiveTab] = useState<"programs" | "sessions">(
+    "programs",
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -45,7 +54,8 @@ export default function AdminTraining() {
         {
           id: "1",
           title: "Household Cleaning Basics",
-          description: "Learn fundamental cleaning techniques and safety protocols",
+          description:
+            "Learn fundamental cleaning techniques and safety protocols",
           duration: "2 weeks",
           status: "active",
           enrolledWorkers: 25,
@@ -101,20 +111,24 @@ export default function AdminTraining() {
       case "completed":
         return <Badge className="bg-green-100 text-green-800">{status}</Badge>;
       case "in-progress":
-        return <Badge className="bg-yellow-100 text-yellow-800">{status}</Badge>;
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">{status}</Badge>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
-  const filteredPrograms = programs.filter(program =>
-    program.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    program.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPrograms = programs.filter(
+    (program) =>
+      program.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      program.description.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const filteredSessions = sessions.filter(session =>
-    session.programTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    session.instructor.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSessions = sessions.filter(
+    (session) =>
+      session.programTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      session.instructor.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -170,7 +184,9 @@ export default function AdminTraining() {
               <TableBody>
                 {filteredPrograms.map((program) => (
                   <TableRow key={program.id}>
-                    <TableCell className="font-medium">{program.title}</TableCell>
+                    <TableCell className="font-medium">
+                      {program.title}
+                    </TableCell>
                     <TableCell>{program.description}</TableCell>
                     <TableCell>{program.duration}</TableCell>
                     <TableCell>{getStatusBadge(program.status)}</TableCell>
@@ -208,7 +224,9 @@ export default function AdminTraining() {
               <TableBody>
                 {filteredSessions.map((session) => (
                   <TableRow key={session.id}>
-                    <TableCell className="font-medium">{session.programTitle}</TableCell>
+                    <TableCell className="font-medium">
+                      {session.programTitle}
+                    </TableCell>
                     <TableCell>{session.date}</TableCell>
                     <TableCell>{session.time}</TableCell>
                     <TableCell>{session.instructor}</TableCell>

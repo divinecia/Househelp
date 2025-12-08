@@ -4,7 +4,15 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getUser, logoutUser, isAuthenticatedAsync } from "@/lib/auth";
 import type { HomeownerData } from "@/lib/auth";
-import { Home, Briefcase, Calendar, User, MoreVertical, LogOut, Star } from "lucide-react";
+import {
+  Home,
+  Briefcase,
+  Calendar,
+  User,
+  MoreVertical,
+  LogOut,
+  Star,
+} from "lucide-react";
 import HomeownerHome from "@/components/homeowner/HomeownerHome";
 import HomeownerJobs from "@/components/homeowner/HomeownerJobs";
 import HomeownerBooking from "@/components/homeowner/HomeownerBooking";
@@ -32,11 +40,11 @@ export default function HomeownerDashboard() {
         if (userData && userData.profile) {
           const homeownerData: HomeownerData = {
             fullName: userData.profile.full_name,
-            contactNumber: '',
-            email: userData.user?.email || '',
-            password: '',
-            homeAddress: '',
-            termsAccepted: true
+            contactNumber: "",
+            email: (userData.user as { email?: string })?.email || "",
+            password: "",
+            homeAddress: "",
+            termsAccepted: true,
           };
           setUser(homeownerData);
         } else {
@@ -90,14 +98,16 @@ export default function HomeownerDashboard() {
               {activeSection === "home"
                 ? "Dashboard"
                 : activeSection === "jobs"
-                ? "My Jobs"
-                : activeSection === "booking"
-                ? "Bookings"
-                : activeSection === "profile"
-                ? "My Profile"
-                : "More"}
+                  ? "My Jobs"
+                  : activeSection === "booking"
+                    ? "Bookings"
+                    : activeSection === "profile"
+                      ? "My Profile"
+                      : "More"}
             </h1>
-            <p className="text-muted-foreground mt-2">Welcome back, {user.fullName}!</p>
+            <p className="text-muted-foreground mt-2">
+              Welcome back, {user.fullName}!
+            </p>
           </div>
 
           {/* Content */}

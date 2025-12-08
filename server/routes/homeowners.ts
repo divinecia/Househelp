@@ -6,11 +6,11 @@ const router = Router();
 // Get all homeowners (admin only). Homeowner sees only their record.
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const profile = (req as any).userProfile;
+    const profile = (req as unknown as { userProfile: { role: string; user_id: string } }).userProfile;
     const role = profile?.role;
 
     if (role === "homeowner") {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("homeowners")
         .select("*")
         .eq("user_id", profile.user_id)
@@ -35,13 +35,14 @@ router.get("/", async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      data: homeowners || []
+      data: homeowners || [],
     });
   } catch (error) {
     console.error("Get homeowners error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get homeowners"
+      error:
+        error instanceof Error ? error.message : "Failed to get homeowners",
     });
   }
 });
@@ -50,10 +51,10 @@ router.get("/", async (req: Request, res: Response) => {
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const profile = (req as any).userProfile;
+    const profile = (req as unknown as { userProfile: Record<string, unknown> }).userProfile;
     const role = profile?.role;
 
-    const { data: homeowner, error } = await (supabase as any)
+    const { data: homeowner, error } = await supabase
       .from("homeowners")
       .select("*")
       .eq("id", id)
@@ -66,11 +67,11 @@ router.get("/:id", async (req: Request, res: Response) => {
     if (!homeowner) {
       return res.status(404).json({
         success: false,
-        error: "Homeowner not found"
+        error: "Homeowner not found",
       });
     }
 
-    if (role === "homeowner" && homeowner.user_id !== profile.user_id) {
+    if (role === "homeowner" && (homeowner as { user_id: string }).user_id !== profile.user_id) {
       return res.status(403).json({ success: false, error: "Forbidden" });
     }
 
@@ -80,13 +81,13 @@ router.get("/:id", async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      data: homeowner
+      data: homeowner,
     });
   } catch (error) {
     console.error("Get homeowner error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get homeowner"
+      error: error instanceof Error ? error.message : "Failed to get homeowner",
     });
   }
 });
@@ -96,28 +97,28 @@ router.put("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
-    const profile = (req as any).userProfile;
+    const profile = (req as unknown as { userProfile: Record<string, unknown> }).userProfile;
     const role = profile?.role;
 
     if (role === "homeowner") {
-      const { data: record } = await (supabase as any)
+      const { data: record } = await supabase
         .from("homeowners")
         .select("user_id")
         .eq("id", id)
         .single();
-      if (!record || (record as any).user_id !== profile.user_id) {
+      if (!record || (record as Record<string, unknown>).user_id !== profile.user_id) {
         return res.status(403).json({ success: false, error: "Forbidden" });
       }
     } else if (role !== "admin") {
       return res.status(403).json({ success: false, error: "Forbidden" });
     }
 
-    const { data: homeowner, error } = await (supabase as any)
+    const { data: homeowner, error } = await supabase
       .from("homeowners")
       .update({
         ...updateData,
-        updated_at: new Date().toISOString()
-      })
+        updated_at: new Date().toISOString(),
+      } as never)
       .eq("id", id)
       .select()
       .single();
@@ -129,13 +130,14 @@ router.put("/:id", async (req: Request, res: Response) => {
     return res.json({
       success: true,
       data: homeowner,
-      message: "Homeowner updated successfully"
+      message: "Homeowner updated successfully",
     });
   } catch (error) {
     console.error("Update homeowner error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update homeowner"
+      error:
+        error instanceof Error ? error.message : "Failed to update homeowner",
     });
   }
 });
@@ -144,17 +146,14 @@ router.put("/:id", async (req: Request, res: Response) => {
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const profile = (req as any).userProfile;
+    const profile = (req as unknown as { userProfile: Record<string, unknown> }).userProfile;
     const role = profile?.role;
 
     if (role !== "admin") {
       return res.status(403).json({ success: false, error: "Forbidden" });
     }
 
-    const { error } = await supabase
-      .from("homeowners")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("homeowners").delete().eq("id", id);
 
     if (error) {
       throw new Error(error.message);
@@ -162,13 +161,14 @@ router.delete("/:id", async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      message: "Homeowner deleted successfully"
+      message: "Homeowner deleted successfully",
     });
   } catch (error) {
     console.error("Delete homeowner error:", error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete homeowner"
+      error:
+        error instanceof Error ? error.message : "Failed to delete homeowner",
     });
   }
 });

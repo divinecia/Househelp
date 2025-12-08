@@ -5,7 +5,10 @@ interface HeaderProps {
 }
 
 export default function Header({ className }: HeaderProps) {
-  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, target: string) => {
+  const handleScroll = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    target: string,
+  ) => {
     e.preventDefault();
     const element = document.getElementById(target);
     if (element) {
@@ -14,7 +17,12 @@ export default function Header({ className }: HeaderProps) {
   };
 
   return (
-    <header className={cn("bg-white border-b border-gray-100 sticky top-0 z-50", className)}>
+    <header
+      className={cn(
+        "bg-white border-b border-gray-100 sticky top-0 z-50",
+        className,
+      )}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
           <a

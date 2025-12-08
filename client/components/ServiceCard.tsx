@@ -30,7 +30,7 @@ export default function ServiceCard({
       className={cn(
         "relative overflow-hidden rounded-2xl p-8 min-h-[200px] flex flex-col items-center justify-center gap-4 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95",
         bgColors[bgColor],
-        className
+        className,
       )}
     >
       <div className="relative z-10 flex flex-col items-center justify-center gap-4">

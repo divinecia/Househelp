@@ -51,7 +51,7 @@ const rolePermissions: Record<UserRole, Permission[]> = {
 export const hasPermission = (
   role: UserRole,
   resource: string,
-  action: string
+  action: string,
 ): boolean => {
   const permissions = rolePermissions[role];
   if (!permissions) {
@@ -71,9 +71,11 @@ export const hasPermission = (
  */
 export const hasAnyPermission = (
   role: UserRole,
-  requirements: Array<{ resource: string; action: string }>
+  requirements: Array<{ resource: string; action: string }>,
 ): boolean => {
-  return requirements.some((req) => hasPermission(role, req.resource, req.action));
+  return requirements.some((req) =>
+    hasPermission(role, req.resource, req.action),
+  );
 };
 
 /**
@@ -81,9 +83,11 @@ export const hasAnyPermission = (
  */
 export const hasAllPermissions = (
   role: UserRole,
-  requirements: Array<{ resource: string; action: string }>
+  requirements: Array<{ resource: string; action: string }>,
 ): boolean => {
-  return requirements.every((req) => hasPermission(role, req.resource, req.action));
+  return requirements.every((req) =>
+    hasPermission(role, req.resource, req.action),
+  );
 };
 
 /**
@@ -104,7 +108,10 @@ export const getRoleResources = (role: UserRole): string[] => {
  * Check if a role is higher or equal than another role
  * Admin > Homeowner/Worker > Guest
  */
-export const hasHigherOrEqualRole = (userRole: UserRole, requiredRole: UserRole): boolean => {
+export const hasHigherOrEqualRole = (
+  userRole: UserRole,
+  requiredRole: UserRole,
+): boolean => {
   const roleHierarchy: Record<UserRole, number> = {
     admin: 3,
     homeowner: 2,

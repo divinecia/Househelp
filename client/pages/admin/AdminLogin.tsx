@@ -25,22 +25,42 @@ export default function AdminLogin() {
     setIsLoading(true);
 
     if (!formData.email || !formData.password) {
-      setError("Please fill in all fields");
+      const missing = [];
+      if (!formData.email) missing.push("email");
+      if (!formData.password) missing.push("password");
+      setError(`Please provide ${missing.join(" and ")}`);
       setIsLoading(false);
       return;
     }
 
     try {
+      console.log("Attempting login with:", { email: formData.email });
       const user = await loginUser("admin", formData.email, formData.password);
-      
+
+      console.log("Login returned user:", {
+        hasUser: !!user,
+        userId: user?.id,
+        userEmail: user?.email,
+      });
+
       if (user) {
+        console.log("Login successful, setting toast and navigating");
         toast.success("Login successful!");
-        navigate("/admin/dashboard");
+        setTimeout(() => {
+          console.log("Navigating to /admin/dashboard");
+          navigate("/admin/dashboard");
+        }, 500);
       } else {
-        setError("Invalid email or password");
+        console.error("Login returned null user");
+        setError("Login failed. Please try again.");
+        toast.error("Login failed. Please try again.");
       }
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Login failed";
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : "Login failed. Please try again.";
+      console.error("Login error:", error);
       setError(errorMsg);
       toast.error(errorMsg);
     } finally {
@@ -62,7 +82,10 @@ export default function AdminLogin() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm"
+          >
             {error && (
               <div className="mb-6 p-4 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-sm">
                 {error}
@@ -70,7 +93,10 @@ export default function AdminLogin() {
             )}
 
             <div className="mb-6">
-              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Email Address
               </label>
               <input
@@ -85,7 +111,10 @@ export default function AdminLogin() {
             </div>
 
             <div className="mb-8">
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Password
               </label>
               <input
