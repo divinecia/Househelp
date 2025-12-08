@@ -46,9 +46,7 @@ export function createServer() {
   const corsOptions = {
     origin: isDevelopment
       ? [
-          "http://localhost:5173",
-          "http://localhost:3000",
-          "http://localhost:5000",
+          "http://localhost:6000",
         ]
       : process.env.ALLOWED_ORIGINS?.split(",") || ["https://yourdomain.com"],
     credentials: true,

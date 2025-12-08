@@ -9,7 +9,7 @@
 import { supabase } from "./supabase";
 
 // Use relative path for API calls (works in both dev and production)
-// In dev: /api → http://localhost:5173/api
+// In dev: /api → http://localhost:6000/api
 // In prod: /api → https://your-domain/api
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
